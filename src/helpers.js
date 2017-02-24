@@ -80,6 +80,7 @@ m.init = function(rawProps,type){
 	};
 
 	rc.reinit = (newProps) => {
+		newProps = newProps || props;
 		props = utils.deepCp({},newProps);
 		freezer = core.process(props);
 		props = core.defaultTheProps(utils.deepCp({},props));
