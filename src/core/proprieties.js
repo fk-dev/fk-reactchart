@@ -191,7 +191,7 @@ let axe = {
 			length: 7,
 			out: 0,
 			color: 'gray',
-			labelize: () => {return '';}
+			labelize: () => ''
 		})
 	},
 	grid: {
@@ -226,8 +226,7 @@ let axe = {
 m.Axes = (axis) => {
 	return {
 		abs: _.map(axis.abs, (p) => _.extend({placement: p}, axe)),
-		ord: _.map(axis.ord, (p) => _.extend({placement: p}, axe)),
-		CS: 'cart'
+		ord: _.map(axis.ord, (p) => _.extend({placement: p}, axe))
 	};
 };
 
@@ -265,7 +264,6 @@ m.Graph = (axis) => {
 		graphProps: [],
 		// axis
 		axisProps: m.Axes(axis),
-		axis: undefined,	// b = bottom, l = left, t = top, r = right, any combination; overrides xaxis and yaxis
 		// shorcuts for easyness of use, overrides
 		// settings in axisProps
 		// label of axis

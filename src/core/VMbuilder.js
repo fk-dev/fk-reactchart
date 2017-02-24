@@ -165,7 +165,6 @@ let axis = function(props,state,axe,dir){
 		let axisKey = axe + '.' + key;
 
 		let axisProps = _.findWhere(props.axisProps[axe], {placement: key});
-		axisProps.CS = props.axisProps.CS;
 
 		let partnerAxis = props.axisProps[partnerAxe][axisProps.partner];
 		let partnerDs = state.spaces[othdir][partnerAxis.placement];

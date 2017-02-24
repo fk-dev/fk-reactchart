@@ -138,8 +138,8 @@ let defaultTheProps = function(props){
 	};
 
 	if(!!_.find(props.data, (data) => data.type === 'Pie')){
-		_.each(fullprops.axisProps.abs, (ax) => {ax.show = false;});
-		_.each(fullprops.axisProps.ord, (ax) => {ax.show = false;});
+		_.each(fullprops.axisProps.abs, (ax) => ax.show = false);
+		_.each(fullprops.axisProps.ord, (ax) => ax.show = false);
 		_.each(props.data, (d,idx) => d.type === 'Pie' ? noMark(idx) : null);
 	}
 
@@ -400,6 +400,8 @@ let offStairs = function(serie,gprops){
 };
 
 let m = {};
+
+m.defaultTheProps = defaultTheProps;
 
 m.process = function(rawProps){
 

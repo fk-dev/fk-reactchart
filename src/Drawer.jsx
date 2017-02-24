@@ -1,12 +1,13 @@
 let React = require('react');
 let Axes = require('./Axes.jsx');
-let Curves = require('./Curves.jsx');
+let grapher = require('./graphs/grapher.jsx');
 let Cadre = require('./Cadre.jsx');
 let Background = require('./Background.jsx');
 let Foreground = require('./Foreground.jsx');
 let Title = require('./Title.jsx');
 
 let imUtils = require('./core/im-utils.js');
+let _ = require('underscore');
 
 /*
 	{
@@ -29,11 +30,11 @@ class Drawer extends React.Component {
 
 	orderAG(){
 		return this.props.state.axisOnTop === true ? <g>
-			<Curves state={this.props.state.curves} />
+			{_.map(this.props.state.curves, (curve) => grapher(curve.type,curve))}
 			<Axes state={this.props.state.axes}/>
 		</g> : <g>
 			<Axes state={this.props.state.axes}/>
-			<Curves state={this.props.state.curves} />
+			{_.map(this.props.state.curves, (curve) => grapher(curve.type,curve))}
 		</g>;
 					
 	}
