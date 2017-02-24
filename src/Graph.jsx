@@ -8,7 +8,13 @@ class Graph extends React.Component {
 
 	componentWillMount(){
 		if(this.props.__preprocessed){
-			this.props.updateGraph(this);
+			this.props.updateGraph(this, 'self');
+		}
+	}
+
+	componentWillUpdate(){
+		if(this.props.__preprocessed){
+			this.props.updateGraph(this, 'self');
 		}
 	}
 
