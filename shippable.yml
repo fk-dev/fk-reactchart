@@ -1,13 +1,15 @@
 language: node_js
 
+node_js:
+   - 6.10.0
+
 build:
   cache: true
   cache_dir_list:
     - $SHIPPABLE_BUILD_DIR/node_modules
 
   ci:
-    - sed -i -e "s/#master/#$BRANCH/g" package.json
-    - npm install
+    - shippable_retry npm cache clean && npm install --unsafe-perm
     - npm test
 
 integrations:

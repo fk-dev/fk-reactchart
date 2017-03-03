@@ -1,7 +1,7 @@
 let React = require('react');
 let _ = require('underscore');
 
-let iconer = require('../icons/iconer.js');
+let iconer = require('../icons/iconer.jsx');
 let color = require('./colorMgr.js');
 
 let process = function(props){
@@ -43,9 +43,9 @@ let process = function(props){
 					let typeMark = gprops.markType;
 					iconProps.color = point.color || color(p);
 					perPoint.push({
-						icon: <svg width={icW} height={icH}>
+						icon: (<svg width={icW} height={icH}>
 								{iconer.icon(iconProps, typeMark)}
-							</svg>,
+							</svg>),
 						label: point.legend || 'data #' + idx
 					});
 				}

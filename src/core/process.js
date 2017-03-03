@@ -4,11 +4,11 @@ let utils = require('./utils.js');
 let gProps = require('./proprieties.js');
 let vm = require('./VMbuilder.js');
 let im = require('./im-utils.js');
-let legender = require('./legendBuilder.js');
+let legender = require('./legendBuilder.jsx');
 
 let preprocessAxis = function(props){
 
-  // axisProps is an Array, 
+  // axisProps is an Array,
   // can be given as a non array
   // empty <==> ticks.major.show === false && ticks.minor.show === false
   if(!!props.axisProps){
@@ -67,7 +67,7 @@ let postprocessAxis = function(props){
 	let fetchBounds = (type,where) => {
 		let serie = [];
 		for (let id = 0; id < props.data.length; id++){
-			let dataW = !!props.data[id][type] && !!props.data[id][type].axis ? props.data[id][type].axis : 
+			let dataW = !!props.data[id][type] && !!props.data[id][type].axis ? props.data[id][type].axis :
 				type === 'abs' ? 'bottom' : 'left';
 			if(dataW === where){
 				serie = serie.concat(_.pluck(props.data[id].series, type === 'abs' ? 'x' : 'y'));
@@ -156,9 +156,9 @@ let defaultTheProps = function(props){
 
 let addDefaultDrop = function(serie, dir, ds, after){
 
-let fetchDs = (d) => !!ds[d].bottom ? ds[d].bottom : 
-			!!ds[d].top ? ds[d].top : 
-			!!ds[d].left ? ds[d].left : 
+let fetchDs = (d) => !!ds[d].bottom ? ds[d].bottom :
+			!!ds[d].top ? ds[d].top :
+			!!ds[d].left ? ds[d].left :
 			!!ds[d].right ? ds[d].right : null;
 
 let defZero = (point) => utils.isDate(point[dir]) ? new Date(0) : 0 ;
@@ -167,7 +167,7 @@ let def = (point,locdir) => {
 	let min = !!ds ? fetchDs(locdir).d.min : defZero(point);
 	let raw = point;
 		raw.drop[locdir] = utils.isNil(raw.drop[locdir]) ? min : raw.drop[locdir];
-		
+
 		return raw;
 	};
 
@@ -214,7 +214,7 @@ let validate = function(series,discard){
 		}
 		for(let p = 0; p < series[se].length; p++){
 		let px = utils.isValidNumber(series[se][p].x);
-		let py = utils.isValidNumber(series[se][p].y); 
+		let py = utils.isValidNumber(series[se][p].y);
 		let pv = utils.isValidNumber(series[se][p].value);
 			if(!pv && ( !utils.isValidParam(px) || !utils.isValidParam(py) ) ){
 				if(!discard){
@@ -453,7 +453,7 @@ m.process = function(rawProps){
 			let locAxis = _.find(props.axisProps[dir], (ax) => ax.placement === dat[dir].axis);
 				for(let p = 0; p < ser.length; p++){
 				let point = ser[p];
-					if(!!point.label[u]){  
+					if(!!point.label[u]){
 						locAxis.tickLabels.push({coord: point[u], label: point.label[u]});
 					}
 				}

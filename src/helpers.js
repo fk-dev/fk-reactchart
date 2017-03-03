@@ -1,7 +1,7 @@
 let core = require('./core/process.js');
 let utils = require('./core/utils.js');
 let space = require('./core/space-transf.js');
-let legender = require('./core/legendBuilder.js');
+let legender = require('./core/legendBuilder.jsx');
 
 let letters = 'azertyuiopqsdfghjklmwxcvbnAZERTYUIOPQSDFGHJKLMWXCVBN';
 let rnd = () => letters.charAt(Math.floor(Math.random() * letters.length));
