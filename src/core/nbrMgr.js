@@ -236,6 +236,9 @@ m.smallestStep = () => 1;
 // management
 m.labelize     = (type, dist) => labelFromType(type, dist);
 
+//
+m.defaultSpan  = () => 10;
+
 m.labelF = 0.75;
 
 m.type = 'number';

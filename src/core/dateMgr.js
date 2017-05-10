@@ -449,6 +449,9 @@ m.step         = (num) => makePeriod({years: num});
 // no
 m.labelize     = () => false;
 
+//
+m.defaultSpan  = () => makePeriod(moment.duration({months: 6}));
+
 m.labelF = 0.75;
 
 m.type = 'date';

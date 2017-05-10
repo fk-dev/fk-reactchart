@@ -361,19 +361,19 @@ let spanSer = (barType) => {
 };
 
 let spanify = function(serie,data){
-let out = {};
+	let out = {};
 	if(utils.isNil(data.span) || data.span === 0){
-	let d;
-	let dir = (data.type[0] === 'y')?'y':'x';
+		let d;
+		let dir = (data.type[0] === 'y')?'y':'x';
+		let mgr = utils.mgr(serie[0][dir]);
 
-	let mgr = utils.mgr(serie[0][dir]);
 		for(let i = 1; i < serie.length; i++){
 		let dd = mgr.distance(serie[i][dir],serie[i - 1][dir]);
 			if(d === undefined || mgr.lowerThan(dd, d)){
 				d = mgr.multiply(dd,0.99);
 			}
 		}
-		out.span = d;
+		out.span = !!d ? d : mgr.defaultSpan();
 	}else{
 		out.span = data.span;
 	}
