@@ -28,13 +28,16 @@ class SquareMark extends React.Component {
 	}
 
 	render(){
-		let { ds, position, size, fill, color, shade, width} = this.props.state;
+		let { css, gIdx, state } = this.props;
+		let { ds, position, size, fill, color, shade, width} = state;
 
 		let x = dataScale.toC(ds.x,position.x) - size;
 		let y = dataScale.toC(ds.y,position.y) - size;
 		let f = fill || color;
 
-		return <rect x={x} y={y} width={2 * size} height={2 * size} fill={f} opacity={shade} stroke={color} strokeWidth={width}/>;
+		let rectProps = css ? null : { width: 2 * size, height: 2 * size, fill: f, opacity: shade, stroke: color, strokeWidth: width };
+
+		return <rect className={'mark mark-' + gIdx} x={x} y={y} {...rectProps}/>;
 	}
 }
 

@@ -13,31 +13,36 @@ class Mark extends React.Component {
 	}
 
 	mark(state){
-		switch(this.props.type){
+		let { css, gIdx, type } = this.props;
+		let opts = {css, gIdx };
+		switch(type){
 			case 'square':
 			case 'Square':
 			case 'opensquare':
 			case 'OpenSquare':
-				return <Square state={state} />;
+				return <Square {...opts} state={state} />;
 			case 'dot':
 			case 'Dot':
 			case 'opendot':
 			case 'OpenDot':
-				return <Dot state={state} />;
+				return <Dot {...opts} state={state} />;
 			case 'bar':
 			case 'Bar':
-				return <Bar state={state} />;
+				return <Bar {...opts} state={state} />;
 			default:
 				throw new Error('unrecognized mark type: "' + this.props.type + '"');
 		}
 	}
 
 	pin(pinS){
-		return !!pinS.path ? <g>
-			<path strokeWidth='1' stroke={pinS.pinColor} fill='none' d={pinS.path}/>
-			<text fontSize={pinS.labelFS} style={{textAnchor: pinS.labelAnc}} fill={pinS.color} x={pinS.xL} y={pinS.yL}>{pinS.label}</text>
+		let { css, gIdx } = this.props;
+		let pathProps = css ? null : { strokeWidth: 1, stroke: pinS.pinColor, fill: 'none', d: pinS.path };
+		let textProps = css ? null : { fontSize: pinS.labelFS, style: {textAnchor: pinS.labelAnc}, fill: pinS.color } ;
+		return pinS.path ? <g>
+			<path className={'pin pin-' + gIdx} {...pathProps}/>
+			<text className={'tag tag-' + gIdx} {...textProps} x={pinS.xL} y={pinS.yL}>{pinS.label}</text>
 		</g> : 
-		<text fontSize={pinS.labelFS} style={{textAnchor: pinS.labelAnc}} fill={pinS.color} x={pinS.xL} y={pinS.yL}>{pinS.label}</text>;
+		<text className={'tag tag-' + gIdx} {...textProps} x={pinS.xL} y={pinS.yL}>{pinS.label}</text>;
 	}
 
 	render(){

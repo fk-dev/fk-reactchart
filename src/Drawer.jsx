@@ -29,12 +29,14 @@ class Drawer extends React.Component {
 	}
 
 	orderAG(){
-		return this.props.state.axisOnTop === true ? <g>
-			{_.map(this.props.state.curves, (curve) => grapher(curve.type,curve))}
-			<Axes state={this.props.state.axes}/>
+		let { state } = this.props;
+		let { css } = state;
+		return state.axisOnTop === true ? <g>
+			{_.map(state.curves, (curve, gIdx) => grapher(curve.type,curve, {css, gIdx}))}
+			<Axes state={state.axes}/>
 		</g> : <g>
-			<Axes state={this.props.state.axes}/>
-			{_.map(this.props.state.curves, (curve) => grapher(curve.type,curve))}
+			<Axes state={state.axes}/>
+			{_.map(state.curves, (curve, gIdx) => grapher(curve.type,curve, {css, gIdx}))}
 		</g>;
 					
 	}

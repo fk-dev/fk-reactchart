@@ -13,17 +13,20 @@ let imUtils = require('../core/im-utils.js');
 class BarChart extends React.Component {
 
 	shouldComponentUpdate(props) {
-	 return !imUtils.isEqual(props.state,this.props.state);
+		return !imUtils.isEqual(props.state,this.props.state);
 	}
 
 	render() {
+		let { state, css, gIdx } = this.props;
+		let opts = { css, gIdx };
+		let { marks } = state;
 
-	if(this.props.state.marks.length === 0){
-		return null;
-	}
+		if(marks.length === 0){
+			return null;
+		}
 
-	 return <g>
-		{_.map(this.props.state.marks,(bar) => <Mark key={bar.key} state={bar} type='bar'/>)}
+		return <g>
+			{_.map(marks, (bar) => <Mark {...opts} key={bar.key} state={bar} type='bar'/>)}
 		</g>;
 	}
 }

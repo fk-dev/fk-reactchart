@@ -16,14 +16,16 @@ let imUtils = require('../core/im-utils.js');
 class StairsChart extends React.Component {
 
 	shouldComponentUpdate(props) {
-	 return !imUtils.isEqual(props.state,this.props.state);
+		return !imUtils.isEqual(props.state,this.props.state);
 	}
 
 	render(){
-		let marks = this.props.state.marks;
-		return marks.length === 0 ? <Bins state={this.props.state.path} /> : <g>
-			<Bins state={this.props.state.path} />
-			{_.map(marks, (point) => <Mark key={point.key} state={point} type={this.props.state.markType}/>)}
+		let { state, css, gIdx } = this.props;
+		let opts = { css, gIdx };
+		let { marks, path, markType } = state;
+		return marks.length === 0 ? <Bins {...opts} state={path} /> : <g>
+			<Bins {...opts} state={path} />
+			{_.map(marks, (point) => <Mark {...opts} key={point.key} state={point} type={markType}/>)}
 			</g>;
 	}
 }

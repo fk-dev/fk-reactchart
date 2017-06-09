@@ -29,14 +29,17 @@ class DotMark extends React.Component {
 	}
 
 	render(){
-		let { ds, position, size, color, radius, fill, shade, width } = this.props.state;
+		let { css, gIdx, state } = this.props;
+		let { ds, position, size, color, radius, fill, shade, width } = state;
 
 		let x = dataScale.toC(ds.x,position.x);
 		let y = dataScale.toC(ds.y,position.y);
 		let r = radius || size;
 		let f = fill || color;
 
-		return <circle cx={x} cy={y} r={r} fill={f} opacity={shade} stroke={color} strokeWidth={width}/>;
+		let cProps = css ? null : { r: r, fill: f, opacity: shade, stroke: color, strokeWidth: width };
+
+		return <circle className={'mark mark-' + gIdx} cx={x} cy={y} {...cProps}/>;
 	}
 }
 
