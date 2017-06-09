@@ -129,7 +129,7 @@ m.VM = function(ds,partner, bounds, dir, locProps, comFac, axisKey){
 		let labelProps = {
 			ds: ds,
 			label:	p.labelize(tick.position) === false ? tick.label : p.labelize(tick.position),
-			FSize:	p.labelFSize || 15,
+			FSize:	p.labelFSize,
 			color:	p.labelColor,
 			rotate: false,
 			transform: true,
@@ -155,7 +155,9 @@ m.VM = function(ds,partner, bounds, dir, locProps, comFac, axisKey){
 		// & anchoring the text
 		let fd = 0.25 * labelProps.FSize; // font depth, 25 %
 		let fh = 0.75 * labelProps.FSize; // font height, 75 %
-		let defOff = 8;
+			// see space mgr
+		let mar = p.labelFMargin;
+		let outTick = p.length * p.out;
 
 		let anchor = (() => {
 			switch(locProps.placement){
@@ -164,7 +166,7 @@ m.VM = function(ds,partner, bounds, dir, locProps, comFac, axisKey){
 						anchor: 'middle',
 						off: {
 							x: 0,
-							y: - fd - defOff
+							y: - fh - fd - mar
 						}
 					};
 				case 'bottom':
@@ -172,14 +174,14 @@ m.VM = function(ds,partner, bounds, dir, locProps, comFac, axisKey){
 						anchor: 'middle',
 						off: {
 							x: 0,
-							y: fh + defOff
+							y: fh + fd + mar
 						}
 					};
 				case 'left':
 					return {
 						anchor: 'end',
 						off: {
-							x: defOff,
+							x: outTick + mar,
 							y: fd
 						}
 					};
@@ -187,7 +189,7 @@ m.VM = function(ds,partner, bounds, dir, locProps, comFac, axisKey){
 					return {
 						anchor: 'start',
 						off: {
-							x: defOff,
+							x: outTick + mar,
 							y: fd
 						}
 					};
@@ -226,7 +228,7 @@ m.VM = function(ds,partner, bounds, dir, locProps, comFac, axisKey){
 				width: true
 			};
 
-			let cus = tick.grid || {};
+			let cus = tick.grid || {};
 			for(let u in tmp){
 				gridProps[u] = utils.isNil(cus[u]) ? p[u] : cus[u];
 			}

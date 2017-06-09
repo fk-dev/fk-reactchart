@@ -93,13 +93,23 @@ let space = function(datas,universe,borders,title){
 			return null;
 		}
 
-	// 1 - the coordinate space
-
 		// get the (right,left) or (top,bottom)
 		let places = [];
 		for(let p in borders.marginsO){
 			places.push(p);
 		}
+
+		// axis/ticks label
+		let relO = {};
+		for(let idx = 0; idx < borders.axis.length; idx++){
+			let w = borders.axis[idx].placement; 
+			let s = borders.axis[idx].label.length > 0 ? 1 : 0;
+			s += borders.axis[idx].ticks.major.show || borders.axis[idx].ticks.minor.show ? 1 : 0;
+			relO[w] = s === 0 ? defMargins.outer.min :
+				s === 1 ? Number(universe) * 0.15 : Number(universe) * 0.2;
+		}
+
+	// 1 - the coordinate space
 
 		// compute the world
 		// universe-world margins
@@ -111,7 +121,7 @@ let space = function(datas,universe,borders,title){
 		}
 
 		// fetch the margin (label + ticks + default) for an axis
-		let margin = function(axis){
+		let bigMargin = (axis) => {
 			if(!axis.show){
 				return defMargins.outer.min;
 			}
@@ -124,6 +134,15 @@ let space = function(datas,universe,borders,title){
 			}
 			return marg;
 		};
+
+		let smallMargin = (axis) => {
+			if(!axis.show){
+				return 0;
+			}
+			return relO[axis.placement];
+		};
+
+		let margin = (axis) => Math.min(smallMargin(axis),bigMargin(axis));
 
 		// labels
 		for(let l = 0; l < borders.axis.length; l++){
@@ -147,6 +166,29 @@ let space = function(datas,universe,borders,title){
 				margins[k] = borders.marginsO[k];
 			}
 			margins[k] = Math.max(margins[k],defMargins.outer.min);
+		}
+
+		for(let om in {bottom: true, top: true, left: true, right: true}){
+			if(margins[om]){
+				let axis = _.find(borders.axis, ax => ax.placement === om);
+				if(axis){
+					let marLength = margins[om];
+					if(axis.label.length > 0){
+						axis.labelFSize = Math.min(axis.labelFSize, 0.48 * marLength);
+						axis.marginOff = 0.52 * marLength;
+						marLength /= 2;
+					}
+					for(let ti in {major: true, minor: true}){
+						let ticks = axis.ticks[ti];
+						if(!ticks.show){
+							continue;
+						}
+						ticks.labelFSize = Math.min(ticks.labelFSize, 0.68 * marLength);
+						ticks.length = ticks.out !== 0 ? Math.min(ticks.length, 0.2 * marLength / ticks.out) : ticks.length;
+						ticks.labelFMargin =  Math.min(marLength - ticks.labelFSize - ticks.length * ticks.out, 8); // no more that 8 pixels out
+					}
+				}
+			}
 		}
 
 		// we have the world's corners
