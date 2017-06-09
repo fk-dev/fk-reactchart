@@ -1,17 +1,22 @@
 let utils = require('../core/utils.js');
 let _ = require('underscore');
 
+let nInterval = (length, height) => {
+	let width = height * 3.5 / 2;
+	return Math.min(Math.floor(length/width), 10);
+};
+
 /*
  * beware of distance (period) versus
  * values (date), see {date,nbr}Mgr.js
 */
-let computeTicks = function(first,last,minor,fac){
+let computeTicks = function(first,last,minor,fac, toPixel, height){
 	let mgr = utils.mgr(first);
 	let start = mgr.closestRoundUp(first,mgr.divide(mgr.distance(first,last),10));
 	let length = mgr.distance(start,last);
 	// distance min criteria 1
 	// 10 ticks max
-	let dec = mgr.divide(length,10);
+	let dec = mgr.divide(length,nInterval(mgr.getValue(length) * toPixel, height));
 	let majDist = mgr.roundUp(dec);
 	let minDist = mgr.roundDown(majDist);
 
@@ -87,7 +92,7 @@ let computeTicks = function(first,last,minor,fac){
 
 let m = {};
 
-m.ticks = function(start,length,labels,minor,fac){
+m.ticks = function(start,length,labels,minor,fac, toPixel, height){
 	if(!!labels && labels.length > 0){
 		return _.map(labels, (lab) => {
 			return {
@@ -101,7 +106,7 @@ m.ticks = function(start,length,labels,minor,fac){
 		});
 	}
 
-	return computeTicks(start,length,minor,fac);
+	return computeTicks(start,length,minor,fac, toPixel, height);
 };
 
 

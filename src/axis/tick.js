@@ -64,7 +64,11 @@ m.VM = function(ds,partner, bounds, dir, locProps, comFac, axisKey){
 	// do we want the minor grid?
 	let minor = (minProps.show === true || locProps.grid.minor.show === true);
 
-	return locProps.empty ? [] : _.map(ticker.ticks(min,max,ticksLabel,minor,comFac), (tick,idx) => {
+	// to have absolute lengthes
+	let toPixel = Math.abs(ds[dir].d2c);
+		// cheat to treat height as if it's length
+	let height = dir === 'x' ? majProps.labelFSize : majProps.labelFSize * 2 / 3.5;
+	return locProps.empty ? [] : _.map(ticker.ticks(min,max,ticksLabel,minor,comFac, toPixel, height), (tick,idx) => {
 /*
 		tick: {
 			show: true || false,
