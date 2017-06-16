@@ -3,7 +3,7 @@ let _ = require('underscore');
 
 let nInterval = (length, height) => {
 	let width = height * 3.5 / 2;
-	return Math.min(Math.floor(length/width), 10);
+	return Math.max(Math.min(Math.floor(length/width), 10), 1);
 };
 
 /*
