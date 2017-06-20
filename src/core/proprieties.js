@@ -1,7 +1,7 @@
 /*
 	all the proprieties
 */
-let _ = require('underscore');
+let { extend, extendOwn, map } = require('underscore');
 let utils = require('./utils.js');
 
 // defaults for marks
@@ -21,8 +21,8 @@ marks.dot = marks.Dot = () => {
 		radius: 3,
 		color: 'black',
 		width: 0,
-		fill: undefined,
-		size: undefined,
+		fill: null,
+		size: null,
 		shade: 1
 	};
 };
@@ -40,7 +40,7 @@ marks.square = marks.Square = () => {
 		},
 		color: 'black',
 		width: 0,
-		fill: undefined,
+		fill: null,
 		size: 0,
 		shade: 1
 	};
@@ -82,8 +82,8 @@ graph.common = () => {
 		// mark props, explicit at heigh level
 		// overwritten if present in markProps
 		mark: true,
-		markColor: undefined,
-		baseLine: {x:undefined, y:0},
+		markColor: null,
+		baseLine: {x:null, y:0},
 		dropLine: {x: false, y:false},
 		markSize: 3,
 		markType: 'dot',
@@ -92,8 +92,8 @@ graph.common = () => {
 		// i.e. specific things like radius
 		// for a dot, or anything.
 		markProps: {},
-		shader: undefined, //playing with colors
-		process: undefined, //playing with data {dir: x || y, type: 'histogram'}
+		shader: null, //playing with colors
+		process: null, //playing with data {dir: x || y, type: 'histogram'}
 		tag: {
 			show: false, // show the tag
 			print: (t) => t + '',
@@ -108,35 +108,35 @@ graph.common = () => {
 	};
 };
 
-graph.Bars = graph.bars = () => _.extend(utils.deepCp({},graph.common()), {
+graph.Bars = graph.bars = () => extend(utils.deepCp({},graph.common()), {
 	color: 'none',
 	width: 0,
 	dir: {
 		x: false,
 		y: true
 	},
-	drop: {x: undefined, y: 0},
+	drop: {x: null, y: 0},
 	markType: 'bar',
 	markProps: {
 		width: 0,
 		draw: false
 	},
 	// Number or {}
-	span: undefined, // auto compute
+	span: null, // auto compute
 	offset: {x: 0, y: 0}
 });
 
-graph.yBars = graph.ybars = () => _.extend(utils.deepCp({},graph.Bars()),{
+graph.yBars = graph.ybars = () => extend(utils.deepCp({},graph.Bars()),{
 	dir: {
 		x: true,
 		y: false
 	},
 });
 
-graph.Pie = graph.pie = () => _.extend(utils.deepCp({},graph.common()),{
+graph.Pie = graph.pie = () => extend(utils.deepCp({},graph.common()),{
 	pie: 'disc', // tore
 	pieOrigin: {x: 0, y:0}, // offset from center
-	pieRadius: undefined, // 2/3 of world
+	pieRadius: null, // 2/3 of world
 	pieToreRadius: 0, // 0: no hole, 1 : no border!
 	tag: {
 		show: false, // show the tag
@@ -174,9 +174,10 @@ m.Tick = {
 	length: 15,
 	out: 0.25, // proportion that is outside
 	color: 'black',
-	labelOffset: {x:0, y:0},
+	labelOffset: {x:0, y:0, along: null, perp: null},
 	labelize: () => {return false;}, //utils.isNil(val) ? '' : val instanceof Date ? moment(val).format('YYYY') : val.toFixed(1);},
 	label: '',
+	rotate: 0,
 	labelFSize: 10,
 	labelColor: 'black'
 };
@@ -186,7 +187,7 @@ m.Tick = {
 let axe = {
 	ticks: {
 		major: m.Tick,
-		minor: _.extendOwn(_.extend({},m.Tick),{
+		minor: extendOwn(extend({},m.Tick),{
 			show: false,
 			length: 7,
 			out: 0,
@@ -196,14 +197,15 @@ let axe = {
 	},
 	grid: {
 		major: m.Grid,
-		minor: _.extendOwn(_.extend({},m.Grid),{
+		minor: extendOwn(extend({},m.Grid),{
 			width: 0.3
 		})
 	},
 	show: true,
 	// to force locally definition
-	min: undefined,
-	max: undefined,
+	min: null,
+	max: null,
+	step: null,
 	tickLabels: [], //{coord: where, label: ''}, coord in ds
 	color:     'black',
 	width:      1,
@@ -225,8 +227,8 @@ let axe = {
 
 m.Axes = (axis) => {
 	return {
-		abs: _.map(axis.abs, (p) => _.extend({placement: p}, axe)),
-		ord: _.map(axis.ord, (p) => _.extend({placement: p}, axe))
+		abs: map(axis.abs, (p) => extend({placement: p}, axe)),
+		ord: map(axis.ord, (p) => extend({placement: p}, axe))
 	};
 };
 
@@ -235,10 +237,10 @@ m.Axes = (axis) => {
 m.Graph = (axis) => {
 	return {
 		// general
- 	 css: false,
+		css: false,
 		name: 'G',
 		height: 400,	// defines the universe's height
-		width:	800,	// defines the universe's width
+		width:	600,	// defines the universe's width
 		legend: {
 			iconWidth: 30,
 			iconHeight: 20,
@@ -246,34 +248,24 @@ m.Graph = (axis) => {
 			iconVMargin: 0, // offset from center
 			iconUnit: 'px'
 		},
-		foreground: undefined,
-		background: undefined,
+		foreground: null,
+		background: null,
 		title: '',
 		titleFSize: 30,
 		axisOnTop: false,
 		// margins
-		innerMargin: {}, // left, bottom, right, top
+		innerMargin: {left: null, bottom: null, right: null, top: null}, // left, bottom, right, top
 		// defMargins.axis.ticks
 		// if defined, overwrite
-		factorMargin: {},  // left, bottom, right, top
+		factorMargin: {left: null, bottom: null, right: null, top: null}, // left, bottom, right, top
 		// factorMargin + defMargins.axis.label + defMargins.axis.ticks
 		// if defined, overwrite
-		outerMargin: {}, // left, bottom, right, top
+		outerMargin: {left: null, bottom: null, right: null, top: null}, // left, bottom, right, top
 		// data
 		data: [],
 		graphProps: [],
 		// axis
 		axisProps: m.Axes(axis),
-		// shorcuts for easyness of use, overrides
-		// settings in axisProps
-		// label of axis
-		xLabel: '',
-		yLabel: '',
-		xLabelFSize: null,
-		yLabelFSize: null,
-		// axis
-		xaxis: '',	// bottom || top
-		yaxis: '',		// left || right
 		// data process
 		discard: true
 	};
@@ -283,7 +275,7 @@ let data = 	{
 	type: 'Plain', // Plain, Bars, yBars, Stairs
 	series:[], // x, y
 	phantomSeries:[], // added points to play on the world's limit
-	stacked: undefined, // x || y || null
+	stacked: null, // x || y || null
 	coordSys: 'cart', // cart || polar
 	ord: {
 		axis: 'left', // 'left' || 'right'
@@ -328,7 +320,7 @@ m.defMargins = {
 			right: 30,
 			top: 25
 		},
-		min: 3
+		min: 3
 	},
 	inner: {
 		left: 10, 
