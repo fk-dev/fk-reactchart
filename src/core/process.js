@@ -8,46 +8,46 @@ let legender = require('./legendBuilder.jsx');
 
 let preprocessAxis = function(props){
 
-  // axisProps is an Array,
-  // can be given as a non array
-  // empty <==> ticks.major.show === false && ticks.minor.show === false
-  if(!!props.axisProps){
-    for(let u in props.axisProps){
-      if(!Array.isArray(props.axisProps[u])){
-        props.axisProps[u] = [props.axisProps[u]];
-      }
-      for(let ax = 0; ax < props.axisProps[u].length; ax++){
-        let axe = props.axisProps[u][ax]; // too long
-        if(axe.empty){
-          if(!axe.ticks){
-            axe.ticks = {};
-          }
-          if(!axe.ticks.major){
-            axe.ticks.major = {};
-          }
-          if(!axe.ticks.minor){
-            axe.ticks.minor = {};
-          }
-          axe.ticks.major.show = false;
-          axe.ticks.minor.show = false;
-        }else{
-            // no major ticks
-          if(!!axe.ticks && !!axe.ticks.major && axe.ticks.major.show === false){
-              // no minor ticks
-              if(!axe.ticks.minor || axe.ticks.minor.show !== true){
-                axe.empty = true;
-              }
-          }
-        }
-      }
-    }
-  }
+	// axisProps is an Array,
+	// can be given as a non array
+	// empty <==> ticks.major.show === false && ticks.minor.show === false
+	if(props.axisProps){
+		for(let u in props.axisProps){
+			if(!Array.isArray(props.axisProps[u])){
+				props.axisProps[u] = [props.axisProps[u]];
+			}
+			for(let ax = 0; ax < props.axisProps[u].length; ax++){
+				let axe = props.axisProps[u][ax]; // too long
+				if(axe.empty){
+					if(!axe.ticks){
+						axe.ticks = {};
+					}
+					if(!axe.ticks.major){
+						axe.ticks.major = {};
+					}
+					if(!axe.ticks.minor){
+						axe.ticks.minor = {};
+					}
+					axe.ticks.major.show = false;
+					axe.ticks.minor.show = false;
+				}else{
+						// no major ticks
+					if(axe.ticks && axe.ticks.major && axe.ticks.major.show === false){
+							// no minor ticks
+							if(!axe.ticks.minor || axe.ticks.minor.show !== true){
+								axe.empty = true;
+							}
+					}
+				}
+			}
+		}
+	}
 
 	// axis depends on data,
 	// where are they?
 	let axis = {
 		abs: _.uniq(_.map(_.pluck(props.data, 'abs'), (e) => utils.isNil(e) ? 'bottom' : e.axis || 'bottom')),
-		ord: _.uniq(_.map(_.pluck(props.data, 'ord'), (e) => utils.isNil(e) ? 'left'   : e.axis || 'left')),
+		ord: _.uniq(_.map(_.pluck(props.data, 'ord'), (e) => utils.isNil(e) ? 'left'	 : e.axis || 'left')),
 	};
 
 	// default
@@ -67,7 +67,7 @@ let postprocessAxis = function(props){
 	let fetchBounds = (type,where) => {
 		let serie = [];
 		for (let id = 0; id < props.data.length; id++){
-			let dataW = !!props.data[id][type] && !!props.data[id][type].axis ? props.data[id][type].axis :
+			let dataW = props.data[id][type] && props.data[id][type].axis ? props.data[id][type].axis :
 				type === 'abs' ? 'bottom' : 'left';
 			if(dataW === where){
 				serie = serie.concat(_.pluck(props.data[id].series, type === 'abs' ? 'x' : 'y'));
@@ -101,10 +101,10 @@ let postprocessAxis = function(props){
 
 			let axisProps = props.axisProps[ax][ia];
 
-		  if(axisProps.factor === 'auto'){
-  	  	let { max, min, mgr } = fetchBounds(ax,axisProps.placement);
+			if(axisProps.factor === 'auto'){
+				let { max, min, mgr } = fetchBounds(ax,axisProps.placement);
 
-     		if(mgr.type === 'number'){
+				if(mgr.type === 'number'){
 					axisProps.factor = mgr.autoFactor(max, min);
 					if(axisProps.factor !== 1){
 						let sax = cores(axisProps.placement);
@@ -113,10 +113,10 @@ let postprocessAxis = function(props){
 				}else{
 					axisProps.factor = 1;
 				}
-	    }else{
-  	    axisProps.factor = 1;
-   		}
- 		}
+			}else{
+				axisProps.factor = 1;
+			}
+		}
 
 	}
 
@@ -137,9 +137,9 @@ let defaultTheProps = function(props){
 		fullprops.graphProps[idx].mark = false;
 	};
 
-	if(!!_.find(props.data, (data) => data.type === 'Pie')){
-		_.each(fullprops.axisProps.abs, (ax) => ax.show = false);
-		_.each(fullprops.axisProps.ord, (ax) => ax.show = false);
+	if(_.find(props.data, (data) => data.type === 'Pie')){
+		_.each(fullprops.axisProps.abs, (ax) => { ax.show = false; });
+		_.each(fullprops.axisProps.ord, (ax) => { ax.show = false; });
 		_.each(props.data, (d,idx) => d.type === 'Pie' ? noMark(idx) : null);
 	}
 
@@ -156,23 +156,23 @@ let defaultTheProps = function(props){
 
 let addDefaultDrop = function(serie, dir, ds, after){
 
-let fetchDs = (d) => !!ds[d].bottom ? ds[d].bottom :
-			!!ds[d].top ? ds[d].top :
-			!!ds[d].left ? ds[d].left :
-			!!ds[d].right ? ds[d].right : null;
+let fetchDs = (d) => ds[d].bottom ? ds[d].bottom :
+			ds[d].top ? ds[d].top :
+			ds[d].left ? ds[d].left :
+			ds[d].right ? ds[d].right : null;
 
 let defZero = (point) => utils.isDate(point[dir]) ? new Date(0) : 0 ;
 
 let def = (point,locdir) => {
-	let min = !!ds ? fetchDs(locdir).d.min : defZero(point);
+	let min = ds ? fetchDs(locdir).d.min : defZero(point);
 	let raw = point;
 		raw.drop[locdir] = utils.isNil(raw.drop[locdir]) ? min : raw.drop[locdir];
 
 		return raw;
 	};
 
-  // if dir is specified, only this dir, if not, both
-	return _.map(serie, (point) => !!dir ? def(point,dir) : after ? def(def(point,'x'), 'y') : point);
+	// if dir is specified, only this dir, if not, both
+	return _.map(serie, (point) => dir ? def(point,dir) : after ? def(def(point,'x'), 'y') : point);
 };
 
 let copySerie = function(serie){
@@ -184,12 +184,12 @@ let copySerie = function(serie){
 			x: xstr ? idx : point.x,
 			y: ystr ? idx : point.y,
 			label: {
-				x: xstr ? point.x : !!point.label && point.label.x ? point.label.x : undefined,
-				y: ystr ? point.y : !!point.label && point.label.y ? point.label.y : undefined
+				x: xstr ? point.x : point.label && point.label.x ? point.label.x : null,
+				y: ystr ? point.y : point.label && point.label.y ? point.label.y : null
 			},
 			drop: {
-				x: ystr ? 0 : undefined,
-				y: xstr ? 0 : undefined
+				x: ystr ? 0 : null,
+				y: xstr ? 0 : null
 			},
 			tag: !utils.isNil(point.value) ? point.value + '' : // explicitely defined
 				xstr ? xstr : ystr ? ystr : // it's a label
@@ -231,16 +231,25 @@ let validate = function(series,discard){
 };
 
 let addOffset = function(series,stacked){
-let xoffset = [];
-let yoffset = [];
+	let xoffset = [];
+	let yoffset = [];
 
-let span = (ser,idx) => ser.length > 1 ? idx === 0 ? Math.abs(ser[idx + 1] - ser[idx]) * 0.9:	// if first
+	let span = (ser,idx) => ser.length > 1 ? idx === 0 ? Math.abs(ser[idx + 1] - ser[idx]) * 0.9:	// if first
 		idx === ser.length - 1 ? Math.abs(ser[idx] - ser[idx - 1]) * 0.9 :	// if last
 			Math.min(Math.abs(ser[idx] - ser[idx-1]),Math.abs(ser[idx+1] - ser[idx])) * 0.9 : // if in between
 				0; // if no serie
 
-let ensure = (obj,prop) => !!obj[prop] ? null : obj[prop] = {};
-let writeIfUndef = (obj,prop,val) => !!obj[prop] ? null : obj[prop] = val;
+	let ensure = (obj,prop) => {
+		if(utils.isNil(obj[prop])){ 
+			obj[prop] = {};
+		}
+	};
+
+	let writeIfUndef = (obj,prop,val) => {
+		if(utils.isNil(obj[prop])){
+			obj[prop] = val;
+		}
+	};
 
 	for(let i = 0 ; i < series.length; i++){
 
@@ -248,8 +257,8 @@ let writeIfUndef = (obj,prop,val) => !!obj[prop] ? null : obj[prop] = val;
 			if(utils.isNil(point.offset)){
 				point.offset = {};
 			}
-			point.offset.x = point.offset.x || undefined;
-			point.offset.y = point.offset.y || undefined;
+			point.offset.x = point.offset.x || null;
+			point.offset.y = point.offset.y || null;
 		});
 
 		if(stacked[i]){ // stacked in direction 'stacked', 'x' and 'y' are accepted
@@ -257,7 +266,7 @@ let writeIfUndef = (obj,prop,val) => !!obj[prop] ? null : obj[prop] = val;
 				case 'x':
 					// init xoffset
 					if(xoffset.length === 0){
-						xoffset = _.map(series[i],function(/*point*/){return 0;});
+						xoffset = _.map(series[i], () => 0 );
 					}else{
 						if(xoffset.length !== series[i].length){
 							throw new Error('Stacked data needs to be of same size (x dir)!!');
@@ -323,7 +332,7 @@ let spanSer = (barType) => {
 			_.each(series[s], (point) => {
 				point.span = point.span || {};
 				point.span[dir] = serie.span;
-				point.offset = point.offset || {};
+				point.offset = point.offset || {};
 				point.offset[dir] = serie.offset[dir];
 				point.offset[othdir] = serie.offset[othdir];
 			});
@@ -345,7 +354,7 @@ let spanSer = (barType) => {
 			if(data[idx].type === barType){
 				out[idx] = serie.length ? spanify(serie, data[idx]) : {};
 				oidx[idx] = n;
-        n++;
+				n++;
 			}
 		});
 
@@ -362,18 +371,18 @@ let spanSer = (barType) => {
 
 let spanify = function(serie,data){
 	let out = {};
-	if(utils.isNil(data.span) || data.span === 0){
+	if(utils.isNil(data.span) || data.span === 0){
 		let d;
 		let dir = (data.type[0] === 'y')?'y':'x';
 		let mgr = utils.mgr(serie[0][dir]);
 
 		for(let i = 1; i < serie.length; i++){
 		let dd = mgr.distance(serie[i][dir],serie[i - 1][dir]);
-			if(d === undefined || mgr.lowerThan(dd, d)){
+			if(utils.isNil(d) || mgr.lowerThan(dd, d)){
 				d = mgr.multiply(dd,0.99);
 			}
 		}
-		out.span = !!d ? d : mgr.defaultSpan();
+		out.span = d ? d : mgr.defaultSpan();
 	}else{
 		out.span = data.span;
 	}
@@ -396,7 +405,6 @@ let offStairs = function(serie,gprops){
 	}else{
 		return undefined;
 	}
-	return undefined;
 };
 
 let m = {};
@@ -425,7 +433,7 @@ m.process = function(rawProps){
 			// span and offset from Bars || yBars
 		makeSpan(state.series, _.map(props.data, (ser,idx) => {return {type: ser.type, span: props.graphProps[idx].span};}));
 			// offset from Stairs
-		lOffset = _.map(props.data, (p,idx) => p.type === 'Stairs' ? offStairs(state.series[idx],props.graphProps[idx]) : undefined);
+		lOffset = _.map(props.data, (p,idx) => p.type === 'Stairs' ? offStairs(state.series[idx],props.graphProps[idx]) : null);
 
 	}
 
@@ -433,7 +441,7 @@ m.process = function(rawProps){
 	let marginalize = (mar) => {
 		for(let m in {left: true, right: true, bottom: true, top: true}){
 			if(!mar[m]){
-				mar[m] = undefined;
+				mar[m] = null;
 			}
 		}
 
@@ -453,7 +461,7 @@ m.process = function(rawProps){
 			let locAxis = _.find(props.axisProps[dir], (ax) => ax.placement === dat[dir].axis);
 				for(let p = 0; p < ser.length; p++){
 				let point = ser[p];
-					if(!!point.label[u]){
+					if(point.label[u]){
 						locAxis.tickLabels.push({coord: point[u], label: point.label[u]});
 					}
 				}
@@ -511,7 +519,7 @@ m.process = function(rawProps){
 			stacked: props.data[idx].stacked,
 			abs: props.data[idx].abs,
 			ord: props.data[idx].ord,
-			limitOffset: (!!lOffset[idx]) ? lOffset[idx] : undefined,
+			limitOffset: (lOffset[idx]) ? lOffset[idx] : null,
 		};
 	});
 
@@ -540,21 +548,21 @@ m.process = function(rawProps){
 			case 'Bars':
 			case 'bars':
 				dir = 'y';
-        ds = state.spaces;
+				ds = state.spaces;
 				break;
 			case 'yBars':
 			case 'ybars':
 				dir = 'x';
-        ds = state.spaces;
+				ds = state.spaces;
 				break;
 			default:
 				break;
 		}
 
-    if(!!props.data[idx].stacked){
-      dir = props.data[idx].stacked;
-    }
-		if(!dir && !!props.graphProps[idx].process){
+		if(props.data[idx].stacked){
+			dir = props.data[idx].stacked;
+		}
+		if(!dir && props.graphProps[idx].process){
 			dir = !props.graphProps[idx].process.dir || props.graphProps[idx].process.dir === 'x' ? 'y' : 'x';
 		}
 		return addDefaultDrop(serie,dir,ds,true);
@@ -572,14 +580,14 @@ m.process = function(rawProps){
 
 	// 2 - background
 	imVM.background = {
-		color: props.background || 'none',
+		color: props.background || 'none',
 		spaceX:{
-			min: Math.min.apply(null,_.map(state.spaces.x,(ds) => {return !!ds ? ds.c.min : 1e6;})),
-			max: Math.max.apply(null,_.map(state.spaces.x,(ds) => {return !!ds ? ds.c.max : -1e6;}))
+			min: Math.min.apply(null,_.map(state.spaces.x,(ds) => ds ? ds.c.min :  1e6 )),
+			max: Math.max.apply(null,_.map(state.spaces.x,(ds) => ds ? ds.c.max : -1e6 ))
 		},
 		spaceY:{
-			min: Math.min.apply(null,_.map(state.spaces.y,(ds) => {return !!ds ? ds.c.min : 1e6;})),
-			max: Math.max.apply(null,_.map(state.spaces.y,(ds) => {return !!ds ? ds.c.max : -1e6;}))
+			min: Math.min.apply(null,_.map(state.spaces.y,(ds) => ds ? ds.c.min : 1e6  )),
+			max: Math.max.apply(null,_.map(state.spaces.y,(ds) => ds ? ds.c.max : -1e6 ))
 		}
 	};
 
