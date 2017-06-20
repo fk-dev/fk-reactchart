@@ -10,15 +10,16 @@ let nInterval = (length, height) => {
  * beware of distance (period) versus
  * values (date), see {date,nbr}Mgr.js
 */
-let computeTicks = function(first,last,minor,fac, toPixel, height){
+let computeTicks = function(first, last, step, minor, mStep, fac, toPixel, height){
 	let mgr = utils.mgr(first);
 	let start = mgr.closestRoundUp(first,mgr.divide(mgr.distance(first,last),10));
 	let length = mgr.distance(start,last);
 	// distance min criteria 1
 	// 10 ticks max
 	let dec = mgr.divide(length,nInterval(mgr.getValue(length) * toPixel, height));
-	let majDist = mgr.roundUp(dec);
-	let minDist = mgr.roundDown(majDist);
+		// we ensure we have a correctly defined step
+	let majDist = step ? mgr.multiply(step,1) : mgr.roundUp(dec);
+	let minDist = mStep ? mgr.multiply(mStep,1) : mgr.roundDown(majDist);
 
 // redefine start to have the biggest rounded value
 	let biggestRounded = mgr.orderMagValue(last,first);
@@ -92,7 +93,7 @@ let computeTicks = function(first,last,minor,fac, toPixel, height){
 
 let m = {};
 
-m.ticks = function(start,length,labels,minor,fac, toPixel, height){
+m.ticks = function(start, length, majStep, labels, minor, minStep, fac, toPixel, height){
 	if(!!labels && labels.length > 0){
 		return _.map(labels, (lab) => {
 			return {
@@ -106,7 +107,7 @@ m.ticks = function(start,length,labels,minor,fac, toPixel, height){
 		});
 	}
 
-	return computeTicks(start,length,minor,fac, toPixel, height);
+	return computeTicks(start, length, majStep, minor, minStep, fac, toPixel, height);
 };
 
 
