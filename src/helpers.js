@@ -10,7 +10,7 @@ let m = {};
 
 m.init = function(rawProps,type){
 
-	let props = rawProps;
+	let props = rawProps || {};
 	props.freeze = type;
 
 	let freezer = core.process(props,true);
@@ -29,7 +29,7 @@ m.init = function(rawProps,type){
 
 	let updateDeps = () => {
 		for(let i in updatee){
-			if(!!updatee[i].forceUpdate){
+			if(updatee[i].forceUpdate){
 				updatee[i].forceUpdate();
 			}else{
 				delete updatee[i];
@@ -45,7 +45,7 @@ m.init = function(rawProps,type){
 		freezer.get().curves.splice(idx,1);
 	};
 
-	let addition = (data,graphp) => {
+	let addition = (data,graphp) => {
 		// raw
 		props.data.push(data);
 		props.graphProps.push(graphp);
@@ -54,6 +54,8 @@ m.init = function(rawProps,type){
 	};
 
 	let rc = {};
+
+	rc.defaults = (p) => core.defaultTheProps(p || props);
 
 	rc.props = () => freezer.get();
 
