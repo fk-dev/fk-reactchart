@@ -241,6 +241,7 @@ m.Graph = (axis) => {
 		name: 'G',
 		height: 400,	// defines the universe's height
 		width:	600,	// defines the universe's width
+    cadre: null,
 		legend: {
 			iconWidth: 30,
 			iconHeight: 20,
