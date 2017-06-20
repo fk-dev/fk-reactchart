@@ -2,6 +2,7 @@ let React = require('react');
 
 let space = require('../core/space-transf.js');
 let imUtils = require('../core/im-utils.js');
+let utils = require('../core/utils.js');
 
 /*
 	{
@@ -13,7 +14,7 @@ let imUtils = require('../core/im-utils.js');
 		anchor: '',
 		color: '',
 		dir: {x, y},
-		rotate: true || false,
+		rotate: true || false,
 		transform: true || false
 	},
 */
@@ -28,8 +29,8 @@ class Label extends React.Component {
 		let { base, power } = label;
 		return <text {...props} {...labProps}>
 			<tspan>{base}</tspan>
-			{ power !== 0 ? <tspan>&#183;10</tspan> : null }
-			{ power !== 0 ? <tspan dy={-0.5 * labProps.fontSize}>{power}</tspan> : null }
+			{ power !== 0 ? <tspan>&#183;10</tspan> : null }
+			{ power !== 0 ? <tspan dy={-0.5 * labProps.fontSize}>{power}</tspan> : null }
 		</text>;
 	}
 
@@ -42,12 +43,12 @@ class Label extends React.Component {
 // label
 		// => theta = arctan(y/x) [-90,90]
 
-		let { transform, ds, position, offset, rotate, dir, color, FSize, anchor, label } = this.props.state;
+		let { transform, ds, position, offset, rotate, angle, dir, color, FSize, anchor, label } = this.props.state;
 
 		let xL = ( transform ? space.toC(ds.x,position.x) : position.x ) + offset.x;
 		let yL = ( transform ? space.toC(ds.y,position.y) : position.y ) + offset.y;
 
-		let theta = rotate ? Math.floor( Math.atan( - Math.sqrt( dir.y / dir.x ) ) * 180 / Math.PI ) : 0; // in degrees
+		let theta = utils.isNil(angle) ? rotate ? Math.floor( Math.atan( - Math.sqrt( dir.y / dir.x ) ) * 180 / Math.PI ) : 0 : angle; // in degrees
 
 		let rotation = 'rotate(' + theta + ' ' + xL + ' ' + yL + ')';
 
