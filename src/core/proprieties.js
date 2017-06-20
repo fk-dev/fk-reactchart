@@ -2,7 +2,6 @@
 	all the proprieties
 */
 let { extend, extendOwn, map } = require('underscore');
-let utils = require('./utils.js');
 
 // defaults for marks
 let marks = {};
@@ -108,7 +107,7 @@ graph.common = () => {
 	};
 };
 
-graph.Bars = graph.bars = () => extend(utils.deepCp({},graph.common()), {
+graph.Bars = graph.bars = () => extend(graph.common(), {
 	color: 'none',
 	width: 0,
 	dir: {
@@ -126,14 +125,14 @@ graph.Bars = graph.bars = () => extend(utils.deepCp({},graph.common()), {
 	offset: {x: 0, y: 0}
 });
 
-graph.yBars = graph.ybars = () => extend(utils.deepCp({},graph.Bars()),{
+graph.yBars = graph.ybars = () => extend(graph.Bars(),{
 	dir: {
 		x: true,
 		y: false
 	},
 });
 
-graph.Pie = graph.pie = () => extend(utils.deepCp({},graph.common()),{
+graph.Pie = graph.pie = () => extend(graph.common(),{
 	pie: 'disc', // tore
 	pieOrigin: {x: 0, y:0}, // offset from center
 	pieRadius: null, // 2/3 of world
@@ -151,7 +150,9 @@ graph.Pie = graph.pie = () => extend(utils.deepCp({},graph.common()),{
 });
 
 //graph.Bars = graph.common;
-graph.Plain = graph.plain = graph.Stairs = graph.stairs = graph.common;
+graph.Plain = graph.plain = graph.common;
+
+graph.Stairs = graph.stairs = () => extend(graph.common(), { stairs: "right" });
 
 ///////////
 // major / minor props
@@ -273,7 +274,7 @@ m.Graph = (axis) => {
 };
 
 let data = 	{
-	type: 'Plain', // Plain, Bars, yBars, Stairs
+	type: 'Plain', // Plain, Bars, yBars
 	series:[], // x, y
 	phantomSeries:[], // added points to play on the world's limit
 	stacked: null, // x || y || null
