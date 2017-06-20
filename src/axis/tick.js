@@ -1,4 +1,4 @@
-let _ = require('underscore');
+let { map } = require('underscore');
 let utils = require('../core/utils.js');
 let ticker = require('../core/ticker.js');
 
@@ -48,15 +48,15 @@ m.VM = function(ds,partner, bounds, dir, locProps, comFac, axisKey){
 
 
 	// min max of the axis
-	let min = bounds.min;
-	let max = bounds.max;
+	let min  = bounds.min;
+	let max  = bounds.max;
 
 	// all ticks are computed along, we need to 
 	// know for each tick which it is
 	let majProps = locProps.ticks.major;
 	let minProps = locProps.ticks.minor;
-	let majGrid = locProps.grid.major;
-	let minGrid = locProps.grid.minor;
+	let majGrid  = locProps.grid.major;
+	let minGrid  = locProps.grid.minor;
 
 	// do we have labels? Only majorTicks
 	let ticksLabel = locProps.tickLabels;
@@ -68,7 +68,17 @@ m.VM = function(ds,partner, bounds, dir, locProps, comFac, axisKey){
 	let toPixel = Math.abs(ds[dir].d2c);
 		// cheat to treat height as if it's length
 	let height = dir === 'x' ? majProps.labelFSize : majProps.labelFSize * 2 / 3.5;
-	return locProps.empty ? [] : _.map(ticker.ticks(min,max,ticksLabel,minor,comFac, toPixel, height), (tick,idx) => {
+
+	// step
+	let majStep = majProps.step;
+	let minStep = minProps.step;
+
+	let tickers = ticker.ticks(min, max, majStep, ticksLabel, minor, minStep, comFac, toPixel, height);
+
+	let prevTick = (idx) => idx > 0 ? tickers[idx - 1].position : null;
+	let nextTick = (idx) => idx < tickers.length - 1 ? tickers[idx + 1].position : null;
+
+	return locProps.empty ? [] : map(tickers, (tick,idx) => {
 /*
 		tick: {
 			show: true || false,
@@ -132,10 +142,11 @@ m.VM = function(ds,partner, bounds, dir, locProps, comFac, axisKey){
 		}
 		let labelProps = {
 			ds: ds,
-			label:	p.labelize(tick.position) === false ? tick.label : p.labelize(tick.position),
+			label:	p.labelize(tick.position, prevTick(idx), nextTick(idx)) === false ? tick.label : p.labelize(tick.position, prevTick(idx), nextTick(idx)),
 			FSize:	p.labelFSize,
 			color:	p.labelColor,
 			rotate: false,
+			angle:  p.rotate,
 			transform: true,
 			show: tick.showLabel || ticksProps.show
 		};
@@ -145,14 +156,16 @@ m.VM = function(ds,partner, bounds, dir, locProps, comFac, axisKey){
 
 
 		let addPerp =  tick.minor ? 3.75 : 0;
+		let perpOff = utils.isNil(p.labelOffset.perp) ? tick.offset.perp : p.labelOffset.perp ;
 		let offsetCspace = {
 			x: p.labelOffset.x, 
-			y: tick.offset.perp + addPerp + p.labelOffset.y 
+			y: perpOff + addPerp + p.labelOffset.y 
 		};
 
+		let alOff = utils.isNil(p.labelOffset.along) ? tick.offset.along : p.labelOffset.along;
 		let offset = {
-			x: labelProps.dir.x !== 0 ? tick.offset.along : 0,
-			y: labelProps.dir.y !== 0 ? tick.offset.along : 0
+			x: labelProps.dir.x !== 0 ? alOff : 0,
+			y: labelProps.dir.y !== 0 ? alOff : 0
 		};
 
 		// adding a little margin
