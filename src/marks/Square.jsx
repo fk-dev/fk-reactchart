@@ -15,7 +15,7 @@ let imUtils = require('../core/im-utils.js');
 		},
 		color: 'black',
 		width: 0,
-		fill: undefined,
+		fill: null,
 		size: 0,
 		shade: 1
 	}
