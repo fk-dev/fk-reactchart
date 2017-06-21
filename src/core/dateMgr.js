@@ -44,7 +44,7 @@ let processPeriod = function(period, fac){
 };
 
 let makePeriod = function(msOrDur){
-	let dur = ( !!msOrDur.years ) ? msOrDur : moment.duration(msOrDur);
+	let dur = ( msOrDur.years ) ? msOrDur : moment.duration(msOrDur);
 	return {
 		years: dur.years(),
 		months: dur.months(),
@@ -204,7 +204,7 @@ let closestDown = function(date,per){
 	}
 	// start of week: Sunday
 	if(per.weeks !== 0){
-		 return moment(date).subtract(per.weeks,'weeks').startOf("week").toDate();
+		return moment(date).subtract(per.weeks,'weeks').startOf("week").toDate();
 	}
 	// start of month
 	if(per.months !== 0){
@@ -384,7 +384,7 @@ m.distance = (d1,d2) => makePeriod(abs(d1.getTime() - d2.getTime()));
 m.greaterThan = function(dop1,dop2){
 	let sd = sameDoP(dop1,dop2);
 	if(sd === null){
-		throw 'Error in dateMgr: trying to compare a Date with a Period';
+		throw new Error('Error in dateMgr: trying to compare a Date with a Period');
 	}
 	return greaterThan(dop1,dop2,sd);
 };
@@ -392,7 +392,7 @@ m.greaterThan = function(dop1,dop2){
 m.lowerThan = function(dop1,dop2){
 	let sd = sameDoP(dop1,dop2);
 	if(sd === null){
-		throw 'Error in dateMgr: trying to compare a Date with a Period';
+		throw new Error('Error in dateMgr: trying to compare a Date with a Period');
 	}
 	return lowerThan(dop1,dop2,sd);
 };
@@ -400,7 +400,7 @@ m.lowerThan = function(dop1,dop2){
 m.equal = function(dop1,dop2){
 	let sd = sameDoP(dop1,dop2);
 	if(sd === null){
-		throw 'Error in dateMgr: trying to compare a Date with a Period';
+		throw new Error('Error in dateMgr: trying to compare a Date with a Period');
 	}
 	return equal(dop1,dop2,sd);
 };
