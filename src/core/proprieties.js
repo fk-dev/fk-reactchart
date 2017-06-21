@@ -282,7 +282,7 @@ let type = (arr,dir) => {
 let data = 	(serie) => {
 	return {
 		type: 'Plain', // Plain, Bars, yBars
-		series:[], // x, y
+		series: [], // x, y
 		phantomSeries:[], // added points to play on the world's limit
 		stacked: null, // x || y || null
 		coordSys: 'cart', // cart || polar
