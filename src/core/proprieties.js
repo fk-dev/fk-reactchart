@@ -273,7 +273,11 @@ m.Graph = (axis) => {
 	};
 };
 
-let type = (arr,dir) => arr.length === 0 || !(arr[0][dir] instanceof Date) ? 'number' : 'date';
+let type = (arr,dir) => {
+	let v = arr.length === 0 ? 0 : arr[0][dir];
+	let lab = arr.length !== 0 && arr[0].label && arr[0].label[dir];
+	return lab ? 'label' : v instanceof Date ? 'date' : 'number';
+};
 
 let data = 	(serie) => {
 	return {

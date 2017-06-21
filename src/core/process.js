@@ -144,10 +144,10 @@ let defaultTheProps = function(props){
 	}
 
 	// data & graphProps
-	let data = gProps.defaults('data');
+	let dataDef = gProps.defaults('data');
 	for(let ng = 0; ng < fullprops.data.length; ng++){
 		let gprops = gProps.defaults(props.data[ng].type || 'Plain');
-		fullprops.data[ng] = utils.deepCp(data(props.data[ng].series), props.data[ng]);
+		fullprops.data[ng] = utils.deepCp(dataDef(props.data[ng].series), props.data[ng]);
 		fullprops.graphProps[ng] = utils.deepCp(utils.deepCp({},gprops), props.graphProps[ng]);
 	}
 
