@@ -374,8 +374,12 @@ m.add = function(dop,p){
 
 m.subtract = function(dop,p){
 	// preprocess period
-	p = processPeriod(p, -1);
-	return m.add(dop,p);
+	let sp = {};
+	for(let u in p){
+		sp[u] = p[u];
+	}
+	sp = processPeriod(sp, -1);
+	return m.add(dop,sp);
 
 };
 

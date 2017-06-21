@@ -12,8 +12,10 @@ let nInterval = (length, height) => {
 */
 let computeTicks = function(first, last, step, minor, mStep, fac, toPixel, height){
 	let mgr = utils.mgr(first);
+	// smart guess
 	let start = mgr.closestRoundUp(first,mgr.divide(mgr.distance(first,last),10));
 	let length = mgr.distance(start,last);
+
 	// distance min criteria 1
 	// 10 ticks max
 	let dec = mgr.divide(length,nInterval(mgr.getValue(length) * toPixel, height));
