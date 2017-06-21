@@ -13,9 +13,13 @@ let { pow, floor, log, min, max, abs, LN10 } = Math;
 //	days : ,
 //	total: *nb days*
 // }
-let processPeriod = function(period){
+let processPeriod = function(period, fac){
+	fac = fac || 1;
 
-	if(im.isImm(period)){return period;}
+	// don't touch immutable
+	if(im.isImm(period)){
+		return period;
+	}
 
 	if(typeof period === 'number'){ // ms
 		period = makePeriod(moment.duration(period));
@@ -24,6 +28,8 @@ let processPeriod = function(period){
 	for(let t in {years: true, months: true, weeks: true, days: true}){
 		if(period[t] === null || period[t] === undefined){
 			period[t] = 0;
+		}else{
+			period[t] *= fac;
 		}
 	}
 	if(period.total === null || period.total === undefined){
@@ -245,8 +251,6 @@ let equal       = (v1,v2,type) => type === 'date' ? dateEQ(v1,v2) : periodEQ(v1,
 
 let addPer      = (p1,p2) => makePeriod(moment.duration(processPeriod(p1)).add(moment.duration(p2)));
 
-let subPer      = (p1,p2) => makePeriod(moment.duration(processPeriod(p1)).subtract(moment.duration(p2)));
-
 let m = {};
 
 // date / distance methods
@@ -348,29 +352,31 @@ m.label = function(date,period){
 	return format.pref + out;
 };
 
+let addMonth = (d,m) => moment(d).add(1,'days').add(m, 'months').add(-1,'days').toDate();
+
+// deal with periods >= months
+// to have last day of month stay last day of month
+let addDate = (d,p) => {
+	let { years, months } = p;
+
+	return moment(addMonth(d, 12 * years + months))
+		.add(p.weeks,'weeks')
+		.add(p.days,'days').toDate();
+};
+
 // date & period methods
 m.add = function(dop,p){
 	// preprocess period
 	p = processPeriod(p);
 
-	return (dop instanceof Date) ? moment(dop)
-		.add(p.years,'years')
-		.add(p.months,'months')
-		.add(p.weeks,'weeks')
-		.add(p.days,'days').toDate():
-		addPer(dop,p);
+	return dop instanceof Date ? addDate(dop,p) : addPer(dop,p);
 };
 
 m.subtract = function(dop,p){
 	// preprocess period
-	p = processPeriod(p);
+	p = processPeriod(p, -1);
+	return m.add(dop,p);
 
-	return (dop instanceof Date) ? moment(dop)
-		.subtract(p.years,'years')
-		.subtract(p.months,'months')
-		.subtract(p.weeks,'weeks')
-		.subtract(p.days,'days').toDate():
-		subPer(dop,p);
 };
 
 m.distance = (d1,d2) => makePeriod(abs(d1.getTime() - d2.getTime()));
