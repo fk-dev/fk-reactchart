@@ -127,7 +127,7 @@ let defaultTheProps = function(props){
 	let axis = preprocessAxis(props);
 
 	// fill by default
-	let fullprops = utils.deepCp(gProps.Graph(axis), props);
+	let fullprops = utils.deepCp(utils.deepCp({},gProps.Graph(axis)), props);
 
 	postprocessAxis(fullprops);
 
