@@ -273,20 +273,24 @@ m.Graph = (axis) => {
 	};
 };
 
-let data = 	{
-	type: 'Plain', // Plain, Bars, yBars
-	series:[], // x, y
-	phantomSeries:[], // added points to play on the world's limit
-	stacked: null, // x || y || null
-	coordSys: 'cart', // cart || polar
-	ord: {
-		axis: 'left', // 'left' || 'right'
-		type: 'number' // 'number' || 'date' || 'label'
-	},
-	abs: {
-		axis: 'bottom', // 'bottom' || 'top'
-		type: 'number' // 'number' || 'date' || 'label'
-	}
+let type = (arr,dir) => arr.length === 0 || !(arr[0][dir] instanceof Date) ? 'number' : 'date';
+
+let data = 	(serie) => {
+	return {
+		type: 'Plain', // Plain, Bars, yBars
+		series:[], // x, y
+		phantomSeries:[], // added points to play on the world's limit
+		stacked: null, // x || y || null
+		coordSys: 'cart', // cart || polar
+		ord: {
+			axis: 'left', // 'left' || 'right'
+			type: type(serie,'y') // 'number' || 'date' || 'label'
+		},
+		abs: {
+			axis: 'bottom', // 'bottom' || 'top'
+			type: type(serie,'x') // 'number' || 'date' || 'label'
+		}
+	};
 };
 
 m.defaults     = (key) => key === 'data' ? data : graph[key]();

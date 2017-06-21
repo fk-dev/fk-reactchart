@@ -127,7 +127,7 @@ let defaultTheProps = function(props){
 	let axis = preprocessAxis(props);
 
 	// fill by default
-	let fullprops = utils.deepCp(utils.deepCp({},gProps.Graph(axis)), props);
+	let fullprops = utils.deepCp(gProps.Graph(axis), props);
 
 	postprocessAxis(fullprops);
 
@@ -147,7 +147,7 @@ let defaultTheProps = function(props){
 	let data = gProps.defaults('data');
 	for(let ng = 0; ng < fullprops.data.length; ng++){
 		let gprops = gProps.defaults(props.data[ng].type || 'Plain');
-		fullprops.data[ng] = utils.deepCp(utils.deepCp({},data), props.data[ng]);
+		fullprops.data[ng] = utils.deepCp(data(props.data[ng].series), props.data[ng]);
 		fullprops.graphProps[ng] = utils.deepCp(utils.deepCp({},gprops), props.graphProps[ng]);
 	}
 
