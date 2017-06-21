@@ -440,7 +440,7 @@ m.process = function(rawProps){
 		// so we have all the keywords
 	let marginalize = (mar) => {
 		for(let m in {left: true, right: true, bottom: true, top: true}){
-			if(!mar[m]){
+			if(utils.isNil(mar[m])){
 				mar[m] = null;
 			}
 		}
