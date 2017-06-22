@@ -207,6 +207,7 @@ let axe = {
 	// to force locally definition
 	min: null,
 	max: null,
+	interval: null,
 	tickLabels: [], //{coord: where, label: ''}, coord in ds
 	color:     'black',
 	width:      1,
