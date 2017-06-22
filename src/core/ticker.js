@@ -20,8 +20,14 @@ let computeTicks = function(first, last, step, minor, mStep, fac, toPixel, heigh
 	// 10 ticks max
 	let dec = mgr.divide(length,nInterval(mgr.getValue(length) * toPixel, height));
 		// we ensure we have a correctly defined step
-	let majDist = step ? mgr.multiply(step,1) : mgr.roundUp(dec);
-	let minDist = mStep ? mgr.multiply(mStep,1) : mgr.roundDown(majDist);
+	let majDist = mgr.isValidStep(step)  ? mgr.multiply(step,1)  : mgr.roundUp(dec);
+	if(step && !utils.isNil(step.offset)){
+		majDist.offset = step.offset;
+	}
+	let minDist = mgr.isValidStep(mStep) ? mgr.multiply(mStep,1) : mgr.roundDown(majDist);
+	if(mStep && !utils.isNil(mStep.offset)){
+		minDist.offset = mStep.offset;
+	}
 
 // redefine start to have the biggest rounded value
 	let biggestRounded = mgr.orderMagValue(last,first);
@@ -35,25 +41,8 @@ let computeTicks = function(first, last, step, minor, mStep, fac, toPixel, heigh
 
 	let out = [];
 	let curValue = start;
-	// if a date, might want a first label with no tick
-	if(mgr.type === 'date'){
-		let pos = mgr.subtract(curValue,majDist);
-		if(mgr.greaterThan(mgr.distance(first,curValue),llength)){
-			out.push({
-				position: pos,
-				offset: {
-					along: mgr.offset(majDist),
-					perp: 0
-				},
-				label: mgr.label(pos,majDist,fac),
-				show: false,
-				showLabel: true
-			});
-		}
-	}
-
 	while(mgr.lowerThan(curValue,last)){
-		let lte = mgr.distance(curValue,last);
+		let fte = mgr.distance(curValue,first);
 		out.push({
 			position: curValue,
 			offset: {
@@ -61,7 +50,7 @@ let computeTicks = function(first, last, step, minor, mStep, fac, toPixel, heigh
 				perp: 0
 			},
 			extra: false,
-			label: mgr.type !== 'date' || mgr.greaterThan(lte, llength) ? mgr.label(curValue,majDist,fac) : '',
+			label: mgr.type !== 'date' || ( mgr.greaterThan(fte, llength) || !majDist.offset ) ? mgr.label(curValue,majDist,fac) : '',
 			minor: false
 		});
 		// minor ticks
@@ -87,6 +76,9 @@ let computeTicks = function(first, last, step, minor, mStep, fac, toPixel, heigh
 		}
 
 		curValue = mgr.add(curValue,majDist);
+		if(mgr.isZero(majDist)){
+			break;
+		}
 	}
 
 	out = out.concat(mgr.extraTicks(majDist,first,last, out));
