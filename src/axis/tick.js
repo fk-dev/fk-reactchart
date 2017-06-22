@@ -73,6 +73,18 @@ m.VM = function(ds,partner, bounds, dir, locProps, comFac, axisKey){
 	let majStep = majProps.step;
 	let minStep = minProps.step;
 
+	if(!utils.isNil(locProps.interval)){
+		if(!majStep){
+			majStep = {};
+		}
+		if(!minStep){
+			minStep = {};
+		}
+
+		majStep.offset = locProps.interval;
+		minStep.offset = locProps.interval;
+	}
+
 	let tickers = ticker.ticks(min, max, majStep, ticksLabel, minor, minStep, comFac, toPixel, height);
 
 	let prevTick = (idx) => idx > 0 ? tickers[idx - 1].position : null;
