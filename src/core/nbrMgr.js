@@ -231,6 +231,8 @@ m.extraTicks = () => [];
 
 m.getValue = m.value = m.step = (v) => v;
 
+m.isValidStep = (v) => v !== null && v !== undefined;
+
 m.smallestStep = () => 1;
 
 // management
@@ -242,6 +244,8 @@ m.defaultSpan  = () => 10;
 m.labelF = 0.75;
 
 m.type = 'number';
+
+m.isZero = (v) => v < 1e-15;
 
 m.autoFactor = function(ma,mi){
   let orMax = m.orderMag(ma);
