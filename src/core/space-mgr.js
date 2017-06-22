@@ -93,6 +93,9 @@ let space = function(datas,universe,borders,title){
 			return null;
 		}
 
+		// quick utils
+		let ifNil = (a,b) => utils.isNil(a) ? b : a;
+
 		// get the (right,left) or (top,bottom)
 		let places = [];
 		for(let p in borders.marginsO){
@@ -199,14 +202,14 @@ let space = function(datas,universe,borders,title){
 		let rmin, rmax;
 		if(utils.isNil(margins.left)){
 			min = universe - margins.bottom;
-			max = margins.top + (borders.marginsF.top || 0);
-			rmin = min - ( borders.marginsI.bottom || defMargins.inner.bottom );
-			rmax = max + ( borders.marginsI.top    || defMargins.inner.top );
+			max = margins.top + ifNil(borders.marginsF.top, 0);
+			rmin = min - ifNil(borders.marginsI.bottom, defMargins.inner.bottom );
+			rmax = max + ifNil(borders.marginsI.top, defMargins.inner.top );
 		}else{
 			min = margins.left;
-			max = universe - margins.right -  + (borders.marginsF.right || 0);
-			rmin = min + ( borders.marginsI.left  || defMargins.inner.left );
-			rmax = max - ( borders.marginsI.right || defMargins.inner.right );
+			max = universe - margins.right -  + ifNil(borders.marginsF.right,0);
+			rmin = min + ifNil(borders.marginsI.left, defMargins.inner.left);
+			rmax = max - ifNil(borders.marginsI.right, defMargins.inner.right);
 		}
 
 		let cWorld = {
