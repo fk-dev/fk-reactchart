@@ -42,7 +42,9 @@ let processPeriod = function(per, fac){
 
 	period.total = per.total === null || per.total === undefined ? moment.duration(period).asDays() * fac : per.total;
 
-	if(period.total > 15 && !period.offset){
+  period.offset = per.offset;
+
+	if(period.total > 15 && ( period.offset === null || period.offset === undefined ) ){
 		period.offset = true;
 	}
 
