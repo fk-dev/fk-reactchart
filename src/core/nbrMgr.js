@@ -18,10 +18,14 @@ let suffixes = {
 
 let m = {};
 
-let firstDigit = function(r){
+let firstDigit = function(r,n){
+  n = n || 1;
 	let res = r * pow(10,-m.orderMag(r));
 	let str = '' + res;
 	let out = str[0] || 0;
+	if(n > 1){
+		out += str.substr(1,n);
+	}
 	return Number(out);
 };
 
@@ -155,7 +159,10 @@ m.roundUp = function(r){
 m.roundDown = function(r){
 	let step = 5 * pow(10,m.orderMag(r) - 1);
 	let cand = firstDigit(r) * pow(10,m.orderMag(r));
-	while(cand >= r){cand -= step;}
+	while(cand >= r){
+		cand -= step;
+	}
+
 	return cand;
 };
 
@@ -168,6 +175,10 @@ m.closestRoundUp = function(ref,dist){
 
 	let refOm = m.orderMag(ref);
 	let start = pow(10,refOm) * firstDigit(ref);
+	let or = m.orderMag(ref - start)  - m.orderMag(dist);
+	if(or > 2){
+		start = pow(10,refOm) * firstDigit(ref,or - 2);
+	}
 	while(start <= ref){
 		start += dist;
 	}
