@@ -14,7 +14,7 @@ export function hide(idx, { props, mgr }){
 	mgr.get().curves[idx].set('show',val);
 }
 
-export function add( { data, graphp} , {props, mgr }){
+export function add( { data, graphp } , {props, mgr }){
 	// raw
 	props.data.push(data);
 	props.graphProps.push(graphp);

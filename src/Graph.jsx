@@ -37,20 +37,17 @@ class Legend extends Graph {
 		let nCol = this.props.col || 1;
 
 		let tabline = (cells,idx) => {
+
 			let iconP = (cell) => {
 				return {
-					width: cell.icon.props.width,
-					opacity: cell.icon.props.faded ? 0.5 : 1
-				};
-			};
-			let labelP = (cell) => {
-				return {
-					opacity: cell.icon.props.faded ? 0.5 : 1
+					width: cell.icon.props.width
 				};
 			};
 
-			let icon  = (cell) => <td key={`i.${cell.label}`} style={iconP(cell)} onClick={() => cell.click(this.sh)}>{cell.icon.icon(cell.icon.props)}</td>;
-			let label = (cell) => <td key={cell.label} style={labelP(cell)} onClick={() => cell.click(this.sh)}>{cell.label}</td>;
+			let cs = (cell) => cell.icon.props.faded ? 'fade-chart' : '';
+
+			let icon  = (cell) => <td key={`i.${cell.label}`} className={cs(cell)} style={iconP(cell)} onClick={() => cell.click(this.sh)}>{cell.icon.icon(cell.icon.props)}</td>;
+			let label = (cell) => <td key={cell.label} className={cs(cell)} onClick={() => cell.click(this.sh)}>{cell.label}</td>;
 
 			let fill = () => {
 				let out = [];
