@@ -1,8 +1,8 @@
-let React = require('react');
-let Label = require('./Label.jsx');
+import React from 'react';
+import Label from './Label.jsx';
 
-let sp = require('../core/space-transf.js');
-let imUtils = require('../core/im-utils.js');
+import { toC, toCwidth } from '../core/space-transf.js';
+import { isEqual } from '../core/im-utils.js';
 
 /*
 	{
@@ -31,10 +31,10 @@ let imUtils = require('../core/im-utils.js');
 	}
 */
 
-class Tick extends React.Component {
+export default class Tick extends React.Component {
 
 	shouldComponentUpdate(props){
-		return !imUtils.isEqual(props.state,this.props.state);
+		return !isEqual(props.state,this.props.state);
 	}
 
 	// grid
@@ -47,13 +47,13 @@ class Tick extends React.Component {
 		}
 
 		let start = {
-			x: sp.toC(this.props.state.tick.ds.x, this.props.state.tick.position.x),
-			y: sp.toC(this.props.state.tick.ds.y, this.props.state.tick.position.y)
+			x: toC(this.props.state.tick.ds.x, this.props.state.tick.position.x),
+			y: toC(this.props.state.tick.ds.y, this.props.state.tick.position.y)
 		};
 
 		let end = {
-			x: start.x + this.props.state.tick.dir.x * sp.toCwidth(this.props.state.tick.ds.x,gprops.length),
-			y: start.y - this.props.state.tick.dir.y * sp.toCwidth(this.props.state.tick.ds.y,gprops.length)
+			x: start.x + this.props.state.tick.dir.x * toCwidth(this.props.state.tick.ds.x,gprops.length),
+			y: start.y - this.props.state.tick.dir.y * toCwidth(this.props.state.tick.ds.y,gprops.length)
 		};
 
 		let gridName = this.props.className + 'Grid';
@@ -74,8 +74,8 @@ class Tick extends React.Component {
 			return null;
 		}
 
-		let x1 = sp.toC(tprops.ds.x, tprops.position.x) - tprops.dir.x * tprops.length * tprops.out;
-		let y1 = sp.toC(tprops.ds.y, tprops.position.y) + tprops.dir.y * tprops.length * tprops.out; // beware about y sign!!
+		let x1 = toC(tprops.ds.x, tprops.position.x) - tprops.dir.x * tprops.length * tprops.out;
+		let y1 = toC(tprops.ds.y, tprops.position.y) + tprops.dir.y * tprops.length * tprops.out; // beware about y sign!!
 		let x2 = x1 + tprops.dir.x * tprops.length;
 		let y2 = y1 - tprops.dir.y * tprops.length; // beware about y sign!!
 
@@ -108,5 +108,3 @@ class Tick extends React.Component {
 		</g>;
 	}
 }
-
-module.exports = Tick;

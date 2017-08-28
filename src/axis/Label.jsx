@@ -1,8 +1,8 @@
-let React = require('react');
+import React from 'react';
 
-let space = require('../core/space-transf.js');
-let imUtils = require('../core/im-utils.js');
-let utils = require('../core/utils.js');
+import { toC } from '../core/space-transf.js';
+import { isEqual } from '../core/im-utils.js';
+import { isNil } from '../core/utils.js';
 
 /*
 	{
@@ -19,10 +19,10 @@ let utils = require('../core/utils.js');
 	},
 */
 
-class Label extends React.Component {
+export default class Label extends React.Component {
 
 	shouldComponentUpdate(props){
-		return !imUtils.isEqual(props.state,this.props.state);
+		return !isEqual(props.state,this.props.state);
 	}
 
 	power(label, labProps, props){
@@ -45,10 +45,10 @@ class Label extends React.Component {
 
 		let { transform, ds, position, offset, rotate, angle, dir, color, FSize, anchor, label } = this.props.state;
 
-		let xL = ( transform ? space.toC(ds.x,position.x) : position.x ) + offset.x;
-		let yL = ( transform ? space.toC(ds.y,position.y) : position.y ) + offset.y;
+		let xL = ( transform ? toC(ds.x,position.x) : position.x ) + offset.x;
+		let yL = ( transform ? toC(ds.y,position.y) : position.y ) + offset.y;
 
-		let theta = utils.isNil(angle) ? rotate ? Math.floor( Math.atan( - Math.sqrt( dir.y / dir.x ) ) * 180 / Math.PI ) : 0 : angle; // in degrees
+		let theta = isNil(angle) ? rotate ? Math.floor( Math.atan( - Math.sqrt( dir.y / dir.x ) ) * 180 / Math.PI ) : 0 : angle; // in degrees
 
 		let rotation = 'rotate(' + theta + ' ' + xL + ' ' + yL + ')';
 
@@ -70,5 +70,3 @@ class Label extends React.Component {
 			{label}</text> : this.power(label,labProps, props);
 	}
 }
-
-module.exports = Label;

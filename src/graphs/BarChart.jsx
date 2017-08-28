@@ -10,7 +10,7 @@ import { isEqual } from '../core/im-utils.js';
 	}
 */
 
-class BarChart extends React.Component {
+export default class BarChart extends React.Component {
 
 	shouldComponentUpdate(props) {
 		return !isEqual(props.state,this.props.state);
@@ -30,5 +30,3 @@ class BarChart extends React.Component {
 		</g>;
 	}
 }
-
-module.exports = BarChart;

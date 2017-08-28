@@ -4,12 +4,12 @@ import Dot from './Dot.jsx';
 import Bar from './Bar.jsx';
 import Square from './Square.jsx';
 
-let imUtils = require('../core/im-utils.js');
+import { isEqual } from '../core/im-utils.js';
 
-class Mark extends React.Component {
+export default class Mark extends React.Component {
 
 	shouldComponentUpdate(props){
-		return !imUtils.isEqual(props.state,this.props.state);
+		return !isEqual(props.state,this.props.state);
 	}
 
 	mark(state){
@@ -52,5 +52,3 @@ class Mark extends React.Component {
 		</g> : this.mark(this.props.state.mark);
 	}
 }
-
-module.exports = Mark;

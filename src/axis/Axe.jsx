@@ -1,8 +1,8 @@
-let React = require('react');
-let Tick = require('./Tick.jsx');
-let AxisLine = require('./AxisLine.jsx');
-let _ = require('underscore');
-let imUtils = require('../core/im-utils.js');
+import React from 'react';
+import Tick from './Tick.jsx';
+import AxisLine from './AxisLine.jsx';
+import { map } from 'underscore';
+import { isEqual } from '../core/im-utils.js';
 
 /*
 	{
@@ -11,9 +11,9 @@ let imUtils = require('../core/im-utils.js');
 	}
 */
 
-class Axe extends React.Component {
+export default class Axe extends React.Component {
 	shouldComponentUpdate(props){
-		return !imUtils.isEqual(props.state,this.props.state);
+		return !isEqual(props.state,this.props.state);
 	}
 
 	render(){
@@ -24,10 +24,8 @@ class Axe extends React.Component {
 		let tickName = className + 'Tick';
 
 		return <g>
-			{ _.map(state.ticks, (tick) => <Tick className={tickName} css={css} key={tick.key} state={tick}/> ) }
+			{ map(state.ticks, (tick) => <Tick className={tickName} css={css} key={tick.key} state={tick}/> ) }
 			<AxisLine className={axisName} css={css} state={state.axisLine}/>
 		</g>;
 	}
 }
-
-module.exports = Axe;

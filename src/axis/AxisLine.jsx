@@ -1,8 +1,8 @@
-let React = require('react');
-let Label = require('./Label.jsx');
-let utils = require('../core/utils.js');
-let imUtils = require('../core/im-utils.js');
-let { defMargins } = require('../core/proprieties.js');
+import React from 'react';
+import Label from './Label.jsx';
+import { mgr as mgrUtil, direction, isNil } from '../core/utils.js';
+import { isEqual } from '../core/im-utils.js';
+import { defMargins } from '../core/proprieties.js';
 
 /*
 	{
@@ -36,10 +36,10 @@ let { defMargins } = require('../core/proprieties.js');
 */
 
 
-class AxisLine extends React.Component {
+export default class AxisLine extends React.Component {
 
 	shouldComponentUpdate(props){
-		return !imUtils.isEqual(props.state,this.props.state);
+		return !isEqual(props.state,this.props.state);
 	}
 
 	axis(){
@@ -63,18 +63,18 @@ class AxisLine extends React.Component {
 	}
 
 	factor(){
-		let { state } = this.props;
-		let { comFac, line } = state;
+		let { state } = this.props;
+		let { comFac, line } = state;
 		let { factor, Fsize, offset, color, ds } = comFac;
-		if(utils.isNil(factor) || factor === 1){
+		if(isNil(factor) || factor === 1){
 			return null;
 		}
 
-		let dir = utils.direction(line, ds);
+		let dir = direction(line, ds);
 		dir.x = Math.sqrt(dir.x / dir.line);
 		dir.y = Math.sqrt(dir.y / dir.line);
 
-		let mgr = utils.mgr(factor);
+		let mgr = mgrUtil(factor);
 		let om = mgr.orderMag(factor);
 
 		let labMar = defMargins.outer.label.bottom; // = top, left, right
@@ -119,5 +119,3 @@ class AxisLine extends React.Component {
 	}
 
 }
-
-module.exports = AxisLine;
