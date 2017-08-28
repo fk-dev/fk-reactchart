@@ -1,35 +1,45 @@
-let _ = require('underscore');
-let utils = require('./utils.js');
-let shader = require('./colorMgr.js');
-let axisLine = require('../axis/axisLine.js');
-let ticks = require('../axis/tick.js');
-let plainVM = require('../graphs/plain.js');
-let barChartVM = require('../graphs/barChart.js');
-let stairsVM = require('../graphs/stairs.js');
-let pieVM = require('../graphs/pie.js');
-let dotVM = require('../marks/dot.js');
-let squareVM = require('../marks/square.js');
-let barVM = require('../marks/bar.js');
-// pin
-let pinMgr = require('../marks/pin.js');
+import { map, each, findWhere, reject, extend } from 'underscore';
+import { isNil, mgr as typeMgr } from './utils.js';
+import { shader } from './colorMgr.js';
 
-// graph
-let graphVM = {};
-graphVM.plain  = graphVM.Plain  = plainVM.VM;
-graphVM.bars   = graphVM.Bars   = barChartVM.VM;
-graphVM.ybars  = graphVM.yBars  = barChartVM.VM;
-graphVM.stairs = graphVM.Stairs = stairsVM.VM;
-graphVM.pie    = graphVM.Pie    = pieVM.VM;
+// axis
+import { vm as axisLineVM } from '../axis/axisLine.js';
+import { vm as ticksVM } from '../axis/tick.js';
+
+// charts
+import { vm as plainVM }    from '../graphs/plain.js';
+import { vm as barChartVM } from '../graphs/barChart.js';
+import { vm as stairsVM }   from '../graphs/stairs.js';
+import { vm as pieVM }      from '../graphs/pie.js';
 
 // marks
-let marksVM = {};
-marksVM.opendot     = marksVM.OpenDot     = dotVM.OVM;
-marksVM.dot         = marksVM.Dot         = dotVM.VM;
-marksVM.opensquare  = marksVM.OpenSquare  = squareVM.OVM;
-marksVM.square      = marksVM.Square      = squareVM.VM;
-marksVM.bar         = marksVM.Bar         = barVM.VM;
+import { vm as dotVM, 
+				ovm as odotVM }    from '../marks/dot.js';
+import { vm as squareVM, 
+				ovm as osquareVM } from '../marks/square.js';
+import { vm as barVM }     from '../marks/bar.js';
+// pin
+import { vm as pinVM } from '../marks/pin.js';
 
-let curve = function(spaces,serie,data,props,idx){
+// graph
+let graphVM = {
+	PLAIN:   plainVM,
+	BARS:    barChartVM,
+	YBARS:   barChartVM,
+	STAIRS:  stairsVM,
+	PIE:     pieVM
+};
+
+// marks
+let marksVM = {
+	OPENDOT:    odotVM,
+	DOT:        dotVM,
+	OPENSQUARE: osquareVM,
+	SQUARE:     squareVM,
+	BAR:        barVM
+};
+
+const curve = function(get, { spaces, serie, data, gprops, idx }){
 
 			// 1 - find ds: {x: , y:}
 			// common to everyone
@@ -56,22 +66,22 @@ let curve = function(spaces,serie,data,props,idx){
 			let gtype = data.type || 'Plain';
 
 			// positions are offsetted here
-			let positions = _.map(serie, (point) => {
+			let positions = map(serie, (point) => {
 
 				let mgr = {
-					x: utils.mgr(point.x),
-					y: utils.mgr(point.y)
+					x: typeMgr(point.x),
+					y: typeMgr(point.y)
 				};
 
-				let offx = utils.isNil(point.offset.x) ? 0 : point.offset.x;
-				let offy = utils.isNil(point.offset.y) ? 0 : point.offset.y;
+				let offx = isNil(point.offset.x) ? 0 : point.offset.x;
+				let offy = isNil(point.offset.y) ? 0 : point.offset.y;
 
 				let out = {
 					x: mgr.x.add(point.x,offx),
 					y: mgr.y.add(point.y,offy),
 					drop: {
-						x: utils.isNil(point.drop.x) ? null : mgr.x.add(point.drop.x,offx),
-						y: utils.isNil(point.drop.y) ? null : mgr.y.add(point.drop.y,offy),
+						x: isNil(point.drop.x) ? null : mgr.x.add(point.drop.x,offx),
+						y: isNil(point.drop.y) ? null : mgr.y.add(point.drop.y,offy),
 					},
 					span: point.span
 				};
@@ -93,18 +103,16 @@ let curve = function(spaces,serie,data,props,idx){
 
 			});
 
-			let lineProps = props.onlyMarks ? {show: false} : graphVM[gtype](positions,props,ds);
-
 			// 3 - points
 			// we extend positions with any precisions done by the user,
 
 			// first shader
-			if(!utils.isNil(props.shader)){
-				shader(props.shader,positions);
+			if(!isNil(gprops.shader)){
+				shader(gprops.shader,positions);
 			}
 
 			// then explicit, takes precedence
-			_.each(positions, (pos,idx) => {
+			each(positions, (pos,idx) => {
 				for(let u in data.series[idx]){
 					switch(u){
 						case 'x':
@@ -120,35 +128,38 @@ let curve = function(spaces,serie,data,props,idx){
 
 
 
-			let isBar = (type) => {
-				return type.search('Bars') >= 0 || type.search('bars') >= 0;
-			};
+			let isBar = (type) => type.search('Bars') >= 0 || type.search('bars') >= 0;
 
 			let graphKey = gtype + '.' + idx;
-			let mtype = isBar(gtype) ? 'bar' : props.markType || 'dot';
-			let mprops = props.mark ? _.map(positions,(pos,idx) => {
+			let mtype = isBar(gtype) ? 'bar' : gprops.markType || 'dot';
+			let mprops = gprops.mark ? map(positions,(pos,idx) => {
 				let markKey = graphKey + '.' + mtype[0] + '.' + idx;
-				return marksVM[mtype](pos,props,ds,markKey,pinMgr(pos,props.tag,ds));
+				return {
+					key: markKey,
+					mark: marksVM[mtype.toUpperCase()].create(() => get().marks[idx], { position: pos, props: gprops, ds}), 
+					pin: pinVM.create(() => get().marks[idx], {pos, tag: gprops.tag,ds}) 
+				};
 			}) : [];
 
 			return {
 				key: graphKey,
 				type: gtype,
-				path: lineProps,
+				path: gprops.onlyMarks ? {show: false} : graphVM[gtype.toUpperCase()].create(() => get().path, { serie: positions, props: gprops, ds }),
 				markType: mtype,
-				marks: mprops
+				marks: mprops,
+				show: gprops.show
 			};
 };
 
-let axis = function(props,state,axe,dir){
+const axis = function(props,state,axe,dir){
 
 	let partnerAxe = axe === 'abs' ? 'ord' : 'abs';
 	let othdir = dir === 'x' ? 'y' : 'x';
 
 	// for every abscissa
-	let out = _.map(state.spaces[dir], (ds,key) => {
+	let out = map(state.spaces[dir], (ds,key) => {
 
-		if(utils.isNil(ds)){
+		if(isNil(ds)){
 			return null;
 		}
 
@@ -164,7 +175,7 @@ let axis = function(props,state,axe,dir){
 
 		let axisKey = axe + '.' + key;
 
-		let axisProps = _.findWhere(props.axisProps[axe], {placement: key});
+		let axisProps = findWhere(props.axisProps[axe], {placement: key});
 
 		let partnerAxis = props.axisProps[partnerAxe][axisProps.partner];
 		let partnerDs = state.spaces[othdir][partnerAxis.placement];
@@ -172,7 +183,7 @@ let axis = function(props,state,axe,dir){
 		let DS = {};
 		DS[dir] = ds;
 		DS[othdir] = partnerDs;
-		let mgr = utils.mgr(partnerDs.d.max);
+		let mgr = typeMgr(partnerDs.d.max);
 		let partner = {
 			pos: partnerDs.d[find(key)],
 			length: mgr.distance(partnerDs.d.max,partnerDs.d.min)
@@ -182,21 +193,95 @@ let axis = function(props,state,axe,dir){
 		return {
 			show: axisProps.show,
 			key: axisKey,
-			axisLine: axisLine.VM(ds,axisProps,partnerDs,dir ),
-			ticks: ticks.VM(DS, partner, bounds, dir, axisProps, axisProps.factor, axisKey)
+			axisLine: axisLineVM(ds,axisProps,partnerDs,dir ),
+			ticks: ticksVM(DS, partner, bounds, dir, axisProps, axisProps.factor, axisKey)
 		};
 	});
 
-	return _.reject(out, (val) => utils.isNil(val));
+	return reject(out, (val) => isNil(val));
 
 };
 
-let m = {};
+export let cadreVM = {
+	create: (get, props) => {
+		return props;
+	}
+};
 
-m.abscissas = (props,state) => axis(props,state,'abs','x');
+export let backgroundVM = {
+	create: (get, { background, spaces }) => {
+		return {
+			color: background || 'none',
+			spaceX:{
+				min: Math.min.apply(null,map(spaces.x,(ds) => ds ? ds.c.min :  1e6 )),
+				max: Math.max.apply(null,map(spaces.x,(ds) => ds ? ds.c.max : -1e6 ))
+			},
+			spaceY:{
+				min: Math.min.apply(null,map(spaces.y,(ds) => ds ? ds.c.min : 1e6  )),
+				max: Math.max.apply(null,map(spaces.y,(ds) => ds ? ds.c.max : -1e6 ))
+			}
+		};
+	}
+};
 
-m.ordinates = (props,state) => axis(props,state,'ord','y');
+const defaultTo = (v,def) => isNil(v) ? def : v;
 
-m.curves = (props,state) => _.map(state.series,(serie,idx) => curve(state.spaces,serie,props.data[idx],props.graphProps[idx],idx));
+export let foregroundVM = {
+	create: (get, { foreground, spaces }) => {
+		if(isNil(foreground)){
+			return null;
+		}
 
-module.exports = m;
+		let { cx, cy, width, height } = foreground;
+
+		cx     = defaultTo(cx,0);
+		cy     = defaultTo(cy,0);
+		width  = defaultTo(width,0);
+		height = defaultTo(height,0);
+
+		let { x, y } = spaces;
+		let { bottom } = x;
+		let { left }   = y;
+		return extend(foreground, { cx, cy, width, height, 
+			ds: {
+				x: bottom,
+				y: left
+			}
+		});
+	}
+};
+
+export let titleVM = {
+	create: (get, { title, titleFSize, width, height }) => {
+
+		return {
+			title, titleFSize, width, height, placement: 'top'
+		};
+	}
+};
+
+export let axesVM = {
+
+	create: (get, { props, state }) => {
+		return {
+			css: props.css,
+			abs: axis(props,state,'abs','x'),
+			ord: axis(props,state,'ord','y')
+		};
+	}
+
+};
+
+export let curvesVM = {
+
+	create: (get, { props, state }) => {
+
+		let { spaces } = state;
+		return map(state.series, (serie,idx) => {
+			let data   = props.data[idx];
+			let gprops = props.graphProps[idx];
+			return curve(() => get()[idx], { spaces, serie, data, gprops, idx});
+		});
+	}
+
+};

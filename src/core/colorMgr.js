@@ -1,5 +1,5 @@
-let _ = require('underscore');
-let utils = require('./utils.js');
+import { reduce, extend } from 'underscore';
+import { isNil, isArray } from './utils.js';
 
 let palette = [ "#3A83F1", "#DC3FF1", "#F2693F", "#8AF23F", "#758d99",
 	"#F1DC41", "#AC310C", "#40C8F2", "#980DAB", "#F6799B", "#9679F6", "#EE2038",
@@ -12,71 +12,80 @@ let palette = [ "#3A83F1", "#DC3FF1", "#F2693F", "#8AF23F", "#758d99",
 	"#83A3F0", "#FEBCA3", "#362463", "#FDB2EA", "#FD981F", "#49F9DF", "#2490C0",
 	"#282807", "#26C186", "#8D54CE", "#6D1662", "#57F2BD"];
 
-let shader = {};
-shader.color = function(options,f){
+const color = function(options,f){
 
-		let toRGB= function(str,w){
-			return {
-				R: Math.round(parseInt(str.substr(1,2),16) * w),
-				G: Math.round(parseInt(str.substr(3,2),16) * w),
-				B: Math.round(parseInt(str.substr(5,2),16) * w)
-			};
+	let { colors } = options;
+
+	const toRGB = function(str,w){
+		return {
+			R: Math.round(parseInt(str.substr(1,2),16) * w),
+			G: Math.round(parseInt(str.substr(3,2),16) * w),
+			B: Math.round(parseInt(str.substr(5,2),16) * w)
 		};
+	};
 
-		let addRGB = function(){
-			return {
-				R: _.reduce(arguments,(memo,ar) => {return memo + ar.R;},0),
-				G: _.reduce(arguments,(memo,ar) => {return memo + ar.G;},0),
-				B: _.reduce(arguments,(memo,ar) => {return memo + ar.B;},0)
-			};
+	const addRGB = function(){
+		return {
+			R: reduce(arguments, (memo,ar) => memo + ar.R, 0),
+			G: reduce(arguments, (memo,ar) => memo + ar.G, 0),
+			B: reduce(arguments, (memo,ar) => memo + ar.B, 0)
 		};
+	};
 
-		let toString = function(rgb){
-			return '#' + (rgb.R.toString(16) + rgb.G.toString(16) + rgb.B.toString(16)).toUpperCase();
-		};
+	const toString = (rgb) => '#' + (rgb.R.toString(16) + rgb.G.toString(16) + rgb.B.toString(16)).toUpperCase();
 
-		let coord = (utils.isArray(f)) ? f : [f, 1 - f];
-		return toString(_.reduce(options.colors, (memo, col, idx) => addRGB(memo,toRGB(col,coord[idx])), {R:0, G:0, B:0}));
+	const coord = (isArray(f)) ? f : [f, 1 - f];
+	return toString(reduce(colors, (memo, col, idx) => addRGB(memo,toRGB(col,coord[idx])), {R:0, G:0, B:0}));
 	
 };
 
-shader.shade = function(options,f){
+const shade = function(options,f){
 	let val = f;
-	if(!!options.shadings && options.shadings.length >= 2){
+	if(options.shadings && options.shadings.length >= 2){
 		val = options.shadings[0] + (options.shadings[1] - options.shadings[0]) * f;
 	}
 	return val;
 };
 
+const white = '#FFFFFF';
+const black = '#000000';
+
+let shadeMgr = { color, shade };
+
 let compute = function(mgr){
-	switch(mgr.computation){
+
+	let { computation, type, options, index, N, factor, shadeFunction, point } = mgr;
+
+	switch(computation){
 		case 'by index':
-			return shader[mgr.type](mgr.options,mgr.index / mgr.N);
+			return shadeMgr[type](options, index / N);
 		case 'explicit':
-			return shader[mgr.type](mgr.options,mgr.factor[mgr.index]);
+			return shadeMgr[type](options, factor[index]);
 		case 'by function':
-			return !!mgr.shadeFunction ? mgr.shadeFunction(mgr.point) : 'black';
+			return shadeFunction ? shadeFunction(point) : 'black';
 	}
 };
 
 // 
-let fun = function(shade,points){
+export function shader(shade,points){
 
-	if(utils.isNil(shade)){
+	if(isNil(shade)){
 		return;
 	}
 
-	if(utils.isNil(points) && typeof shade === 'number'){
+	if(isNil(points) && typeof shade === 'number'){
 		return palette[shade];
 	}
 
-	let mgr = _.extend({},shade);
+	let mgr = extend({},shade);
 	mgr.N = points.length - 1;
 	for(let i = 0; i < points.length; i++){
 		mgr.index = i;
 		mgr.point = points[i];
 		points[i][shade.type] = compute(mgr);
 	}
-};
+}
 
-module.exports = fun;
+export function lighter(col, f)  { return color({colors: [col, white]}, f);}
+export function darker(col, f)   { return color({colors: [col, black]}, f);}
+export function lighterInv(col,f){ return color({colors: [col, white]}, [1/f , 1 - 1/f]);}

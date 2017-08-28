@@ -3,11 +3,9 @@
  *
  * ds is { c : {min, max}, d: {min,max}}
  */
-let _ = require('underscore');
-let utils = require('./utils.js');
-let { defMargins } = require('./proprieties.js');
-
-let m = {};
+import { find, flatten, map, extend, filter } from 'underscore';
+import * as utils from './utils.js';
+import { defMargins } from './proprieties.js';
 
 /* universe is {width , height}, this
  * is the total size of the svg picture.
@@ -87,7 +85,7 @@ let m = {};
  * the cs/ds correspondance is found with:
  *    universe - marginsO - marginsI = datas
  */
-let space = function(datas,universe,borders,title){
+const space = function(datas,universe,borders,title){
 		// if no data, we don't waste time
 		if(datas.length === 0){
 			return null;
@@ -173,7 +171,7 @@ let space = function(datas,universe,borders,title){
 
 		for(let om in {bottom: true, top: true, left: true, right: true}){
 			if(margins[om]){
-				let axis = _.find(borders.axis, ax => ax.placement === om);
+				let axis = find(borders.axis, ax => ax.placement === om);
 				if(axis){
 					let marLength = margins[om];
 					if(axis.label.length > 0){
@@ -223,7 +221,7 @@ let space = function(datas,universe,borders,title){
 
 	// 2 - the data space
 
-		let allValues = _.flatten(datas);
+		let allValues = flatten(datas);
 
 		let mgr = allValues.length === 0 ? utils.mgr(5) : utils.mgr(allValues[0]);
 
@@ -311,14 +309,14 @@ let space = function(datas,universe,borders,title){
 
 };
 
-m.spaces = function(datas,universe,borders,title){
+export function spaces(datas,universe,borders,title){
 
-	let filter = (datas,dir) => {
-		return _.map(datas, (serie) => {
+	let _filter = (datas,dir) => {
+		return map(datas, (serie) => {
 			// global characteristics
 			let loff = serie.limitOffset;
 			let limOfIdx = dir === 'y' || utils.isNil(loff) ? -1 : loff > 0 ? serie.series.length - 1: 0;
-			return _.map(serie.series, (point,idx) => {
+			return map(serie.series, (point,idx) => {
 					// if label
 					if(utils.isString(point[dir])){
 						return idx;
@@ -350,21 +348,21 @@ m.spaces = function(datas,universe,borders,title){
 					// limitOffset changes only one boundary
 					if(limOfIdx === idx){
 						if(utils.isArray(val)){
-							val = _.map(val, (v) => v + loff);
+							val = map(val, (v) => v + loff);
 						}else{
 							val += loff;
 						}
 					}
 
 					return val;
-				}).concat(_.map(serie.phantomSeries,(p) => {return p[dir];}));
+				}).concat(map(serie.phantomSeries,(p) => {return p[dir];}));
 			});
 	};
 
 	let ob = {right: 'ord', left: 'ord', top: 'abs', bottom: 'abs'};
 	let dats = {};
 	for(let w in ob){
-		dats[w] = _.filter(datas,(series) => !!series[ob[w]] && series[ob[w]].axis === w);
+		dats[w] = filter(datas,(series) => !!series[ob[w]] && series[ob[w]].axis === w);
 	}
 
 	let mins = {};
@@ -395,10 +393,10 @@ m.spaces = function(datas,universe,borders,title){
 	}
 
 	// worlds = (l,b), (l,t), (r,b), (r,t)
-	let rights = filter(dats.right,  'y');
-	let lefts  = filter(dats.left,   'y');
-	let top    = filter(dats.top,    'x');
-	let bottom = filter(dats.bottom, 'x');
+	let rights = _filter(dats.right,  'y');
+	let lefts  = _filter(dats.left,   'y');
+	let top    = _filter(dats.top,    'x');
+	let bottom = _filter(dats.bottom, 'x');
 
 
 	let border = {};
@@ -419,7 +417,7 @@ m.spaces = function(datas,universe,borders,title){
 	let bor = {};
 	for(let w in ob){
 		// copy/expand
-		bor[w] = _.extend(_.extend({},border[ob[w]]), {min: mins[w], max: maxs[w]});
+		bor[w] = extend(extend({},border[ob[w]]), {min: mins[w], max: maxs[w]});
 	}
 	
 
@@ -433,6 +431,4 @@ m.spaces = function(datas,universe,borders,title){
 			top:    space(top,   universe.width,bor.top)
 		}
 	};
-};
-
-module.exports = m;
+}

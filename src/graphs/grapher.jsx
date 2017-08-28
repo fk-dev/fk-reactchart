@@ -1,10 +1,11 @@
-let React = require('react');
-let Plain = require('./Plain.jsx');
-let Stairs = require('./Stairs.jsx');
-let BarChart = require('./BarChart.jsx');
-let Pie = require('./Pie.jsx');
+import React from 'react';
 
-let utils = require('../core/utils.js');
+import Plain    from './Plain.jsx';
+import Stairs   from './Stairs.jsx';
+import BarChart from './BarChart.jsx';
+import Pie      from './Pie.jsx';
+
+import { isNil } from '../core/utils.js';
 
 // the graphs function generator
 let graph = {};
@@ -17,12 +18,10 @@ graph.Bars   = graph.yBars = (props,opts) => <BarChart {...opts} key={props.key}
 
 graph.Pie    = (props, opts) => <Pie {...opts} key={props.key} state={props}/>;
 
-let m = function(key,props, opts){
-	if(utils.isNil(graph[key])){
+export function grapher(key,props, opts){
+	if(isNil(graph[key])){
 		throw new Error('Unknown graph type "' + key + '"');
 	}
 
-	return graph[key](props,opts);
-};
-
-module.exports = m;
+	return props.show ? graph[key](props,opts) : null;
+}

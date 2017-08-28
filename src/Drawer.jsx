@@ -1,13 +1,13 @@
-let React = require('react');
-let Axes = require('./Axes.jsx');
-let grapher = require('./graphs/grapher.jsx');
-let Cadre = require('./Cadre.jsx');
-let Background = require('./Background.jsx');
-let Foreground = require('./Foreground.jsx');
-let Title = require('./Title.jsx');
+import React from 'react';
+import Axes from './Axes.jsx';
+import { grapher } from './graphs/grapher.jsx';
+import Cadre from './Cadre.jsx';
+import Background from './Background.jsx';
+import Foreground from './Foreground.jsx';
+import Title from './Title.jsx';
 
-let imUtils = require('./core/im-utils.js');
-let _ = require('underscore');
+import { isEqual } from './core/im-utils.js';
+import { map } from 'underscore';
 
 /*
 	{
@@ -22,21 +22,21 @@ let _ = require('underscore');
 	}
 */
 
-class Drawer extends React.Component {
+export default class Drawer extends React.Component {
 
 	shouldComponentUpdate(props){
-		return !imUtils.isEqual(props.state,this.props.state);
+		return !isEqual(props.state,this.props.state);
 	}
 
 	orderAG(){
 		let { state } = this.props;
 		let { css } = state;
 		return state.axisOnTop === true ? <g>
-			{_.map(state.curves, (curve, gIdx) => grapher(curve.type,curve, {css, gIdx}))}
+			{map(state.curves, (curve, gIdx) => grapher(curve.type,curve, {css, gIdx}))}
 			<Axes state={state.axes}/>
 		</g> : <g>
 			<Axes state={state.axes}/>
-			{_.map(state.curves, (curve, gIdx) => grapher(curve.type,curve, {css, gIdx}))}
+			{map(state.curves, (curve, gIdx) => grapher(curve.type,curve, {css, gIdx}))}
 		</g>;
 					
 	}
@@ -44,14 +44,11 @@ class Drawer extends React.Component {
 	render(){
 		let state = this.props.state;
 		return <svg width={state.width} height={state.height}>
-			{state.cadre ? <Cadre width={state.width} height={state.height}/> : null }
-			<Background state={state.background}/>
+			{ state.cadre ? <Cadre width={state.width} height={state.height}/> : null }
+			{ state.background ? <Background state={state.background}/> : null }
 			<Title state={state.title} />
-					{this.orderAG()}
-			<Foreground state={state.foreground} pWidth={state.width} pHeight={state.height}/>
-			</svg>;
-
+			{this.orderAG()}
+			{ state.foreground ? <Foreground state={state.foreground} pWidth={state.width} pHeight={state.height}/> : null }
+		</svg>;
 	}
 }
-
-module.exports = Drawer;

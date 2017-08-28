@@ -1,13 +1,14 @@
-let React = require('react');
-let _ = require('underscore');
+import React from 'react';
+import { flatten, extend } from 'underscore';
 
-let iconer = require('../icons/iconer.jsx');
-let color = require('./colorMgr.js');
+import { iconer } from '../icons/iconer.jsx';
+import { shader } from './colorMgr.js';
+import * as evMgr from './events-mgr.js';
 
-let process = function(props){
+export let vm = {
+	create: function(get, { props }){
 
-	let icW = props.legend.iconWidth + props.legend.iconUnit;
-	let icH = props.legend.iconHeight + props.legend.iconUnit;
+	let events = evMgr.create(props.legend.events);
 
 	// for icon, just to help reading
 	let icw  = props.legend.iconWidth  - 2 * props.legend.iconHMargin;
@@ -23,7 +24,7 @@ let process = function(props){
 			sha.type = 'color';
 			sha.factor = [0.5];
 			let col = {};
-			color(sha,[col]);
+			shader(sha,[col]);
 			icc = col.color;
 		}
 		let ics = gprops.width < 2 ? gprops.width * 1.5 : gprops.width; // slightly more bold, if needed
@@ -33,20 +34,26 @@ let process = function(props){
 			height: ich,
 			hMargin: ichm,
 			vMargin: icvm,
-			strokeWidth: ics
+			strokeWidth: ics,
+			faded: !props.graphProps[idx].show
 		};
 		let perPoint = [];
 		if (data.series) {
 			for(let p = 0; p < data.series.length; p++){
-				if(!!data.series[p].legend){
+				if(data.series[p].legend){
 					let point = data.series[p];
 					let typeMark = gprops.markType;
-					iconProps.color = point.color || color(p);
+					iconProps.color = point.color || shader(p);
 					perPoint.push({
-						icon: (<svg width={icW} height={icH}>
-								{iconer.icon(iconProps, typeMark)}
-							</svg>),
-						label: point.legend || 'data #' + idx
+						icon: {
+							icon: (pr) => <svg width={pr.width} height={pr.height}>
+														{iconer(pr, typeMark)}
+													</svg>,
+							props: extend({},iconProps),
+							
+						},
+						label: point.legend || 'data #' + idx,
+						click: events.onClick(idx)
 					});
 				}
 			}
@@ -54,11 +61,15 @@ let process = function(props){
 
 		return perPoint.length !== 0 ? perPoint :
 			{
-				icon: <svg width={icW} height={icH}>
-						{gprops.onlyMarks ? null : iconer.icon(iconProps, 'line')}
-						{gprops.mark ? iconer.icon(iconProps, gprops.markType) : null}
-					</svg>,
-				label: gprops.name || 'graph #' + idx
+				icon: {
+					icon: (p) => <svg width={p.width} height={p.height}>
+											{gprops.onlyMarks ? null : iconer(p, 'line')}
+											{gprops.mark ? iconer(p, gprops.markType) : null}
+										</svg>,
+					props: iconProps
+				},
+				label: gprops.name || 'graph #' + idx,
+				click: events.onClick(idx)
 			};
 	};
 
@@ -67,7 +78,6 @@ let process = function(props){
 		leg.push(getALegend(props.data[i],props.graphProps[i],i));
 	}
 
-	return _.flatten(leg);
+	return flatten(leg);
+	}
 };
-
-module.exports = process;

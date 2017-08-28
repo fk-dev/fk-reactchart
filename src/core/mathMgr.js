@@ -2,7 +2,7 @@
 /// misc
 ///////////////////
 
-let relEps = 1e-16;
+const relEps = 1e-16;
 
 let misc = {};
 
@@ -35,8 +35,4 @@ misc.isZero = function(a,coef){
 	return Math.abs(a) < coef * relEps;
 };
 
-let m = {};
-
-m.misc = misc;
-
-module.exports = m;
+export { misc };

@@ -1,11 +1,11 @@
-let React = require('react');
+import React from 'react';
 
-let imUtils = require('./core/im-utils.js');
+import { isEqual } from './core/im-utils.js';
 
-class Title extends React.Component {
+export default class Title extends React.Component {
 
 	shouldComponentUpdate(props){
-		return !imUtils.isEqual(props.state,this.props.state);
+		return !isEqual(props.state,this.props.state);
 	}
 
 	render(){
@@ -14,5 +14,3 @@ class Title extends React.Component {
 		return (!!this.props.state.title && this.props.state.title.length !== 0) ? <text textAnchor='middle' fontSize={this.props.state.FSize} x={xT} y={yT}>{this.props.state.title}</text>:null;
 	}
 }
-
-module.exports = Title;

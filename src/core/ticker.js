@@ -1,8 +1,8 @@
-let utils = require('../core/utils.js');
-let _ = require('underscore');
+import { isNil, mgr as typeMgr } from '../core/utils.js';
+import { map } from 'underscore';
 
-let nInterval = (length, height) => {
-	let width = height * 3.5 / 2;
+const nInterval = (length, height) => {
+	const width = height * 3.5 / 2;
 	return Math.max(Math.min(Math.floor(length/width), 10), 1);
 };
 
@@ -10,8 +10,8 @@ let nInterval = (length, height) => {
  * beware of distance (period) versus
  * values (date), see {date,nbr}Mgr.js
 */
-let computeTicks = function(first, last, step, minor, mStep, fac, toPixel, height){
-	let mgr = utils.mgr(first);
+const computeTicks = function(first, last, step, minor, mStep, fac, toPixel, height){
+	let mgr = typeMgr(first);
 	// smart guess
 	let start = mgr.closestRoundUp(first,mgr.divide(mgr.distance(first,last),10));
 	let length = mgr.distance(start,last);
@@ -21,17 +21,17 @@ let computeTicks = function(first, last, step, minor, mStep, fac, toPixel, heigh
 	let dec = mgr.divide(length,nInterval(mgr.getValue(length) * toPixel, height));
 		// we ensure we have a correctly defined step
 	let majDist = mgr.isValidStep(step)  ? mgr.multiply(step,1)  : mgr.roundUp(dec);
-	if(step && !utils.isNil(step.offset)){
+	if(step && !isNil(step.offset)){
 		majDist.offset = step.offset;
 	}
 	let minDist = mgr.isValidStep(mStep) ? mgr.multiply(mStep,1) : mgr.roundDown(majDist);
-	if(mStep && !utils.isNil(mStep.offset)){
+	if(mStep && !isNil(mStep.offset)){
 		minDist.offset = mStep.offset;
 	}
 
 // redefine start to have the biggest rounded value
 	let biggestRounded = mgr.orderMagValue(last,first);
-	start = utils.isNil(biggestRounded) ? start : biggestRounded;
+	start = isNil(biggestRounded) ? start : biggestRounded;
 	while(mgr.greaterThan(start,first) || mgr.equal(start,first)){
 		start = mgr.subtract(start,majDist);
 	}
@@ -85,11 +85,9 @@ let computeTicks = function(first, last, step, minor, mStep, fac, toPixel, heigh
 	return out;
 };
 
-let m = {};
-
-m.ticks = function(start, length, majStep, labels, minor, minStep, fac, toPixel, height){
+export function ticks(start, length, majStep, labels, minor, minStep, fac, toPixel, height){
 	if(!!labels && labels.length > 0){
-		return _.map(labels, (lab) => {
+		return map(labels, (lab) => {
 			return {
 				position: lab.coord, 
 				label: lab.label, 
@@ -102,7 +100,4 @@ m.ticks = function(start, length, majStep, labels, minor, minStep, fac, toPixel,
 	}
 
 	return computeTicks(start, length, majStep, minor, minStep, fac, toPixel, height);
-};
-
-
-module.exports = m;
+}

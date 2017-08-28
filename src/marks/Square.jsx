@@ -1,6 +1,6 @@
-let React = require('react');
-let dataScale = require('../core/space-transf.js');
-let imUtils = require('../core/im-utils.js');
+import React from 'react';
+import { toC } from '../core/space-transf.js';
+import { isEqual } from '../core/im-utils.js';
 
 /*
 	{
@@ -21,18 +21,18 @@ let imUtils = require('../core/im-utils.js');
 	}
 */
 
-class SquareMark extends React.Component {
+export default class SquareMark extends React.Component {
 
 	shouldComponentUpdate(props){
-		return !imUtils.isEqual(props.state,this.props.state);
+		return !isEqual(props.state,this.props.state);
 	}
 
 	render(){
 		let { css, gIdx, state } = this.props;
 		let { ds, position, size, fill, color, shade, width} = state;
 
-		let x = dataScale.toC(ds.x,position.x) - size;
-		let y = dataScale.toC(ds.y,position.y) - size;
+		let x = toC(ds.x,position.x) - size;
+		let y = toC(ds.y,position.y) - size;
 		let f = fill || color;
 
 		let rectProps = css ? null : { width: 2 * size, height: 2 * size, fill: f, opacity: shade, stroke: color, strokeWidth: width };
@@ -40,5 +40,3 @@ class SquareMark extends React.Component {
 		return <rect className={'mark mark-' + gIdx} x={x} y={y} {...rectProps}/>;
 	}
 }
-
-module.exports = SquareMark;

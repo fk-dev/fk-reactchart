@@ -1,6 +1,6 @@
-let space = require('../core/space-transf.js');
+import { toC } from '../core/space-transf.js';
 
-let angle = (deg) => {
+const angle = (deg) => {
 
 	while(deg < 0){
 		deg += 360;
@@ -24,7 +24,7 @@ let angle = (deg) => {
 //	 print: // how to print
 //	 theta: // angle from mark
 // }
-let pin = function(pos,tag,ds) {
+const pin = function(get, { pos, tag, ds }) {
 	// angle
 	let ang = angle(tag.pinAngle);
 	// anchor
@@ -37,8 +37,8 @@ let pin = function(pos,tag,ds) {
 
 		// mark
 	let mpos = {
-		x: space.toC(ds.x,pos.x),
-		y: space.toC(ds.y,pos.y)
+		x: toC(ds.x,pos.x),
+		y: toC(ds.y,pos.y)
 	};
 
 		// pin length
@@ -80,6 +80,6 @@ let pin = function(pos,tag,ds) {
 };
 
 
-let m = (pos,tag,ds) => tag.show ? pin(pos,tag,ds) : null;
-
-module.exports = m;
+export let vm = {
+	create: (get, { pos, tag, ds }) => tag.show ? pin(get, { pos, tag, ds }) : null
+};

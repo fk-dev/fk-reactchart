@@ -1,9 +1,8 @@
-let React = require('react');
-let Path = require('./Path.jsx');
-let Mark = require('../marks/Mark.jsx');
-let _ = require('underscore');
-
-let imUtils = require('../core/im-utils.js');
+import React from 'react';
+import Path  from './Path.jsx';
+import Mark  from '../marks/Mark.jsx';
+import { map } from 'underscore';
+import { isEqual } from '../core/im-utils.js';
 
 /*
 	{
@@ -12,10 +11,10 @@ let imUtils = require('../core/im-utils.js');
 		marks: [Dot || Square]
 	}
 */
-class PlainChart extends React.Component {
+export default class PlainChart extends React.Component {
 
 	shouldComponentUpdate(props) {
-		return !imUtils.isEqual(props.state,this.props.state);
+		return !isEqual(props.state,this.props.state);
 	}
 
 	render(){
@@ -24,9 +23,7 @@ class PlainChart extends React.Component {
 		let { marks, path, markType } = state;
 		return marks.length === 0 ? <Path {...opts} state={path}/> : <g>
 			<Path {...opts} state={path}/>
-			{_.map(marks, (point) => <Mark key={point.key} {...opts} state={point} type={markType}/>)}
+			{map(marks, (point) => <Mark key={point.key} {...opts} state={point} type={markType}/>)}
 			</g>;
 	}
 }
-
-module.exports = PlainChart;

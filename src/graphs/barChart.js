@@ -1,5 +1,5 @@
-let m = {};
-
-m.VM = () => null;
-
-module.exports = m;
+export let vm = {
+	create: () => {
+		return null;
+	}
+};

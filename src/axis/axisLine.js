@@ -1,4 +1,4 @@
-let utils = require('../core/utils.js');
+import { direction } from '../core/utils.js';
 
 /*
 	{
@@ -34,9 +34,7 @@ let utils = require('../core/utils.js');
 	}
 */
 
-let m ={};
-
-m.VM = function(ds,props,partnerDs,dir){
+export function vm(ds,props,partnerDs,dir){
 
 	let show = props.show;
 
@@ -93,7 +91,7 @@ m.VM = function(ds,props,partnerDs,dir){
 		},
 */
 
-	let lineDir = utils.direction(line);
+	let lineDir = direction(line);
 	let label = {
 		label: props.label,
 		FSize: props.labelFSize,
@@ -185,6 +183,4 @@ m.VM = function(ds,props,partnerDs,dir){
 		comFac: comFac
 	};
 
-};
-
-module.exports = m;
+}

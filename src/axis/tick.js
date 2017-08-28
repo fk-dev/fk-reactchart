@@ -1,6 +1,6 @@
-let { map } = require('underscore');
-let utils = require('../core/utils.js');
-let ticker = require('../core/ticker.js');
+import { map } from 'underscore';
+import { isNil, mgr as typeMgr } from '../core/utils.js';
+import { ticks } from '../core/ticker.js';
 
 /*
 	{
@@ -38,9 +38,7 @@ let ticker = require('../core/ticker.js');
 	}
 */
 
-let m = {};
-
-m.VM = function(ds,partner, bounds, dir, locProps, comFac, axisKey){
+export function vm(ds,partner, bounds, dir, locProps, comFac, axisKey){
 
 	//// general defs
 
@@ -73,7 +71,7 @@ m.VM = function(ds,partner, bounds, dir, locProps, comFac, axisKey){
 	let majStep = majProps.step;
 	let minStep = minProps.step;
 
-	if(!utils.isNil(locProps.interval)){
+	if(!isNil(locProps.interval)){
 		if(!majStep){
 			majStep = {};
 		}
@@ -85,7 +83,7 @@ m.VM = function(ds,partner, bounds, dir, locProps, comFac, axisKey){
 		minStep.offset = locProps.interval;
 	}
 
-	let tickers = ticker.ticks(min, max, majStep, ticksLabel, minor, minStep, comFac, toPixel, height);
+	let tickers = ticks(min, max, majStep, ticksLabel, minor, minStep, comFac, toPixel, height);
 
 	let prevTick = (idx) => idx > 0 ? tickers[idx - 1].position : null;
 	let nextTick = (idx) => idx < tickers.length - 1 ? tickers[idx + 1].position : null;
@@ -113,7 +111,7 @@ m.VM = function(ds,partner, bounds, dir, locProps, comFac, axisKey){
 		};
 
 		for(let u in tmp){
-			ticksProps[u] = utils.isNil(tick[u]) ? p[u] : tick[u];
+			ticksProps[u] = isNil(tick[u]) ? p[u] : tick[u];
 		}
 		ticksProps.position = {};
 		ticksProps.position[dir] = tick.position;
@@ -129,8 +127,8 @@ m.VM = function(ds,partner, bounds, dir, locProps, comFac, axisKey){
 		}
 
 		let mgr = {
-			x: utils.mgr(ticksProps.position.x),
-			y: utils.mgr(ticksProps.position.y)
+			x: typeMgr(ticksProps.position.x),
+			y: typeMgr(ticksProps.position.y)
 		};
 
 /*
@@ -148,7 +146,7 @@ m.VM = function(ds,partner, bounds, dir, locProps, comFac, axisKey){
 
 		// label
 		if(typeof p.labelize === 'string'){
-			let lmgr = utils.mgr(tick.position);
+			let lmgr = typeMgr(tick.position);
 			let maxDist = ds[dir].d.max - ds[dir].d.min;
 			p.labelize = lmgr.labelize(p.labelize, maxDist);
 		}
@@ -168,13 +166,13 @@ m.VM = function(ds,partner, bounds, dir, locProps, comFac, axisKey){
 
 
 		let addPerp =  tick.minor ? 3.75 : 0;
-		let perpOff = utils.isNil(p.labelOffset.perp) ? tick.offset.perp : p.labelOffset.perp ;
+		let perpOff = isNil(p.labelOffset.perp) ? tick.offset.perp : p.labelOffset.perp ;
 		let offsetCspace = {
 			x: p.labelOffset.x, 
 			y: perpOff + addPerp + p.labelOffset.y 
 		};
 
-		let alOff = utils.isNil(p.labelOffset.along) ? tick.offset.along : p.labelOffset.along;
+		let alOff = isNil(p.labelOffset.along) ? tick.offset.along : p.labelOffset.along;
 		let offset = {
 			x: labelProps.dir.x !== 0 ? alOff : 0,
 			y: labelProps.dir.y !== 0 ? alOff : 0
@@ -259,7 +257,7 @@ m.VM = function(ds,partner, bounds, dir, locProps, comFac, axisKey){
 
 			let cus = tick.grid || {};
 			for(let u in tmp){
-				gridProps[u] = utils.isNil(cus[u]) ? p[u] : cus[u];
+				gridProps[u] = isNil(cus[u]) ? p[u] : cus[u];
 			}
 			gridProps.length = partner.length;
 
@@ -272,6 +270,4 @@ m.VM = function(ds,partner, bounds, dir, locProps, comFac, axisKey){
 		};
 
 	});
-};
-
-module.exports = m;
+}

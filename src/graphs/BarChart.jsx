@@ -1,7 +1,7 @@
-let React = require('react');
-let Mark = require('../marks/Mark.jsx');
-let _ = require('underscore');
-let imUtils = require('../core/im-utils.js');
+import React from 'react';
+import Mark from '../marks/Mark.jsx';
+import { map } from 'underscore';
+import { isEqual } from '../core/im-utils.js';
 
 /*
 	{
@@ -13,7 +13,7 @@ let imUtils = require('../core/im-utils.js');
 class BarChart extends React.Component {
 
 	shouldComponentUpdate(props) {
-		return !imUtils.isEqual(props.state,this.props.state);
+		return !isEqual(props.state,this.props.state);
 	}
 
 	render() {
@@ -26,7 +26,7 @@ class BarChart extends React.Component {
 		}
 
 		return <g>
-			{_.map(marks, (bar) => <Mark {...opts} key={bar.key} state={bar} type='bar'/>)}
+			{map(marks, (bar) => <Mark {...opts} key={bar.key} state={bar} type='bar'/>)}
 		</g>;
 	}
 }

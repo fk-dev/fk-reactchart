@@ -1,11 +1,11 @@
-let React = require('react');
+import React from 'react';
 
-let imUtils = require('../core/im-utils.js');
+import { isEqual } from '../core/im-utils.js';
 
-class Pie extends React.Component {
+export default class Pie extends React.Component {
 
 	shouldComponentUpdate(props){
-		return !imUtils.isEqual(props.state,this.props.state);
+		return !isEqual(props.state,this.props.state);
 	}
 
 	render(){
@@ -24,14 +24,14 @@ class Pie extends React.Component {
 
 		let oldT = 0;
 		let out = [];
-		let x = abs(oldT,radius,origin);
-		let y = coo(oldT,radius,origin);
+	//	let x = abs(oldT,radius,origin);
+	//	let y = coo(oldT,radius,origin);
 
 		for(let p = 0; p < positions.length; p++){
 
 			let color = positions[p].color;
 			let theta = Math.min(positions[p].value, 359.9640);// more than 99.99% is a circle (not supported by arc anyway)
-			let label = !!labels[p] ? labels[p] : null;
+			let label = labels[p] ? labels[p] : null;
 			let x1 = abs(oldT,toreRadius,origin);
 			let y1 = coo(oldT,toreRadius,origin);
 			let x2 = abs(oldT,radius,origin);
@@ -49,7 +49,7 @@ class Pie extends React.Component {
 
 			out.push(<path key={p} fill={color} stroke='none' strokeWidth='0' d={path}/>);
 
-			if(!!label){
+			if(label){
 				let curAng = theta / 2 + oldT;
 				let offset = curAng === 90 || curAng === 270 ? 0 :
 					curAng > 90 && curAng < 270 ? - pinHook : pinHook;
@@ -71,13 +71,11 @@ class Pie extends React.Component {
 				}
 				out.push(<text fontSize={pinFontSize} key={p + '.l'} x={xc} y={yc} style={lstyle}>{label}</text>);
 			}
-			x = x2;
-			y = y2;
+			//x = x2;
+			//y = y2;
 			oldT += theta;
 		}
 
 		return <g>{out}</g>;
 	}
 }
-
-module.exports = Pie;

@@ -1,10 +1,10 @@
-let moment = require('moment');
-let _ = require('underscore');
+import moment from 'moment';
+import { map, findIndex } from 'underscore';
 let im = {
 	isImm: p => typeof p === 'object' ? Object.isFrozen(p) : false
 };
 
-let { pow, floor, log, min, max, abs, LN10 } = Math;
+let { pow, floor, log, abs, LN10 } = Math;
 
 const _period = {years: true, months: true, weeks: true, days: true};
 const _period_type = ['years','months','weeks','days'];
@@ -29,7 +29,7 @@ let processPeriod = function(per, fac){
 	let period = {};
 
 	if(typeof per === 'number'){ // ms
-		period = makePeriod(moment.duration(per));
+		period = _makePeriod(moment.duration(per));
 	}
 
 	for(let t in _period){
@@ -51,7 +51,7 @@ let processPeriod = function(per, fac){
 	return period;
 };
 
-let makePeriod = function(msOrDur){
+let _makePeriod = function(msOrDur){
 	let dur = msOrDur.years && typeof msOrDur.years === 'function' ? msOrDur : moment.duration(msOrDur);
 	return {
 		years:  dur.years(),
@@ -109,7 +109,7 @@ let roundDownPeriod = function(p){
 
 	let out = {};
 	if(p.years > 2){
-		out = make('years',max(floor(p.years)/10,1));
+		out = make('years',Math.max(floor(p.years)/10,1));
 	}else if(p.total >= moment.duration({months: 6}).asDays()){
 		out = make('months', 6);
 	}else if(p.total >= moment.duration({months: 3}).asDays()){
@@ -163,7 +163,7 @@ let roundUpPeriod = function(p){
 let roundPeriod = function(per,type){
 
 	// copy
-	let p = makePeriod(per);
+	let p = _makePeriod(per);
 
 	type = type || 'down';
 
@@ -194,7 +194,7 @@ let roundPeriod = function(per,type){
 let closestUp = function(date,per){
 	let out = closestDown(date,per);
 	while(out.getTime() <= date.getTime()){
-		out = m.add(out,per);
+		out = add(out,per);
 	}
 
 	return out;
@@ -247,30 +247,28 @@ let periodLT    = (p1,p2) => p1.total < p2.total;
 
 let periodEQ    = (p1,p2) => p1.total === p2.total;
 
-let greaterThan = (v1,v2,type) => type === 'date' ? dateGT(v1,v2) : periodGT(v1,v2);
+let _greaterThan = (v1,v2,type) => type === 'date' ? dateGT(v1,v2) : periodGT(v1,v2);
 
-let lowerThan   = (v1,v2,type) => type === 'date' ? dateLT(v1,v2) : periodLT(v1,v2);
+let _lowerThan   = (v1,v2,type) => type === 'date' ? dateLT(v1,v2) : periodLT(v1,v2);
 
-let equal       = (v1,v2,type) => type === 'date' ? dateEQ(v1,v2) : periodEQ(v1,v2);
+let _equal       = (v1,v2,type) => type === 'date' ? dateEQ(v1,v2) : periodEQ(v1,v2);
 
-let addPer      = (p1,p2) => makePeriod(moment.duration(processPeriod(p1)).add(moment.duration(p2)));
-
-let m = {};
+let addPer      = (p1,p2) => _makePeriod(moment.duration(processPeriod(p1)).add(moment.duration(p2)));
 
 // date / distance methods
-m.orderMag = (dop) => floor(log( ( dop instanceof Date ) ? dop.getTime() : moment.duration({days: processPeriod(dop).total}).asMilliseconds() ) / LN10);
+export function orderMag(dop){ return floor(log( ( dop instanceof Date ) ? dop.getTime() : moment.duration({days: processPeriod(dop).total}).asMilliseconds() ) / LN10);}
 
-m.orderMagValue = function(last,first){
+export function orderMagValue(last,first){
 	// end of cur year
 	let nextfst = utc(new Date(first.getFullYear() + 1,0,0));
-	if(m.lowerThan(nextfst,last)){
+	if(lowerThan(nextfst,last)){
 		return nextfst;
 	}
 
 	// end of cur semester 
 	if(first.getMonth() < 7){
 		nextfst = utc(new Date(first.getFullYear(),7,0));
-		if(m.lowerThan(nextfst,last)){
+		if(lowerThan(nextfst,last)){
 			return nextfst;
 		}
 	}
@@ -278,20 +276,20 @@ m.orderMagValue = function(last,first){
 	// end of cur trimester
 	let mm = first.getMonth() + 3 - first.getMonth() % 3;
 	nextfst = utc(new Date(first.getFullYear(),mm,0));
-	if(m.lowerThan(nextfst,last)){
+	if(lowerThan(nextfst,last)){
 		return nextfst;
 	}
 
 	// end of cur month
 	nextfst = utc(new Date(first.getFullYear(),first.getMonth() + 1,0));
-	if(m.lowerThan(nextfst,last)){
+	if(lowerThan(nextfst,last)){
 		return nextfst;
 	}
 
 	// end of cur half-month
 	if(first.getDate() < 15){
 		nextfst = utc(new Date(first.getFullYear(),first.getMonth(),14));
-		if(m.lowerThan(nextfst,last)){
+		if(lowerThan(nextfst,last)){
 			return nextfst;
 		}
 	}
@@ -299,22 +297,22 @@ m.orderMagValue = function(last,first){
 	// end of cur quarter-month (as 7 days)
 	let dd = first.getDate() + 7 - first.getDate() % 7 - 1;
 	nextfst = utc(new Date(first.getFullYear(),first.getMonth(),dd));
-	if(m.lowerThan(nextfst,last)){
+	if(lowerThan(nextfst,last)){
 		return nextfst;
 	}
 
 	// next day
 	return utc(new Date(first.getFullYear(),first.getMonth(),first.getDate() + 1));
-};
+}
 
-m.orderMagDist = (r) => makePeriod(pow(10,m.orderMag(r)));
+export function orderMagDist(r){ return _makePeriod(pow(10,orderMag(r)));}
 
-m.roundUp      = (p) => roundPeriod(p,'up');
+export function roundUp(p){ return roundPeriod(p,'up');}
 
-m.roundDown    = (p) => roundPeriod(p,'down');
+export function roundDown(p){ return roundPeriod(p,'down');}
 
-//m.multiply     = (p,f) => makePeriod(moment.duration({days: processPeriod(p).total * f}));
-m.multiply     = (p,f) => {
+//m.multiply     = (p,f) => _makePeriod(moment.duration({days: processPeriod(p).total * f}));
+export function multiply(p,f){
 	let sp = processPeriod(p);
 	for(let u in p){
 		if(u === 'offset'){
@@ -323,42 +321,42 @@ m.multiply     = (p,f) => {
 		sp[u] *= f;
 	}
 	return sp;
-};
+}
 
-//m.divide       = (p,f) => makePeriod(moment.duration({days: processPeriod(p).total / f}));
-m.divide = (p,f) => {
-	let np = m.multiply(p,1/f);
-	return makePeriod(moment.duration({days: np.total}));
-};
+//m.divide       = (p,f) => _makePeriod(moment.duration({days: processPeriod(p).total / f}));
+export function divide(p,f){
+	let np = multiply(p,1/f);
+	return _makePeriod(moment.duration({days: np.total}));
+}
 
-m.increase = (p1,p2) => makePeriod(moment.duration({days: processPeriod(p1).total + processPeriod(p2).total}));
+export function increase(p1,p2){ return _makePeriod(moment.duration({days: processPeriod(p1).total + processPeriod(p2).total}));}
 
-m.offset = function(p){
+export function offset(p){
 	let sp = processPeriod(p);
 
 	let offsetMe = (per) => {
 		if(per.years !== 0){
-			return makePeriod(moment.duration({months: -6}));
+			return _makePeriod(moment.duration({months: -6}));
 		}else{
-			return m.divide(p, -2);
+			return divide(p, -2);
 		}
 	};
 
-	return sp.offset ? offsetMe(sp) : makePeriod(0) ;
-};
+	return sp.offset ? offsetMe(sp) : _makePeriod(0) ;
+}
 
 // date methods
-m.closestRoundUp   = (ref,per) => closestUp(ref, roundPeriod(per) );
+export function closestRoundUp(ref,per){ return closestUp(ref, roundPeriod(per) );}
 
-m.closestRoundDown = (ref,per) => closestDown(ref, roundPeriod(per) );
+export function closestRoundDown(ref,per){ return closestDown(ref, roundPeriod(per) );}
 
-m.closestRound     = (ref,om,type) => type === 'up' ? m.closestRoundUp(ref,om) : m.closestRoundDown(ref,om);
+export function closestRound(ref,om,type){ return type === 'up' ? closestRoundUp(ref,om) : closestRoundDown(ref,om);}
 
-m.min              = (dates) => utc(new Date(min.apply(null,_.map(dates, (date) => date.getTime() ))));
+export function min(dates){ return utc(new Date(Math.min.apply(null, map(dates, (date) => date.getTime() ))));}
 
-m.max              = (dates) => utc(new Date(max.apply(null,_.map(dates, (date) => date.getTime()))));
+export function max(dates){ return utc(new Date(Math.max.apply(null, map(dates, (date) => date.getTime()))));}
 
-m.label = function(date,period){
+export function label(date,period){
 	let format = fetchFormat(period);
 	let out = '';
 	if(format.pref === 'S'){
@@ -368,7 +366,7 @@ m.label = function(date,period){
 		out = moment(date).format(format.string);
 	}
 	return format.pref + out;
-};
+}
 
 let addMonth = (d,m) => moment(d).add(1,'days').add(m, 'months').add(-1,'days').toDate();
 
@@ -383,67 +381,67 @@ let addDate = (d,p) => {
 };
 
 // date & period methods
-m.add = function(dop,p){
+export function add(dop,p){
 	// preprocess period
 	let sp = processPeriod(p);
 
 	return dop instanceof Date ? addDate(dop,sp) : addPer(dop,sp);
-};
+}
 
-m.subtract = function(dop,p){
+export function subtract(dop,p){
 	// preprocess period
 	let sp = {};
 	for(let u in p){
 		sp[u] = p[u];
 	}
 	sp = processPeriod(sp, -1);
-	return m.add(dop,sp);
+	return add(dop,sp);
 
-};
+}
 
-m.distance = (d1,d2) => makePeriod(abs(d1.getTime() - d2.getTime()));
+export function distance(d1,d2){ return _makePeriod(abs(d1.getTime() - d2.getTime()));}
 
-m.greaterThan = function(dop1,dop2){
+export function greaterThan(dop1,dop2){
 	let sd = sameDoP(dop1,dop2);
 	if(sd === null){
 		throw new Error('Error in dateMgr: trying to compare a Date with a Period');
 	}
-	return greaterThan(dop1,dop2,sd);
-};
+	return _greaterThan(dop1,dop2,sd);
+}
 
-m.lowerThan = function(dop1,dop2){
+export function lowerThan(dop1,dop2){
 	let sd = sameDoP(dop1,dop2);
 	if(sd === null){
 		throw new Error('Error in dateMgr: trying to compare a Date with a Period');
 	}
-	return lowerThan(dop1,dop2,sd);
-};
+	return _lowerThan(dop1,dop2,sd);
+}
 
-m.equal = function(dop1,dop2){
+export function equal(dop1,dop2){
 	let sd = sameDoP(dop1,dop2);
 	if(sd === null){
 		throw new Error('Error in dateMgr: trying to compare a Date with a Period');
 	}
-	return equal(dop1,dop2,sd);
-};
+	return _equal(dop1,dop2,sd);
+}
 
 // managements
-m.getValue = (dop) => (dop instanceof Date) ? dop.getTime() : moment.duration(dop).asMilliseconds();
+export function getValue(dop){ return (dop instanceof Date) ? dop.getTime() : moment.duration(dop).asMilliseconds();}
 
-m.extraTicks = function(step,start,end, already){
+export function extraTicks(step,start,end, already){
 	let out = [];
 	let startYear = start.getFullYear();
 	let lastYear = end.getFullYear();
 	// every year, whatever happens
 	for(let ye = startYear; ye <= lastYear; ye++){
 		let dat = utc(new Date(ye,0,0));
-		let idx = _.findIndex(already,(a) => m.equal(a.position,dat));
+		let idx = findIndex(already,(a) => equal(a.position,dat));
 		if(idx !== -1){
 			already[idx].grid = {};
 			already[idx].grid.show = true;
 			continue;
 		}
-		if(m.lowerThan(start,dat) && m.lowerThan(dat,end)){
+		if(lowerThan(start,dat) && lowerThan(dat,end)){
 			out.push({
 				position: dat,
 				offset: {
@@ -462,19 +460,19 @@ m.extraTicks = function(step,start,end, already){
 		}
 	}
 	return out;
-};
+}
 
-m.smallestStep = () => makePeriod(moment.duration({days: 1}));
+export function smallestStep(){ return _makePeriod(moment.duration({days: 1}));}
 
-m.makePeriod   = (per) => processPeriod(per);
-
-// in years
-m.value        = (num) => utc(new Date(num * 1000 * 3600 * 24 * 365));
+export function makePeriod(per){ return processPeriod(per);}
 
 // in years
-m.step         = (num) => makePeriod({years: num});
+export function value(num){ return utc(new Date(num * 1000 * 3600 * 24 * 365));}
 
-m.isValidStep  = (cand) => {
+// in years
+export function step(num){ return _makePeriod({years: num});}
+
+export function isValidStep(cand){
 	if(!cand){
 		return false;
 	}
@@ -485,18 +483,16 @@ m.isValidStep  = (cand) => {
 		}
 	}
 	return false;
-};
+}
 
 // no
-m.labelize     = () => false;
+export function labelize(){ return false;}
 
 //
-m.defaultSpan  = () => makePeriod(moment.duration({months: 6}));
+export function defaultSpan(){ return _makePeriod(moment.duration({months: 6}));}
 
-m.labelF = 0.75;
+export const labelF = 0.75;
 
-m.isZero = (dOp) => dOp instanceof Date ? dOp.getTime() === 0 : dOp.total === 0;
+export function isZero(dOp){ return dOp instanceof Date ? dOp.getTime() === 0 : dOp.total === 0;}
 
-m.type = 'date';
-
-module.exports = m;
+export const type = 'date';

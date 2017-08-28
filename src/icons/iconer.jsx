@@ -1,8 +1,8 @@
-let React = require('react');
+import React from 'react';
 
-let icon = {};
+let _icon = {};
 
-icon.square = icon.Square = function(data,open){
+_icon.square = _icon.Square = function(data,open){
 	let l = Math.min(data.width, data.height) * 3/5;
 	let x = data.hMargin + (data.width - l)/2 ;
 	let y = data.vMargin + (data.height - l);
@@ -10,9 +10,9 @@ icon.square = icon.Square = function(data,open){
 	return <rect x={x} y={y} width={l} height={l} fill={f} stroke={data.color} />;
 };
 
-icon.opensquare = icon.OpenSquare = (data) => icon.square(data,true);
+_icon.opensquare = _icon.OpenSquare = (data) => _icon.square(data,true);
 
-icon.dot = icon.Dot = function(data,open){
+_icon.dot = _icon.Dot = function(data,open){
 	let x = (data.width + 2 * data.hMargin)/2;
 	let r = Math.min(data.height, data.width) * 3 / 10; // 3 / 5 de remplissage
 	let y = data.height + data.vMargin - r;
@@ -20,11 +20,11 @@ icon.dot = icon.Dot = function(data,open){
 	return <circle cx={x} cy={y} r={r} fill={f} stroke={data.color}/>;
 };
 
-icon.opendot = icon.OpenDot = (data) => icon.dot(data,true);
+_icon.opendot = _icon.OpenDot = (data) => _icon.dot(data,true);
 
-icon.bar = icon.Bar = icon.square;
+_icon.bar = _icon.Bar = _icon.square;
 
-icon.pie = icon.Pie = function(data){
+_icon.pie = _icon.Pie = function(data){
 	let x = data.hMargin + data.width/2;
 	let y = 2 * data.vMargin + data.height;
 	let r = data.height;
@@ -37,7 +37,7 @@ icon.pie = icon.Pie = function(data){
 	return <path fill={data.color} d={path}/>;
 };
 
-icon.line = function(data){
+_icon.line = function(data){
 
 	let l = Math.min(data.width, data.height);
 	let x1 = data.hMargin + (data.width - l)/2 ;
@@ -46,14 +46,11 @@ icon.line = function(data){
 	return <line x1={x1} y1={y} x2={x2} y2={y} stroke={data.color} strokeWidth={data.strokeWidth}/>;
 };
 
-let m = {};
 
-m.icon = function(data, key){
-	if(!icon[key]){
+export function iconer(data, key){
+	if(!_icon[key]){
 		throw new Error('unrecognized mark type: "' + key + '"');
 	}
 
-	return icon[key](data);
-};
-
-module.exports = m;
+	return _icon[key](data);
+}

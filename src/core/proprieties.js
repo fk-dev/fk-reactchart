@@ -1,7 +1,7 @@
 /*
 	all the proprieties
 */
-let { extend, extendOwn, map } = require('underscore');
+import { extend, extendOwn, map } from 'underscore';
 
 // defaults for marks
 let marks = {};
@@ -78,6 +78,7 @@ graph.common = () => {
 		width: 1,
 		fill: 'none',
 		shade: 1,
+		show: true,
 		// mark props, explicit at heigh level
 		// overwritten if present in markProps
 		mark: true,
@@ -158,10 +159,8 @@ graph.Stairs = graph.stairs = () => extend(graph.common(), { stairs: "right" });
 // major / minor props
 /////////////
 
-let m = {};
-
 // that's a major
-m.Grid = {
+export const Grid = {
 	show: false,
 	color: 'LightGray',
 	width: 0.5,
@@ -169,7 +168,7 @@ m.Grid = {
 };
 
 // that's a major
-m.Tick = {
+export const Tick = {
 	show: true,
 	width: 1,
 	length: 15,
@@ -177,19 +176,18 @@ m.Tick = {
 	step: null,
 	color: 'black',
 	labelOffset: {x:0, y:0 },
-	labelize: () => {return false;}, //utils.isNil(val) ? '' : val instanceof Date ? moment(val).format('YYYY') : val.toFixed(1);},
+	labelize: () => false, //utils.isNil(val) ? '' : val instanceof Date ? moment(val).format('YYYY') : val.toFixed(1);},
 	label: '',
 	rotate: 0,
 	labelFSize: 10,
 	labelColor: 'black'
 };
 
-
 //
-let axe = {
+const axe = {
 	ticks: {
-		major: m.Tick,
-		minor: extendOwn(extend({},m.Tick),{
+		major: Tick,
+		minor: extendOwn(extend({},Tick),{
 			show: false,
 			length: 7,
 			out: 0,
@@ -198,8 +196,8 @@ let axe = {
 		})
 	},
 	grid: {
-		major: m.Grid,
-		minor: extendOwn(extend({},m.Grid),{
+		major: Grid,
+		minor: extendOwn(extend({},Grid),{
 			width: 0.3
 		})
 	},
@@ -227,16 +225,15 @@ let axe = {
 	factorFSize: 10
 };
 
-m.Axes = (axis) => {
+export function Axes(axis){
 	return {
 		abs: map(axis.abs, (p) => extend({placement: p}, axe)),
 		ord: map(axis.ord, (p) => extend({placement: p}, axe))
 	};
-};
-
+}
 
 ///
-m.Graph = (axis) => {
+export function Graph(axis){
 	return {
 		// general
 		css: false,
@@ -249,7 +246,10 @@ m.Graph = (axis) => {
 			iconHeight: 20,
 			iconHMargin: 0, // offset from center
 			iconVMargin: 0, // offset from center
-			iconUnit: 'px'
+			iconUnit: 'px',
+			events: {
+				onClick: null // fade or suppress
+			}
 		},
 		foreground: null,
 		background: null,
@@ -268,19 +268,19 @@ m.Graph = (axis) => {
 		data: [],
 		graphProps: [],
 		// axis
-		axisProps: m.Axes(axis),
+		axisProps: Axes(axis),
 		// data process
 		discard: true
 	};
-};
+}
 
-let type = (arr,dir) => {
+const type = (arr,dir) => {
 	let v = arr.length === 0 ? 0 : arr[0][dir];
 	let lab = arr.length !== 0 && arr[0].label && arr[0].label[dir];
 	return lab ? 'label' : v instanceof Date ? 'date' : 'number';
 };
 
-let data = 	(serie) => {
+const data = (serie) => {
 	return {
 		type: 'Plain', // Plain, Bars, yBars
 		series: [], // x, y
@@ -298,9 +298,9 @@ let data = 	(serie) => {
 	};
 };
 
-m.defaults     = (key) => key === 'data' ? data : graph[key]();
+export function defaults(key){ return key === 'data' ? data : graph[key]();}
 
-m.marksDefault = (key) => marks[key]();
+export function marksDefault(key){ return marks[key]();}
 
 /* If no marginsO are defined, here are the rules:
  *  - ticks and ticks labels are 20 px in the y dir (height of text),
@@ -312,7 +312,7 @@ m.marksDefault = (key) => marks[key]();
  *			- 20px + ({x,y}LabelFSize	+ 10 px) if a {x,y}Label is defined,
  *  - top margin takes a titleFSize + 10px more if a title is defined
  */
-m.defMargins = {
+export const defMargins = {
 	outer: {
 		label: {
 			bottom: 20,
@@ -343,5 +343,3 @@ m.defMargins = {
 	min: 0,
 	max: 4
 };
-
-module.exports = m;

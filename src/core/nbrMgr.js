@@ -1,6 +1,6 @@
-let { pow, floor, log, min, max, abs, LN10 } = Math;
+let { pow, floor, log, abs, LN10 } = Math;
 
-let suffixes = {
+const suffixes = {
 	18: 'E', // exa
 	15: 'P', // peta
 	12: 'T', // tera
@@ -16,11 +16,9 @@ let suffixes = {
 	'-18': 'a' // atto
 };
 
-let m = {};
-
-let firstDigit = function(r,n){
+const firstDigit = function(r,n){
   n = n || 1;
-	let res = r * pow(10,-m.orderMag(r));
+	let res = r * pow(10,-orderMag(r));
 	let str = '' + res;
 	let out = str[0] || 0;
 	if(n > 1){
@@ -29,7 +27,7 @@ let firstDigit = function(r,n){
 	return Number(out);
 };
 
-let firstNonNull = function(v){
+const firstNonNull = function(v){
 	let str = v + '';
 	let com = str.indexOf('.');
 	if(com < 0){
@@ -42,12 +40,12 @@ let firstNonNull = function(v){
 		}
 	}
 	out = i - com;
-	return max(out,0);
+	return Math.max(out,0);
 };
 
-let roundMe = function(min,max){
-	let valOrder = m.orderMag(max);
-	let distOrd = m.orderMag(m.distance(max,min));
+const roundMe = function(min,max){
+	let valOrder = orderMag(max);
+	let distOrd = orderMag(distance(max,min));
 
 	let valid = (cand) => cand >= min && cand <= max;
 
@@ -63,21 +61,21 @@ let roundMe = function(min,max){
 	return val;
 };
 
-let scientific = (val, orMax) => {
-	let om = m.orderMag(val);
+const scientific = (val, orMax) => {
+	let om = orderMag(val);
 	let face = val / pow(10,om);
 	while(face >= 10){
 		face /= 10;
 		om += 1;
 	}
 
-	let maxV = max(om - orMax + 1, 0);
-	let f = min(firstNonNull(face), maxV);
+	let maxV = Math.max(om - orMax + 1, 0);
+	let f = Math.min(firstNonNull(face), maxV);
 
 	return {base: face.toFixed(f), power: om};
 };
 
-let suffixe = (order) => {
+const suffixe = (order) => {
 	let num = order % 3 === 0 ? order : (order - 1) % 3 === 0 ? order - 1 : order - 2;
 	return {
 		num, 
@@ -85,8 +83,8 @@ let suffixe = (order) => {
 	};
 };
 
-let natural = (val, orMax) => {
-	let om = m.orderMag(val);
+const natural = (val, orMax) => {
+	let om = orderMag(val);
 	let { num, string } = suffixe(om);
 	let base = val / pow(10, num);
 	while(base >= 1e3){
@@ -95,34 +93,33 @@ let natural = (val, orMax) => {
 		string = suffixe(om).string;
 	}
 
-	let maxV = max(om - orMax + 1, 0);
+	let maxV = Math.max(om - orMax + 1, 0);
 	let comp = firstNonNull(base);
-	let f = min(comp, maxV);
+	let f = Math.min(comp, maxV);
 
 	return base.toFixed(f) + string;
 };
 
-let labelFromType = (type, dist) => {
+const labelFromType = (type, dist) => {
 
 	switch(type){
 		case 'sci':
-			return (val) => scientific(val, m.orderMag(dist));
+			return (val) => scientific(val, orderMag(dist));
 		case 'nat':
-			return (val) => natural(val, m.orderMag(dist));
+			return (val) => natural(val, orderMag(dist));
 		default:
 			return () => false;
 	}
 };
 
 // distance methods
-m.orderMag = function(r){
+export function orderMag(r){
 	if(r < 0){
 		r = -r;
 	}
 	return (r === 0) ? 0 : floor( log(r) / LN10);
-};
-
-m.orderMagValue = m.orderMagDist = function(max,min){
+}
+export function orderMagValue (max,min){
 
 	// zero case treated right away
 	if(min * max < 0){
@@ -132,50 +129,54 @@ m.orderMagValue = m.orderMagDist = function(max,min){
 	let absMax = max < 0 ? Math.abs(min) : max;
 	let fac = max < 0 ? -1 : 1;
 	return fac * roundMe(absMin,absMax);
-};
+}
 
-m.roundUp = function(r){
+export function orderMagDist(max, min){
+	return orderMagValue(max, min);
+}
+
+export function roundUp(r){
 	let step = (val) => {
 		switch(firstDigit(val)){
 			case 2:
-				return 5 * pow(10,m.orderMag(cand));
+				return 5 * pow(10, orderMag(cand));
 			default:
 				return 2 * cand;
 		}
 		
 	};
-	let cand = pow(10,m.orderMag(r));
+	let cand = pow(10, orderMag(r));
 	while(cand <= r){
 		cand = step(cand);
 	}
 
-	let test = cand * pow(10,-m.orderMag(cand)); // between 0 and 1
+	let test = cand * pow(10, -orderMag(cand)); // between 0 and 1
 	if(test > 6){
-		cand = pow(10,m.orderMag(cand) + 1);
+		cand = pow(10, orderMag(cand) + 1);
 	}
 	return cand;
-};
+}
 
-m.roundDown = function(r){
-	let step = 5 * pow(10,m.orderMag(r) - 1);
-	let cand = firstDigit(r) * pow(10,m.orderMag(r));
+export function roundDown(r){
+	let step = 5 * pow(10, orderMag(r) - 1);
+	let cand = firstDigit(r) * pow(10, orderMag(r));
 	while(cand >= r){
 		cand -= step;
 	}
 
 	return cand;
-};
+}
 
 // value methods
-m.closestRoundUp = function(ref,dist){
+export function closestRoundUp(ref,dist){
 
 	if(ref < 0){
-		return - m.closestRoundDown(-ref,dist);
+		return - closestRoundDown(-ref,dist);
 	}
 
-	let refOm = m.orderMag(ref);
+	let refOm = orderMag(ref);
 	let start = pow(10,refOm) * firstDigit(ref);
-	let or = m.orderMag(ref - start)  - m.orderMag(dist);
+	let or = orderMag(ref - start)  - orderMag(dist);
 	if(or > 2){
 		start = pow(10,refOm) * firstDigit(ref,or - 2);
 	}
@@ -183,17 +184,17 @@ m.closestRoundUp = function(ref,dist){
 		start += dist;
 	}
 	return start;
-};
+}
 
-m.closestRoundDown = function(ref,dist){
+export function closestRoundDown(ref,dist){
 
-	let om = m.orderMag(dist);
+	let om = orderMag(dist);
 
 	if(ref < 0){
-		return - m.closestRoundUp(-ref,om);
+		return - closestRoundUp(-ref,om);
 	}
 
-	let refOm = m.orderMag(ref);
+	let refOm = orderMag(ref);
 	let start = pow(10,refOm) * firstDigit(ref);
 	if(refOm !== om){
 		while(start < ref){
@@ -206,65 +207,65 @@ m.closestRoundDown = function(ref,dist){
 	}
 
 	return start;
-};
+}
 
 // value & distance methods
-m.closestRound = (ref,om,type) => (type === 'up')? m.closestRoundUp(ref,om):m.closestRoundDown(ref,om);
+export function closestRound(ref,om,type){ return (type === 'up') ? closestRoundUp(ref,om) : closestRoundDown(ref,om); }
 
-m.min          = (values) => min.apply(null,values);
+export function min(values){ return Math.min.apply(null,values);}
 
-m.max          = (values) => max.apply(null,values);
+export function max(values){ return Math.max.apply(null,values);}
 
-m.label        = (value, useless, fac) => (value / fac).toFixed(1);
+export function label(value, useless, fac){ return (value / fac).toFixed(1);}
 
-m.multiply     = (d,f) => d * f;
+export function multiply(d,f){ return d * f;}
 
-m.divide       = (d,f) => d / f;
+export function divide(d,f){ return d / f;}
 
-m.increase     = (d1,d2) => d1 + d2;
+export function increase(d1,d2){ return d1 + d2;}
 
-m.offset       = (/*d*/) => 0;
+export function offset(/*d*/){ return 0;}
 
-m.add          = (d1,d2) => d1 + d2;
+export function add(d1,d2){ return d1 + d2;}
 
-m.subtract     = (d1,d2) => d1 - d2;
+export function subtract(d1,d2){ return d1 - d2;}
 
-m.distance     = (d1,d2) => abs(d1 - d2);
+export function distance(d1,d2){ return abs(d1 - d2);}
 
-m.greaterThan  = (v1,v2) => v1 > v2;
+export function greaterThan(v1,v2){ return v1 > v2;}
 
-m.lowerThan    = (v1,v2) => v1 < v2;
+export function lowerThan(v1,v2){ return v1 < v2;}
 
-m.equal        = (v1,v2) => v1 === v2;
+export function equal(v1,v2){ return v1 === v2;}
 
 // some management
-m.extraTicks = () => [];
+export function extraTicks(){ return [];}
 
-m.getValue = m.value = m.step = (v) => v;
+export function getValue(v){ return v;}
+export function value(v){ return getValue(v);}
+export function step(v){ return getValue(v);}
 
-m.isValidStep = (v) => v !== null && v !== undefined;
+export function isValidStep(v){ return v !== null && v !== undefined;}
 
-m.smallestStep = () => 1;
+export function smallestStep(){ return 1;}
 
 // management
-m.labelize     = (type, dist) => labelFromType(type, dist);
+export function labelize(type, dist){ return labelFromType(type, dist);}
 
 //
-m.defaultSpan  = () => 10;
+export function defaultSpan(){ return 10;}
 
-m.labelF = 0.75;
+export const labelF = 0.75;
 
-m.type = 'number';
+export const type = 'number';
 
-m.isZero = (v) => v < 1e-15;
+export function isZero(v){ return v < 1e-15;}
 
-m.autoFactor = function(ma,mi){
-  let orMax = m.orderMag(ma);
-  let orMin = m.orderMag(mi);
-  let a = min(orMax, orMin);
-  let b = max(orMax, orMin);
+export function autoFactor(ma,mi){
+  let orMax = orderMag(ma);
+  let orMin = orderMag(mi);
+  let a = Math.min(orMax, orMin);
+  let b = Math.max(orMax, orMin);
   
   return b - a < 3 ? pow(10,a) : pow(10,b);
-};
-
-module.exports = m;
+}

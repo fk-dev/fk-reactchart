@@ -1,8 +1,8 @@
-let React = require('react');
+import React from 'react';
 
-let Dot = require('./Dot.jsx');
-let Bar = require('./Bar.jsx');
-let Square = require('./Square.jsx');
+import Dot from './Dot.jsx';
+import Bar from './Bar.jsx';
+import Square from './Square.jsx';
 
 let imUtils = require('../core/im-utils.js');
 
@@ -47,9 +47,9 @@ class Mark extends React.Component {
 
 	render(){
 		return this.props.state.pin ? <g>
-			{this.mark(this.props.state)}
+			{this.mark(this.props.state.mark)}
 			{this.pin(this.props.state.pin)}
-		</g> : this.mark(this.props.state);
+		</g> : this.mark(this.props.state.mark);
 	}
 }
 

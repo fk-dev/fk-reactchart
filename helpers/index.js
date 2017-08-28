@@ -1,1 +1,1 @@
-module.exports = require('../src/helpers.js');
+export * from '../src/helpers.js';

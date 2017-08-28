@@ -1,6 +1,5 @@
-let React = require('react');
-
-let imUtils = require('./core/im-utils.js');
+import React from 'react';
+import { isEqual } from './core/im-utils.js';
 
 /*
 	{
@@ -18,10 +17,10 @@ let imUtils = require('./core/im-utils.js');
 	}
 */
 
-class Background extends React.Component {
+export default class Background extends React.Component {
 
 	shouldComponentUpdate(props){
-		return !imUtils.isEqual(props.state,this.props.state);
+		return !isEqual(props.state,this.props.state);
 	}
 
 	render(){
@@ -33,5 +32,3 @@ class Background extends React.Component {
 
 	}
 }
-
-module.exports = Background;

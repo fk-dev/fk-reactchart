@@ -1,35 +1,37 @@
-let date = require('./dateMgr.js');
-let nbr  = require('./nbrMgr.js');
-
-let m ={};
+import * as date from './dateMgr.js';
+import * as nbr from './nbrMgr.js';
 
 let isPeriod = function(v){
 	let out = false;
 	for(let t in {years: true, 	months: true, weeks: true, days: true}){
-		out = out || !m.isNil(v[t]);
+		out = out || !isNil(v[t]);
 	}
 	return out;
 };
 
-m.math = require('./mathMgr.js');
+export { misc as math } from './mathMgr.js';
 
-m.isDate = (v) => !!v && (v instanceof Date || isPeriod(v));
+export function isDate(v){ return !!v && (v instanceof Date || isPeriod(v));}
 
-m.isArray = (v) => !!v && Array.isArray(v);
+export function isArray(v){ return !!v && Array.isArray(v);}
 
-m.isString = (v) => !!v && typeof v === 'string';
+export function isString(v){ return !!v && typeof v === 'string';}
 
-m.isNil = (v) => v === null || v === undefined;
+export function isNil(v){ return v === null || v === undefined;}
 
-m.isValidNumber = (r) => !m.isNil(r) && !isNaN(r) && isFinite(r);
+export function isValidNumber(r){ return !isNil(r) && !isNaN(r) && isFinite(r);}
 
-m.isValidParam = (p) => m.isDate(p) || m.isString(p) || m.isValidNumber(p);
+export function isValidParam(p){ return isDate(p) || isString(p) || isValidNumber(p);}
 
-m.deepCp = function(tgt,thing){
+export function deepCp(tgt,thing){
+
+	if(isNil(thing)){
+		return tgt;
+	}
 
 	if(typeof thing === 'object'){
 		if(!tgt || typeof tgt !== 'object'){
-			if(m.isArray(thing)){
+			if(isArray(thing)){
 				tgt = [];
 			}else if(thing instanceof Date){
 				tgt = new Date(thing.getTime());
@@ -40,27 +42,27 @@ m.deepCp = function(tgt,thing){
 			}
 		}
 		for(let t in thing){
-			tgt[t] = m.deepCp(tgt[t],thing[t]);
+			tgt[t] = deepCp(tgt[t],thing[t]);
 		}
 	}else{
 		tgt = thing;
 	}
 	return tgt;
-};
+}
 
-m.mgr = (ex) => m.isDate(ex) ? date : nbr;
+export function mgr(ex){ return isDate(ex) ? date : nbr;}
 
-m.homothe = function(src,tgt,fac,val){
-	let t = m.isDate(tgt) ? date.getValue(tgt) : tgt;
-	let v = m.isDate(val) ? date.getValue(val) : val;
-	let s = m.isDate(src) ? date.getValue(src) : src;
+export function homothe(src,tgt,fac,val){
+	let t = isDate(tgt) ? date.getValue(tgt) : tgt;
+	let v = isDate(val) ? date.getValue(val) : val;
+	let s = isDate(src) ? date.getValue(src) : src;
 	let sol = t + (v - s) * fac;
-  return ( m.isDate(tgt) ) ? new Date(sol) : sol ;
-};
+  return ( isDate(tgt) ) ? new Date(sol) : sol ;
+}
 
-m.toValue = (val) => m.isDate(val) ? date.getValue(val) : val;
+export function toValue(val){ return isDate(val) ? date.getValue(val) : val;}
 
-m.direction = function(line, ds){
+export function direction(line, ds){
 		// line is AC
 		//
 		//             C
@@ -79,7 +81,7 @@ m.direction = function(line, ds){
 
 		let hor = '-1';
 		let ver = '-1';
-		if(!!ds){
+		if(ds){
 			// 0: left, 1: right
 			hor = Math.abs(line.end.x - ds.x.c.min) < Math.abs(ds.x.c.max - line.end.x) ? '0' : '1';
 			// 0: bottom, 1: top
@@ -88,9 +90,7 @@ m.direction = function(line, ds){
 
 		return {x: AB, y: BC, line: distSqr(line.end,line.start), corner: hor + ver};
 
-};
+}
 
 // to make proper period objects
-m.makePeriod = date.makePeriod;
-
-module.exports = m;
+export function makePeriod(p){ return date.makePeriod(p);}

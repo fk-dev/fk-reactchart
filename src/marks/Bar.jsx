@@ -1,7 +1,7 @@
-let React = require('react');
-let dataScale = require('../core/space-transf.js');
-let utils = require('../core/utils.js');
-let imUtils = require('../core/im-utils.js');
+import React from 'react';
+import { toCwidth as _toCwidth, toC as _toC} from '../core/space-transf.js';
+import { isNil, mgr as typeMgr } from '../core/utils.js';
+import { isEqual } from '../core/im-utils.js';
 
 /*
 	{
@@ -26,10 +26,10 @@ let imUtils = require('../core/im-utils.js');
 	}
 */
 
-class BarMark extends React.Component {
+export default class BarMark extends React.Component {
 
 	shouldComponentUpdate(props){
-		return !imUtils.isEqual(props.state,this.props.state);
+		return !isEqual(props.state,this.props.state);
 	}
 
 	render() {
@@ -37,8 +37,8 @@ class BarMark extends React.Component {
 		let { state, css, gIdx } = this.props;
 
 		let mgr = {
-			x: utils.mgr(state.position.x),
-			y: utils.mgr(state.position.y)
+			x: typeMgr(state.position.x),
+			y: typeMgr(state.position.y)
 		};
 
 		let ds = state.ds;
@@ -46,24 +46,24 @@ class BarMark extends React.Component {
 		let position = state.position;
 
 		let span = {
-			x: utils.isNil(state.span.x) ? 0 : state.span.x,
-			y: utils.isNil(state.span.y) ? 0 : state.span.y 
+			x: isNil(state.span.x) ? 0 : state.span.x,
+			y: isNil(state.span.y) ? 0 : state.span.y 
 		};
 
 		let drop = {
-			x: utils.isNil(state.drop.x) ? state.position.x : state.drop.x,
-			y: utils.isNil(state.drop.y) ? state.position.y : state.drop.y 
+			x: isNil(state.drop.x) ? state.position.x : state.drop.x,
+			y: isNil(state.drop.y) ? state.position.y : state.drop.y 
 		};
 
 		let toC = (dir) => {
 			let op = dir === 'y' ? 'add' : 'subtract';
-			return dataScale.toC(ds[dir], mgr[dir][op](position[dir],mgr[dir].divide(span[dir],2))); // all in dataSpace
+			return _toC(ds[dir], mgr[dir][op](position[dir],mgr[dir].divide(span[dir],2))); // all in dataSpace
 		};
 
 		let x = toC('x');
 		let y = toC('y');
 
-		let toCwidth = (dir) => dataScale.toCwidth(ds[dir], mgr[dir].add(mgr[dir].distance(drop[dir],position[dir]), span[dir]));
+		let toCwidth = (dir) => _toCwidth(ds[dir], mgr[dir].add(mgr[dir].distance(drop[dir],position[dir]), span[dir]));
 
 		let height = toCwidth('y');
 		let width  = toCwidth('x');
@@ -86,5 +86,3 @@ class BarMark extends React.Component {
 		return <rect className={'mark mark-' + gIdx} x={x} y={y} {...rProps}/>; 
 	}
 }
-
-module.exports = BarMark;

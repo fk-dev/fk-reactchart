@@ -1,9 +1,9 @@
-let React = require('react');
-let Bins = require('./Bins.jsx');
-let Mark = require('../marks/Mark.jsx');
-let _ = require('underscore');
+import React from 'react';
+import Bins from './Bins.jsx';
+import Mark from '../marks/Mark.jsx';
+import { map } from 'underscore';
 
-let imUtils = require('../core/im-utils.js');
+import { isEqual } from '../core/im-utils.js';
 
 /*
 	{
@@ -13,10 +13,10 @@ let imUtils = require('../core/im-utils.js');
 	}
 */
 
-class StairsChart extends React.Component {
+export default class StairsChart extends React.Component {
 
 	shouldComponentUpdate(props) {
-		return !imUtils.isEqual(props.state,this.props.state);
+		return !isEqual(props.state,this.props.state);
 	}
 
 	render(){
@@ -25,9 +25,7 @@ class StairsChart extends React.Component {
 		let { marks, path, markType } = state;
 		return marks.length === 0 ? <Bins {...opts} state={path} /> : <g>
 			<Bins {...opts} state={path} />
-			{_.map(marks, (point) => <Mark {...opts} key={point.key} state={point} type={markType}/>)}
+			{map(marks, (point) => <Mark {...opts} key={point.key} state={point} type={markType}/>)}
 			</g>;
 	}
 }
-
-module.exports = StairsChart;

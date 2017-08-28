@@ -1,8 +1,8 @@
-let React = require('react');
+import React from 'react';
 
-let _ = require('underscore');
-let space = require('../core/space-transf.js');
-let imUtils = require('../core/im-utils.js');
+import { map  } from 'underscore';
+import { toC } from '../core/space-transf.js';
+import { isEqual } from '../core/im-utils.js';
 
 /*
 	 {
@@ -28,10 +28,10 @@ let imUtils = require('../core/im-utils.js');
 	}
 */
 
-class Path extends React.Component {
+export default class Path extends React.Component {
 
 	shouldComponentUpdate(props) {
-		return !imUtils.isEqual(props.state,this.props.state);
+		return !isEqual(props.state,this.props.state);
 	}
 
 
@@ -47,11 +47,11 @@ class Path extends React.Component {
 		let pos = state.positions;
 		let drops = state.drops;
 
-		let coord = (idx) => space.toC(ds.x,pos[idx].x) + ',' + space.toC(ds.y, pos[idx].y);
+		let coord = (idx) => toC(ds.x,pos[idx].x)   + ',' + toC(ds.y, pos[idx].y);
 
-		let dropx = (idx) => space.toC(ds.x,drops[idx].x) + ',' + space.toC(ds.y, pos[idx].y);
+		let dropx = (idx) => toC(ds.x,drops[idx].x) + ',' + toC(ds.y, pos[idx].y);
 
-		let dropy = (idx) => space.toC(ds.x,pos[idx].x) + ',' + space.toC(ds.y, drops[idx].y);
+		let dropy = (idx) => toC(ds.x,pos[idx].x)   + ',' + toC(ds.y, drops[idx].y);
 
 		let points = 'M ' + coord(0);
 		for(let i = 1; i < state.positions.length; i++){
@@ -79,14 +79,14 @@ class Path extends React.Component {
 		let shade = state.shade;
 
 		if(state.dropLine.y){
-			dropLines = _.map(state.positions,(pos,idx) => {
+			dropLines = map(state.positions,(pos,idx) => {
 				let path = 'M ' + coord(idx) + ' L ' + dropy(idx);
 				let key = state.key + '.dl.' + idx;
 				return <path key={key} d={path} stroke={color} strokeWidth={width} opacity={shade}/>;
 			});
 		}
 		if(state.dropLine.x){
-			dropLines = _.map(state.positions,(pos,idx) => {
+			dropLines = map(state.positions,(pos,idx) => {
 				let path = 'M ' + coord(idx) + ' L ' + dropx(idx);
 				let key = state.key + '.dl.' + idx;
 				return <path key={key} d={path} stroke={color} strokeWidth={width} opacity={shade}/>;
@@ -110,5 +110,3 @@ class Path extends React.Component {
 	}
 
 }
-
-module.exports = Path;

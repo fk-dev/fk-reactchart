@@ -1,6 +1,6 @@
-let React = require('react');
-let dataScale = require('../core/space-transf.js');
-let imUtils = require('../core/im-utils.js');
+import React from 'react';
+import { toC } from '../core/space-transf.js';
+import { isEqual } from '../core/im-utils.js';
 
 /*
 	{
@@ -22,18 +22,18 @@ let imUtils = require('../core/im-utils.js');
 	}
 */
 
-class DotMark extends React.Component {
+export default class DotMark extends React.Component {
 
 	shouldComponentUpdate(props){
-		return !imUtils.isEqual(props.state,this.props.state);
+		return !isEqual(props.state,this.props.state);
 	}
 
 	render(){
 		let { css, gIdx, state } = this.props;
 		let { ds, position, size, color, radius, fill, shade, width } = state;
 
-		let x = dataScale.toC(ds.x,position.x);
-		let y = dataScale.toC(ds.y,position.y);
+		let x = toC(ds.x,position.x);
+		let y = toC(ds.y,position.y);
 		let r = radius || size;
 		let f = fill || color;
 
@@ -42,5 +42,3 @@ class DotMark extends React.Component {
 		return <circle className={'mark mark-' + gIdx} cx={x} cy={y} {...cProps}/>;
 	}
 }
-
-module.exports = DotMark;

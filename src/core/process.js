@@ -1,10 +1,9 @@
-let _ = require('underscore');
-let space = require('./space-mgr.js');
-let utils = require('./utils.js');
-let gProps = require('./proprieties.js');
-let vm = require('./VMbuilder.js');
-let im = require('./im-utils.js');
-let legender = require('./legendBuilder.jsx');
+import { uniq, map, pluck, find, each, filter } from 'underscore';
+import { spaces } from './space-mgr.js';
+import * as utils from './utils.js';
+import * as gProps from './proprieties.js';
+import { cadreVM, backgroundVM, foregroundVM, titleVM, axesVM, curvesVM } from './VMbuilder.js';
+import { vm as legendVM } from './legendBuilder.jsx';
 
 let preprocessAxis = function(props){
 
@@ -46,8 +45,8 @@ let preprocessAxis = function(props){
 	// axis depends on data,
 	// where are they?
 	let axis = {
-		abs: _.uniq(_.map(_.pluck(props.data, 'abs'), (e) => utils.isNil(e) ? 'bottom' : e.axis || 'bottom')),
-		ord: _.uniq(_.map(_.pluck(props.data, 'ord'), (e) => utils.isNil(e) ? 'left'	 : e.axis || 'left')),
+		abs: uniq(map(pluck(props.data, 'abs'), (e) => utils.isNil(e) ? 'bottom' : e.axis || 'bottom')),
+		ord: uniq(map(pluck(props.data, 'ord'), (e) => utils.isNil(e) ? 'left'	 : e.axis || 'left')),
 	};
 
 	// default
@@ -70,7 +69,7 @@ let postprocessAxis = function(props){
 			let dataW = props.data[id][type] && props.data[id][type].axis ? props.data[id][type].axis :
 				type === 'abs' ? 'bottom' : 'left';
 			if(dataW === where){
-				serie = serie.concat(_.pluck(props.data[id].series, type === 'abs' ? 'x' : 'y'));
+				serie = serie.concat(pluck(props.data[id].series, type === 'abs' ? 'x' : 'y'));
 			}
 		}
 
@@ -114,7 +113,7 @@ let postprocessAxis = function(props){
 					axisProps.factor = 1;
 				}
 			}else{
-				axisProps.factor = 1;
+				axisProps.factor = axisProps.factor || 1;
 			}
 		}
 
@@ -137,10 +136,10 @@ let defaultTheProps = function(props){
 		fullprops.graphProps[idx].mark = false;
 	};
 
-	if(_.find(props.data, (data) => data.type === 'Pie')){
-		_.each(fullprops.axisProps.abs, (ax) => { ax.show = false; });
-		_.each(fullprops.axisProps.ord, (ax) => { ax.show = false; });
-		_.each(props.data, (d,idx) => d.type === 'Pie' ? noMark(idx) : null);
+	if(find(props.data, (data) => data.type === 'Pie')){
+		each(fullprops.axisProps.abs, (ax) => { ax.show = false; });
+		each(fullprops.axisProps.ord, (ax) => { ax.show = false; });
+		each(props.data, (d,idx) => d.type === 'Pie' ? noMark(idx) : null);
 	}
 
 	// data & graphProps
@@ -172,12 +171,12 @@ let def = (point,locdir) => {
 	};
 
 	// if dir is specified, only this dir, if not, both
-	return _.map(serie, (point) => dir ? def(point,dir) : after ? def(def(point,'x'), 'y') : point);
+	return map(serie, (point) => dir ? def(point,dir) : after ? def(def(point,'x'), 'y') : point);
 };
 
 let copySerie = function(serie){
 
-	return _.map(serie, (point,idx) => {
+	return map(serie, (point,idx) => {
 	let xstr = utils.isString(point.x);
 	let ystr = utils.isString(point.y);
 	let raw = {
@@ -253,7 +252,7 @@ let addOffset = function(series,stacked){
 
 	for(let i = 0 ; i < series.length; i++){
 
-		_.each(series[i],(point) => {
+		each(series[i],(point) => {
 			if(utils.isNil(point.offset)){
 				point.offset = {};
 			}
@@ -266,7 +265,7 @@ let addOffset = function(series,stacked){
 				case 'x':
 					// init xoffset
 					if(xoffset.length === 0){
-						xoffset = _.map(series[i], () => 0 );
+						xoffset = map(series[i], () => 0 );
 					}else{
 						if(xoffset.length !== series[i].length){
 							throw new Error('Stacked data needs to be of same size (x dir)!!');
@@ -278,14 +277,14 @@ let addOffset = function(series,stacked){
 						ensure(series[i][j],'drop');
 						series[i][j].drop.x = 0;
 						ensure(series[i][j],'span');
-						writeIfUndef(series[i][j].span,'y',span(_.pluck(series[i],'y'),j));
+						writeIfUndef(series[i][j].span,'y',span(pluck(series[i],'y'),j));
 						xoffset[j] += series[i][j].x;
 					}
 					break;
 				case 'y':
 						// init yoffset
 					if(yoffset.length === 0){
-						yoffset = _.map(series[i],function(/*point*/){return 0;});
+						yoffset = map(series[i],function(/*point*/){return 0;});
 					}else{
 						if(yoffset.length !== series[i].length){
 							throw new Error('Stacked data needs to be of same size (y dir)!!');
@@ -297,7 +296,7 @@ let addOffset = function(series,stacked){
 						ensure(series[i][k],'drop');
 						series[i][k].drop.y = 0;
 						ensure(series[i][k],'span');
-						writeIfUndef(series[i][k].span,'x',span(_.pluck(series[i],'x'),k));
+						writeIfUndef(series[i][k].span,'x',span(pluck(series[i],'x'),k));
 						yoffset[k] += series[i][k].y;
 					}
 					break;
@@ -329,7 +328,7 @@ let spanSer = (barType) => {
 			if(utils.isNil(serie.offset[othdir])){
 				serie.offset[othdir] = othmgr.step(0);
 			}
-			_.each(series[s], (point) => {
+			each(series[s], (point) => {
 				point.span = point.span || {};
 				point.span[dir] = serie.span;
 				point.offset = point.offset || {};
@@ -350,7 +349,7 @@ let spanSer = (barType) => {
 	let n = 0;
 	let out = [];
 	let oidx = [];
-		_.each(series, (serie,idx) => {
+		each(series, (serie,idx) => {
 			if(data[idx].type === barType){
 				out[idx] = serie.length ? spanify(serie, data[idx]) : {};
 				oidx[idx] = n;
@@ -358,7 +357,7 @@ let spanSer = (barType) => {
 			}
 		});
 
-		_.each(out, (serie,idx) => serie ? spanDiv(serie,n,idx,oidx[idx]) : null );
+		each(out, (serie,idx) => serie ? spanDiv(serie,n,idx,oidx[idx]) : null );
 	};
 
 	spanSer('Bars');
@@ -407,15 +406,22 @@ let offStairs = function(serie,gprops){
 	}
 };
 
-let m = {};
+export { defaultTheProps };
 
-m.defaultTheProps = defaultTheProps;
-
-m.process = function(rawProps){
+export function process(getNode, rawProps, getMgr){
 
 	let props = defaultTheProps(utils.deepCp({},rawProps));
 
-	let raw = _.pluck(props.data,'series');
+	let raw = pluck(props.data,'series');
+
+	let acti = map(filter(props.graphProps, (g) => g.show), (l,i) => i);
+	let filterData = (series) => {
+		let out = [];
+		for(let i = 0; i < acti.length; i++){
+			out.push(series[acti[i]]);
+		}
+		return out;
+	};
 
 	let state = {};
 	let lOffset = [];
@@ -423,17 +429,17 @@ m.process = function(rawProps){
 	// empty
 	if(!validate(raw,props.discard)){
 
-		state.series = _.map(props.data, (/*ser*/) => [] );
+		state.series = map(props.data, (/*ser*/) => [] );
 
 	}else{
 			// data depening on serie, geographical data only
-		state.series = _.map(raw, (serie) => copySerie(serie) );
+		state.series = map(raw, (serie) => copySerie(serie) );
 			// offset from stacked
-		addOffset(state.series, _.map(props.data, (ser) => ser.stacked ));
+		addOffset(state.series, map(props.data, (ser) => ser.stacked ));
 			// span and offset from Bars || yBars
-		makeSpan(state.series, _.map(props.data, (ser,idx) => {return {type: ser.type, span: props.graphProps[idx].span};}));
+		makeSpan(state.series, map(props.data, (ser,idx) => {return {type: ser.type, span: props.graphProps[idx].span};}));
 			// offset from Stairs
-		lOffset = _.map(props.data, (p,idx) => p.type === 'Stairs' ? offStairs(state.series[idx],props.graphProps[idx]) : null);
+		lOffset = map(props.data, (p,idx) => p.type === 'Stairs' ? offStairs(state.series[idx],props.graphProps[idx]) : null);
 
 	}
 
@@ -453,12 +459,12 @@ m.process = function(rawProps){
 	let ord = utils.isArray(props.axisProps.ord) ? props.axisProps.ord : [props.axisProps.ord];
 
 	// let's look for labels given in the data
-	_.each(props.data, (dat,idx) => {
+	each(props.data, (dat,idx) => {
 	let locObDir = {x: 'abs', y: 'ord'};
 	let ser = state.series[idx];
 		for(let u in locObDir){
 			let dir = locObDir[u];
-			let locAxis = _.find(props.axisProps[dir], (ax) => ax.placement === dat[dir].axis);
+			let locAxis = find(props.axisProps[dir], (ax) => ax.placement === dat[dir].axis);
 				for(let p = 0; p < ser.length; p++){
 				let point = ser[p];
 					if(point.label[u]){
@@ -495,7 +501,7 @@ m.process = function(rawProps){
 
 	// span and offet pointwise
 	// drops if required and not given (default value)
-	_.each(state.series, (serie,idx) => {
+	each(state.series, (serie,idx) => {
 	let dir;
 		switch(props.data[idx].type){
 			case 'Bars':
@@ -512,7 +518,7 @@ m.process = function(rawProps){
 		addDefaultDrop(serie,dir);
 	});
 
-	let data = _.map(state.series,(ser,idx) => {
+	let data = map(filterData(state.series),(ser,idx) => {
 		return {
 			series: ser,
 			phantomSeries: props.data[idx].phantomSeries,
@@ -539,10 +545,10 @@ m.process = function(rawProps){
 	}
 
 	// space = {dsx, dsy}
-	state.spaces = space.spaces(data,universe,borders,title);
+	state.spaces = spaces(data,universe,borders,title);
 
 	// defaut drops for those that don't have them
-	state.series = _.map(state.series, (serie,idx) => {
+	state.series = map(state.series, (serie,idx) => {
 	let dir, ds;
 		switch(props.data[idx].type){
 			case 'Bars':
@@ -568,6 +574,9 @@ m.process = function(rawProps){
 		return addDefaultDrop(serie,dir,ds,true);
 	});
 
+////
+
+
 	//now to immutable VM
 	let imVM = {
 		width: props.width,
@@ -576,70 +585,48 @@ m.process = function(rawProps){
 	};
 
 	// 1 - cadre
-	imVM.cadre = props.cadre;
+	imVM.cadre = cadreVM.create(() => getNode().cadre, props.cadre);
 
 	// 2 - background
-	imVM.background = {
-		color: props.background || 'none',
-		spaceX:{
-			min: Math.min.apply(null,_.map(state.spaces.x,(ds) => ds ? ds.c.min :  1e6 )),
-			max: Math.max.apply(null,_.map(state.spaces.x,(ds) => ds ? ds.c.max : -1e6 ))
-		},
-		spaceY:{
-			min: Math.min.apply(null,_.map(state.spaces.y,(ds) => ds ? ds.c.min : 1e6  )),
-			max: Math.max.apply(null,_.map(state.spaces.y,(ds) => ds ? ds.c.max : -1e6 ))
-		}
-	};
+	imVM.background = backgroundVM.create(() => getNode().background, { background: props.background, spaces: state.spaces });
 
 	// 3 - foreground
-	imVM.foreground = props.foreground || {};
-	imVM.foreground.cx		 = imVM.foreground.cx			|| 0;
-	imVM.foreground.cy		 = imVM.foreground.cy			|| 0;
-	imVM.foreground.width  = imVM.foreground.width	|| 0;
-	imVM.foreground.height = imVM.foreground.height || 0;
-	imVM.foreground.ds		 = {
-		x: state.spaces.x.bottom,
-		y: state.spaces.y.left
-	};
+	imVM.foreground = foregroundVM.create(() => getNode().foreground, { foreground: props.foreground, spaces: state.spaces });
 
 	// 4 - Title
-	imVM.title = {
+	imVM.title = titleVM.create(() => getNode().title, {
 		title: props.title,
 		FSize: props.titleFSize,
 		width: props.width,
 		// as of now, it's not used
 		height: props.height,
 		placement: 'top'
-	};
+	});
 
 	// 5 - Axes
-	imVM.axes = {
-		css: props.css,
-		abs: vm.abscissas(props,state),
-		ord: vm.ordinates(props,state)
-	};
+	imVM.axes = axesVM.create(() => getNode().axes, { props, state});
 
 	// 6 - Curves
-	imVM.curves = vm.curves(props,state);
+	imVM.curves = curvesVM.create(() => getNode().curves, { props, state } );
 
 	// 7 - legend
-	imVM.legend = () => legender(props);
+	imVM.legend = legendVM.create(getMgr, { props } );
 
-	return im.freeze(imVM,props.freeze);
+	return imVM;
 
-};
+}
 
-m.processLegend = function(rawProps){
+export function processLegend(rawProps){
 	let props = defaultTheProps(utils.deepCp({},rawProps));
 	// data depening on serie, geographical data only
-	props.data = _.map(props.data, (dat,idx) =>  {
+	props.data = map(props.data, (dat,idx) =>  {
 		return {
 		type: rawProps.data[idx].type,
 		series: copySerie(dat.series)
 		};
 	});
 
-	return legender(props);
-};
+	let out = legendVM.create(() => {}, props);
 
-module.exports = m;
+	return out;
+}
