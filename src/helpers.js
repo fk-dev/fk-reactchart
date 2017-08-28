@@ -1,27 +1,23 @@
-let core = require('./core/process.js');
-let utils = require('./core/utils.js');
-let space = require('./core/space-transf.js');
-let legender = require('./core/legendBuilder.jsx');
+import { process, defaultTheProps } from './core/process.js';
+import { freeze } from './core/im-utils.js';
+import { deepCp, isNil } from './core/utils.js';
+import { toC } from './core/space-transf.js';
+import * as manip from './core/data-manip.js';
 
-let letters = 'azertyuiopqsdfghjklmwxcvbnAZERTYUIOPQSDFGHJKLMWXCVBN';
-let rnd = () => letters.charAt(Math.floor(Math.random() * letters.length));
+const letters = 'azertyuiopqsdfghjklmwxcvbnAZERTYUIOPQSDFGHJKLMWXCVBN';
+const rnd = () => letters.charAt(Math.floor(Math.random() * letters.length));
 
-let m = {};
+export function init(rawProps,type){
 
-m.init = function(rawProps,type){
-
-	let props = rawProps || {};
-	props.freeze = type;
-
-	let freezer = core.process(props,true);
-	props = core.defaultTheProps(utils.deepCp({},props));
+	let props;
+	let freezer;
 
 	let updatee = {};
 
 	// super quick, should not be needed to be strong
 	let genKey = () => {
 		let key = rnd() + rnd();
-		while(!utils.isNil(updatee[key])){
+		while(!isNil(updatee[key])){
 			key = rnd() + rnd();
 		}
 		return key;
@@ -37,43 +33,33 @@ m.init = function(rawProps,type){
 		}
 	};
 
-	let remove = (idx) => {
-		// raw
-		props.data.splice(idx,1);
-		props.graphProps.splice(idx,1);
-		// freezer
-		freezer.get().curves.splice(idx,1);
-	};
-
-	let addition = (data,graphp) => {
-		// raw
-		props.data.push(data);
-		props.graphProps.push(graphp);
-		// freezer
-		rc.reinit(props);
-	};
-
 	let rc = {};
+	//
+	props = defaultTheProps(deepCp({},rawProps));
+	props.freeze = type;
+	freezer = freeze(process(() => freezer.get(), props, () => rc));
+	freezer.on('update',updateDeps);
 
-	rc.defaults = (p) => core.defaultTheProps(p || props);
+	rc.defaults = (p) => defaultTheProps(p || props);
 
-	rc.props = () => freezer.get();
+	rc.props = rc.get = () => freezer.get();
+	rc.unprocessedProps = () => props;
+
+	rc.legend = () => freezer.get().legend;
 
 	rc.mgr = () => freezer;
 
 	rc.toC = (point) => {
 		return {
-			x: space.toC(point.ds.x,point.position.x),
-			y: space.toC(point.ds.y,point.position.y)
+			x: toC(point.ds.x,point.position.x),
+			y: toC(point.ds.y,point.position.y)
 		};
 	};
 
   rc.__preprocessed = true;
 
-	rc.legend = () => legender(props);
-
   rc.updateGraph = (obj, key) => {
-		if(utils.isNil(key)){
+		if(isNil(key)){
 			key = genKey();
 		}
 		if(!updatee[key]){
@@ -81,22 +67,33 @@ m.init = function(rawProps,type){
 		}
 	};
 
-	rc.reinit = (newProps) => {
+	rc.reinit = (newProps, type) => {
 		newProps = newProps || props;
-		props = utils.deepCp({},newProps);
-		freezer = core.process(props);
-		props = core.defaultTheProps(utils.deepCp({},props));
-		freezer.on('update',() => updateDeps());
+		props   = defaultTheProps(deepCp({},newProps));
+		props.freeze = type;
+		freezer = freeze(process(() => freezer.get(), props));
+		freezer.on('update', updateDeps);
 		updateDeps();
 	};
 
-	rc.delCurve = remove;
-	rc.addCurve = addition;
+	rc.delCurve = (idx) => manip.remove(idx, { props, mgr: rc });
+	rc.addCurve = (data, graphp) => manip.add({data,graphp}, {props, mgr: rc});
 
-	freezer.on('update',() => updateDeps());
+	rc.dynamic = {
+		remove: {
+			curve: rc.delCurve,
+			mark: (cidx,midx) => manip.removeMark(cidx, midx, {props, mgr: rc})
+		},
+		add: {
+			curve: rc.addCurve,
+			mark: (cidx,midx, position) => manip.removeMark(cidx, midx, position,  {props, mgr: rc})
+		},
+		hide: {
+			curve: (idx) => manip.hide(idx, { props, mgr: rc}),
+			mark:  (cidx,midx) => manip.hideMark(cidx, midx, {props, mgr: rc}) 
+		}
+	};
 
 	return rc;
 
-};
-
-module.exports = m;
+}
