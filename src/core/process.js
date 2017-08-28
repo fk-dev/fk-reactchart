@@ -414,7 +414,7 @@ export function process(getNode, rawProps, getMgr){
 
 	let raw = pluck(props.data,'series');
 
-	let acti = map(filter(props.graphProps, (g) => g.show), (l,i) => i);
+	let acti = filter(map(props.graphProps, (g,idx) => g.show ? idx : null), (l) => l);
 	let filterData = (series) => {
 		let out = [];
 		for(let i = 0; i < acti.length; i++){
