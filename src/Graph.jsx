@@ -45,9 +45,10 @@ class Legend extends Graph {
 			};
 
 			let cs = (cell) => cell.icon.props.faded ? 'fade-chart' : '';
+      let clicker = (cell) => this.props.noMarkClick ? null : () => cell.click(this.sh);
 
-			let icon  = (cell) => <td key={`i.${cell.label}`} className={cs(cell)} style={iconP(cell)} onClick={() => cell.click(this.sh)}>{cell.icon.icon(cell.icon.props)}</td>;
-			let label = (cell) => <td key={cell.label} className={cs(cell)} onClick={() => cell.click(this.sh)}>{cell.label}</td>;
+			let icon  = (cell) => <td key={`i.${cell.label}`} className={cs(cell)} style={iconP(cell)} onClick={clicker(cell)}>{cell.icon.icon(cell.icon.props)}</td>;
+			let label = (cell) => <td key={cell.label} className={cs(cell)} onClick={clicker(cell)}>{cell.label}</td>;
 
 			let fill = () => {
 				let out = [];
