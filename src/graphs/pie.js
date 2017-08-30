@@ -20,7 +20,7 @@ export let vm = {
 
 		let labels = [];
 		if(props.tag.show){
-			labels = map(serie, (val) => props.tag.print(val.tag));
+			labels = map(serie, (val) => props.tag.print(val));
 		}
 
 		let maxR = Math.min( toCwidth(ds.x,ds.x.d.max - ds.x.d.min) / 2, toCwidth(ds.y,ds.y.d.max - ds.y.d.min) / 2);

@@ -66,7 +66,7 @@ const pin = function(get, { pos, tag, ds }) {
 
 	let path = 'M ' + mpos.x + ',' + mpos.y + ' L ' + (mpos.x + pl.x) + ',' + (mpos.y - pl.y) + ' L ' + lpos.x + ',' + lpos.y;
 	return {
-		label: tag.print(pos.tag),
+		label: tag.print(pos),
 		labelAnc: anchor.top || anchor.bottom ? 'middle' : anchor.left ? 'start' : 'end',
 		labelFS: tag.fontSize,
 		x: lpos.x,

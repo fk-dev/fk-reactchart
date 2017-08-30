@@ -96,7 +96,7 @@ graph.common = () => {
 		process: null, //playing with data {dir: x || y, type: 'histogram'}
 		tag: {
 			show: false, // show the tag
-			print: (t) => t + '',
+			print: (p) => p.tag,
 			fontSize: 10,
 			pin: false, // show the pin
 			pinColor: 'black', // color of the pin
@@ -140,7 +140,7 @@ graph.Pie = graph.pie = () => extend(graph.common(),{
 	pieToreRadius: 0, // 0: no hole, 1 : no border!
 	tag: {
 		show: false, // show the tag
-		print: (t) => t + '',
+		print: (p) => p.tag,
 		pin: false, // show the pin
 		pinColor: 'black', // color or the pin
 		pinLength: 0.35, // 10 px as pin length
