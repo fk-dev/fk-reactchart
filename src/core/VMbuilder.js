@@ -232,22 +232,26 @@ export let foregroundVM = {
 			return null;
 		}
 
-		let { cx, cy, width, height } = foreground;
-
-		cx     = defaultTo(cx,0);
-		cy     = defaultTo(cy,0);
-		width  = defaultTo(width,0);
-		height = defaultTo(height,0);
+		let fore = Array.isArray(foreground) ? foreground : [ foreground ];
+		each(fore, f => {
+			let { cx, cy, width, height } = f;
+			cx     = defaultTo(cx,0);
+			cy     = defaultTo(cy,0);
+			width  = defaultTo(width,0);
+			height = defaultTo(height,0);
+			extend(f,{ cx, cy, width, height });
+		});
 
 		let { x, y } = spaces;
 		let { bottom } = x;
 		let { left }   = y;
-		return extend(foreground, { cx, cy, width, height, 
+		return {
 			ds: {
 				x: bottom,
 				y: left
-			}
-		});
+			},
+			fore
+		};
 	}
 };
 
