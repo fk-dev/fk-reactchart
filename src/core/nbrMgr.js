@@ -212,9 +212,29 @@ export function closestRoundDown(ref,dist){
 // value & distance methods
 export function closestRound(ref,om,type){ return (type === 'up') ? closestRoundUp(ref,om) : closestRoundDown(ref,om); }
 
-export function min(values){ return Math.min.apply(null,values);}
+export function min(values){ 
+	if(values.length < 50001){
+		return Math.min.apply(null,values);
+	}else{
+		let m = values[0];
+		for(let i = 1; i < values.length; i++){
+			m = m > values[i] ? values[i] : m ;
+		}
+		return m;
+	}
+}
 
-export function max(values){ return Math.max.apply(null,values);}
+export function max(values){ 
+	if(values.length < 50001){
+		return Math.max.apply(null,values);
+	}else{
+		let m = values[0];
+		for(let i = 1; i < values.length; i++){
+			m = m < values[i] ? values[i] : m ;
+		}
+		return m;
+	}
+}
 
 export function label(value, useless, fac){ return (value / fac).toFixed(1);}
 

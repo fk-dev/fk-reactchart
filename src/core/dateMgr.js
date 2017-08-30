@@ -352,9 +352,29 @@ export function closestRoundDown(ref,per){ return closestDown(ref, roundPeriod(p
 
 export function closestRound(ref,om,type){ return type === 'up' ? closestRoundUp(ref,om) : closestRoundDown(ref,om);}
 
-export function min(dates){ return utc(new Date(Math.min.apply(null, map(dates, (date) => date.getTime() ))));}
+export function min(dates){ 
+	if(dates.length < 50001){
+		return utc(new Date(Math.min.apply(null, map(dates, (date) => date.getTime() ))));
+	}else{
+		let m = dates[0];
+		for(let i = 1; i < dates.length; i++){
+			m = m.getTime() > dates[i].getTime() ? dates[i] : m ;
+		}
+		return utc(m);
+	}
+}
 
-export function max(dates){ return utc(new Date(Math.max.apply(null, map(dates, (date) => date.getTime()))));}
+export function max(dates){ 
+	if(dates.length < 50001){
+		return utc(new Date(Math.max.apply(null, map(dates, (date) => date.getTime()))));
+	}else{
+		let m = dates[0];
+		for(let i = 1; i < dates.length; i++){
+			m = m.getTime() < dates[i].getTime() ? dates[i] : m ;
+		}
+		return utc(m);
+	}
+}
 
 export function label(date,period){
 	let format = fetchFormat(period);
