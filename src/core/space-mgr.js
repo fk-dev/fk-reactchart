@@ -3,9 +3,10 @@
  *
  * ds is { c : {min, max}, d: {min,max}}
  */
-import { find, flatten, map, extend, filter } from 'underscore';
+import { find, flatten, map, extend, filter, pluck } from 'underscore';
 import * as utils from './utils.js';
 import { defMargins } from './proprieties.js';
+import * as errorMgr from './errorMgr.js';
 
 /* universe is {width , height}, this
  * is the total size of the svg picture.
@@ -85,7 +86,7 @@ import { defMargins } from './proprieties.js';
  * the cs/ds correspondance is found with:
  *    universe - marginsO - marginsI = datas
  */
-const space = function(datas,universe,borders,title){
+const space = function(datas,universe,borders,title, exData){
 		// if no data, we don't waste time
 		if(datas.length === 0){
 			return null;
@@ -223,7 +224,7 @@ const space = function(datas,universe,borders,title){
 
 		let allValues = flatten(datas);
 
-		let mgr = allValues.length === 0 ? utils.mgr(5) : utils.mgr(allValues[0]);
+		let mgr = allValues.length === 0 ? utils.mgr(exData) : utils.mgr(allValues[0]);
 
 	// either data defined or explicitely defined
 		let minVals = (vals) => {
@@ -248,10 +249,10 @@ const space = function(datas,universe,borders,title){
 			max: maxVals(allValues)
 		};
 		// empty graph
-		if(!isFinite(bounds.min)){
+		if(!isFinite(bounds.min) || utils.isNil(bounds.min)){
 			bounds.min = mgr.value(0);
 		}
-		if(!isFinite(bounds.max)){
+		if(!isFinite(bounds.max) || utils.isNil(bounds.max)){
 			bounds.max = mgr.value(4);
 		}
 
@@ -419,16 +420,36 @@ export function spaces(datas,universe,borders,title){
 		// copy/expand
 		bor[w] = extend(extend({},border[ob[w]]), {min: mins[w], max: maxs[w]});
 	}
+
+  let findType = (types) => {
+    let ty;
+    for(let u = 0; u < types.length; u++){
+      if(types[u].type){
+        if(ty && ty !== 'error' && types[u].type !== ty){
+          errorMgr(`Types of ${types} are not consistent! Check your props.`);
+          ty = 'error';
+        }else{
+          ty = types[u].type;
+        }
+      }
+    }
+    // number in case of error or nothing
+    return ty === 'date' ? new Date() : 5 ;
+  };
 	
+  let typeData = {
+    x: findType(flatten(pluck(datas,'abs'))),
+    y: findType(flatten(pluck(datas,'ord'))),
+  };
 
 	return {
 		y: {
-			left:  space(lefts, universe.height,bor.left,title),
-			right: space(rights,universe.height,bor.right,title)
+			left:  space(lefts, universe.height,bor.left,title, typeData.y),
+			right: space(rights,universe.height,bor.right,title, typeData.y)
 		}, 
 		x: {
-			bottom: space(bottom,universe.width,bor.bottom),
-			top:    space(top,   universe.width,bor.top)
+			bottom: space(bottom,universe.width,bor.bottom, null, typeData.x),
+			top:    space(top,   universe.width,bor.top, null, typeData.x)
 		}
 	};
 }
