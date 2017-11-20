@@ -39,7 +39,7 @@ npm install git+ssh://git@github.com/fundkis/reactchart.git
 
 Let's start with a minimal example:
 
-```
+```javascript
 let React = require('react');
 let Chart = require('reactchart');
 
@@ -90,7 +90,7 @@ The _data_ proprieties contains the numerical description of the
 graphic, basically what should be shown. It is an array as one
 graphic may contain several data.
 
-```
+```javascript
 data: [{
 	series: [{x, y, value, label: {x, y}, tag, legend		}], // the data points
     type: 'Plain' or 'Bars' or ..., // type of graph
@@ -157,7 +157,7 @@ several values, the first value given is the default value.
 
 Note that in most browsers, an **undefined** color is equivalent to black.
 
-```
+```javascript
 graphProps: [{
 	color: 'black' or 'blue' or '#1F456C' or ..., // any color
 	width: 1, // any number
@@ -233,7 +233,7 @@ length, angle, and hook. The tag itself is given by a _tag_ propriety in the dat
 React Chart supports two possible axis for the abscissa and the ordinate: at the
 top of the bottom of the chart for the abscissa, left or right for the ordinate.
 Thus the following description:
-```
+```javascript
 {
 	ticks: {
 		major: {
