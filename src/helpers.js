@@ -65,6 +65,8 @@ export function init(rawProps,type){
 		if(!updatee[key]){
 			updatee[key] = obj;
 		}
+
+		return key;
 	};
 
 	rc.reinit = (newProps, type) => {

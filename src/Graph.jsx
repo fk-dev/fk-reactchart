@@ -21,7 +21,7 @@ export default class Graph extends React.Component {
 		}else{
 			this.sh = init(pr);
 		}
-		this.sh.updateGraph(this);
+		this.myKey = this.sh.updateGraph(this, this.myKey);
 	}
 
 	render(){
