@@ -421,12 +421,12 @@ export function spaces(datas,universe,borders,title){
 		bor[w] = extend(extend({},border[ob[w]]), {min: mins[w], max: maxs[w]});
 	}
 
-  let findType = (types) => {
+  let findType = (types, pl) => {
     let ty;
     for(let u = 0; u < types.length; u++){
-      if(types[u].type){
+      if(types[u].type && pl === types[u].axis){
         if(ty && ty !== 'error' && types[u].type !== ty){
-          errorMgr(`Types of ${types} are not consistent! Check your props.`);
+          errorMgr(`Types of ${JSON.stringify(types)} are not consistent for axis at ${pl} placement! Check your props.`);
           ty = 'error';
         }else{
           ty = types[u].type;
@@ -438,18 +438,24 @@ export function spaces(datas,universe,borders,title){
   };
 	
   let typeData = {
-    x: findType(flatten(pluck(datas,'abs'))),
-    y: findType(flatten(pluck(datas,'ord'))),
+    x: {
+      bottom: findType(flatten(pluck(datas,'abs')), 'bottom'),
+      top:    findType(flatten(pluck(datas,'abs')), 'top')
+    },
+    y: {
+      left:  findType(flatten(pluck(datas,'ord')), 'left'),
+      right: findType(flatten(pluck(datas,'ord')), 'right')
+    }
   };
 
 	return {
 		y: {
-			left:  space(lefts, universe.height,bor.left,title, typeData.y),
-			right: space(rights,universe.height,bor.right,title, typeData.y)
+			left:  space(lefts, universe.height,bor.left,title, typeData.y.left),
+			right: space(rights,universe.height,bor.right,title, typeData.y.right)
 		}, 
 		x: {
-			bottom: space(bottom,universe.width,bor.bottom, null, typeData.x),
-			top:    space(top,   universe.width,bor.top, null, typeData.x)
+			bottom: space(bottom,universe.width,bor.bottom, null, typeData.x.bottom),
+			top:    space(top,   universe.width,bor.top, null, typeData.x.top)
 		}
 	};
 }
