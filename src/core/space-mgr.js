@@ -6,7 +6,7 @@
 import { find, flatten, map, extend, filter, pluck } from 'underscore';
 import * as utils from './utils.js';
 import { defMargins } from './proprieties.js';
-import * as errorMgr from './errorMgr.js';
+import { errorMgr } from './errorMgr.js';
 
 /* universe is {width , height}, this
  * is the total size of the svg picture.
