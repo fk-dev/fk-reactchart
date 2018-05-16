@@ -1,1 +1,1 @@
-export function errorMgr(){}
+export function errorMgr(a){return console.log(a);}

@@ -17,13 +17,13 @@ export default class Axes extends React.Component {
 	}
 
 	abscissa(){
-		let css = this.props.state.css;
-		return map(this.props.state.abs, (p) => {return p.show ? <Axe className='xAxis' key={p.key} css={css} state={p}/> : null;});
+		const css = this.props.state.css;
+		return map(this.props.state.abs, (p) => p.show ? <Axe className='xAxis' key={p.key} css={css} state={p}/> : null);
 	}
 
 	ordinate(){
-		let css = this.props.state.css;
-		return map(this.props.state.ord, (p) => {return p.show ? <Axe className='yAxis' key={p.key} css={css} state={p}/> : null;});
+		const css = this.props.state.css;
+		return map(this.props.state.ord, (p) => p.show ? <Axe className='yAxis' key={p.key} css={css} state={p}/> : null);
 	}
 
 	render(){

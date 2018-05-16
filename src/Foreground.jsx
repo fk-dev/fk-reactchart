@@ -13,19 +13,19 @@ export default class Foreground extends React.Component {
 		if(isNil(state.content)){
 			return null;
 		}
-		let wxc = isNil(state.x) ? isNil(state.ix) ? (state.cx - state.width / 2)  + this.props.pWidth / 2 : //pixels
+		const wxc = isNil(state.x) ? isNil(state.ix) ? (state.cx - state.width / 2)  + this.props.pWidth / 2 : //pixels
 			fromPic(ds.x, state.ix) : // implicit system
 				toC(ds.x, state.x); // data space
-		let wyc = isNil(state.y) ? isNil(state.iy) ? (state.cy + state.height / 2) + this.props.pHeight / 2 : //pixels
+		const wyc = isNil(state.y) ? isNil(state.iy) ? (state.cy + state.height / 2) + this.props.pHeight / 2 : //pixels
 			fromPic(ds.y, state.iy) : // implicit
 				toC(ds.y, state.y);
-		let trans = 'translate(' + wxc + ',' + wyc + ')';
+		const trans = 'translate(' + wxc + ',' + wyc + ')';
 		return <g key={`fore.${i}`} transform={trans}>{state.content()}</g>;
 	}
 
 	render(){
-		let { state } = this.props;
-		let renderAll = () => {
+		const { state } = this.props;
+		const renderAll = () => {
 			let out = [];
 			for(let i = 0; i < state.fore.length; i++){
 				out.push(this.renderOne(state.fore[i], state.ds, i));

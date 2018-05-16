@@ -34,24 +34,24 @@ class Legend extends Graph {
 
 	table(){
 
-		let nCol = this.props.col || 1;
+		const nCol = this.props.col || 1;
 
-		let tabline = (cells,idx) => {
+		const tabline = (cells,idx) => {
 
-			let iconP = (cell) => {
+			const iconP = (cell) => {
 				return {
 					width: cell.icon.props.width
 				};
 			};
 
-			let cs = (cell) => cell.icon.props.faded ? 'fade-chart' : '';
-      let clicker = (cell) => this.props.noMarkClick ? null : () => cell.click(this.sh);
+			const cs = (cell) => cell.icon.props.faded ? 'fade-chart' : '';
+      const clicker = (cell) => this.props.noMarkClick ? null : () => cell.click(this.sh);
 
-			let icon  = (cell) => <td key={`i.${cell.label}`} className={cs(cell)} style={iconP(cell)} onClick={clicker(cell)}>{cell.icon.icon(cell.icon.props)}</td>;
-			let label = (cell) => <td key={cell.label} className={cs(cell)} onClick={clicker(cell)}>{cell.label}</td>;
+			const icon  = (cell) => <td key={`i.${cell.label}`} className={cs(cell)} style={iconP(cell)} onClick={clicker(cell)}>{cell.icon.icon(cell.icon.props)}</td>;
+			const label = (cell) => <td key={cell.label} className={cs(cell)} onClick={clicker(cell)}>{cell.label}</td>;
 
-			let fill = () => {
-				let out = [];
+			const fill = () => {
+				const out = [];
 				for(let i = 0; i < cells.length; i++){
 					out.push(icon(cells[i]));
 					out.push(label(cells[i]));
@@ -62,7 +62,7 @@ class Legend extends Graph {
 			return <tr key={idx}>{fill()}</tr>;
 		};
 
-		let gmap = (tab, oneLine) => {
+		const gmap = (tab, oneLine) => {
 			let out = [];
 			let line = [];
 			let j = 0;
@@ -89,17 +89,17 @@ class Legend extends Graph {
 
 	line(){
 		
-		let print = (l,idx) => {
+		const print = (l,idx) => {
 			// a little depth to the icon
 			// a little space to breathe
 			// here to avoid use of CSS, easyness of use
 			// for a third party
-			let margin = {
+			const margin = {
 				style: {
 					marginRight: '10pt'
 				}
 			};
-			let { icon } = l;
+			const { icon } = l;
 			return <span key={idx} {...margin} onClick={icon.click}>
 				<span verticalAlign='sub'>{icon.icon(icon.props)}</span>
 				<span>{l.label}</span>

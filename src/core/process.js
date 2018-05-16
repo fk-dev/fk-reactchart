@@ -5,7 +5,7 @@ import * as gProps from './proprieties.js';
 import { cadreVM, backgroundVM, foregroundVM, titleVM, axesVM, curvesVM } from './VMbuilder.js';
 import { vm as legendVM } from './legendBuilder.jsx';
 
-let preprocessAxis = function(props){
+const preprocessAxis = function(props){
 
 	// axisProps is an Array,
 	// can be given as a non array
@@ -61,9 +61,9 @@ let preprocessAxis = function(props){
 
 };
 
-let postprocessAxis = function(props){
+const postprocessAxis = function(props){
 
-	let fetchBounds = (type,where) => {
+	const fetchBounds = (type,where) => {
 		let serie = [];
 		for (let id = 0; id < props.data.length; id++){
 			let dataW = props.data[id][type] && props.data[id][type].axis ? props.data[id][type].axis :
@@ -82,7 +82,7 @@ let postprocessAxis = function(props){
 
 	};
 
-	let cores = (wa) => {
+	const cores = (wa) => {
 		switch(wa){
 			case 'left':
 			case 'right':
@@ -101,12 +101,12 @@ let postprocessAxis = function(props){
 			let axisProps = props.axisProps[ax][ia];
 
 			if(axisProps.factor === 'auto'){
-				let { max, min, mgr } = fetchBounds(ax,axisProps.placement);
+				const { max, min, mgr } = fetchBounds(ax,axisProps.placement);
 
 				if(mgr.type === 'number'){
 					axisProps.factor = mgr.autoFactor(max, min);
 					if(axisProps.factor !== 1){
-						let sax = cores(axisProps.placement);
+						const sax = cores(axisProps.placement);
 						props.factorMargin[sax] = gProps.defMargins.outer.factor[sax];
 					}
 				}else{
@@ -121,7 +121,7 @@ let postprocessAxis = function(props){
 
 };
 
-let defaultTheProps = function(props){
+const defaultTheProps = function(props){
 
 	let axis = preprocessAxis(props);
 
@@ -131,7 +131,7 @@ let defaultTheProps = function(props){
 	postprocessAxis(fullprops);
 
 	// default for pie !!!bad coding!!!, Pie should do it (how?)
-	let noMark = (idx) => {
+	const noMark = (idx) => {
 		fullprops.graphProps[idx].markType = 'pie';
 		fullprops.graphProps[idx].mark = false;
 	};
@@ -145,7 +145,7 @@ let defaultTheProps = function(props){
 	// data & graphProps
 	let dataDef = gProps.defaults('data');
 	for(let ng = 0; ng < fullprops.data.length; ng++){
-		let gprops = gProps.defaults(props.data[ng].type || 'Plain');
+		const gprops = gProps.defaults(props.data[ng].type || 'Plain');
 		fullprops.data[ng] = utils.deepCp(dataDef(props.data[ng].series), props.data[ng]);
 		fullprops.graphProps[ng] = utils.deepCp(utils.deepCp({},gprops), props.graphProps[ng]);
 	}
@@ -153,18 +153,18 @@ let defaultTheProps = function(props){
 	return fullprops;
 };
 
-let addDefaultDrop = function(serie, dir, ds, after){
+const addDefaultDrop = function(serie, dir, ds, after){
 
-let fetchDs = (d) => ds[d].bottom ? ds[d].bottom :
+	const fetchDs = (d) => ds[d].bottom ? ds[d].bottom :
 			ds[d].top ? ds[d].top :
 			ds[d].left ? ds[d].left :
 			ds[d].right ? ds[d].right : null;
 
-let defZero = (point) => utils.isDate(point[dir]) ? new Date(0) : 0 ;
+	const defZero = (point) => utils.isDate(point[dir]) ? new Date(0) : 0 ;
 
-let def = (point,locdir) => {
-	let min = ds ? fetchDs(locdir).d.min : defZero(point);
-	let raw = point;
+	const def = (point,locdir) => {
+		const min = ds ? fetchDs(locdir).d.min : defZero(point);
+		let raw = point;
 		raw.drop[locdir] = utils.isNil(raw.drop[locdir]) ? min : raw.drop[locdir];
 
 		return raw;
@@ -174,12 +174,12 @@ let def = (point,locdir) => {
 	return map(serie, (point) => dir ? def(point,dir) : after ? def(def(point,'x'), 'y') : point);
 };
 
-let copySerie = function(serie){
+const copySerie = function(serie){
 
 	return map(serie, (point,idx) => {
-	let xstr = utils.isString(point.x);
-	let ystr = utils.isString(point.y);
-	let raw = {
+		const xstr = utils.isString(point.x);
+		const ystr = utils.isString(point.y);
+		let raw = {
 			x: xstr ? idx : point.x,
 			y: ystr ? idx : point.y,
 			label: {
@@ -205,16 +205,16 @@ let copySerie = function(serie){
 	});
 };
 
-let validate = function(series,discard){
+const validate = function(series,discard){
 
 	for(let se = 0; se < series.length; se++){
 		if(utils.isNil(series[se])){
 			series[se] = [];
 		}
 		for(let p = 0; p < series[se].length; p++){
-		let px = utils.isValidNumber(series[se][p].x);
-		let py = utils.isValidNumber(series[se][p].y);
-		let pv = utils.isValidNumber(series[se][p].value);
+			const px = utils.isValidNumber(series[se][p].x);
+			const py = utils.isValidNumber(series[se][p].y);
+			const pv = utils.isValidNumber(series[se][p].value);
 			if(!pv && ( !utils.isValidParam(px) || !utils.isValidParam(py) ) ){
 				if(!discard){
 					return false;
@@ -229,22 +229,22 @@ let validate = function(series,discard){
 
 };
 
-let addOffset = function(series,stacked){
+const addOffset = function(series,stacked){
 	let xoffset = [];
 	let yoffset = [];
 
-	let span = (ser,idx) => ser.length > 1 ? idx === 0 ? Math.abs(ser[idx + 1] - ser[idx]) * 0.9:	// if first
+	const span = (ser,idx) => ser.length > 1 ? idx === 0 ? Math.abs(ser[idx + 1] - ser[idx]) * 0.9:	// if first
 		idx === ser.length - 1 ? Math.abs(ser[idx] - ser[idx - 1]) * 0.9 :	// if last
 			Math.min(Math.abs(ser[idx] - ser[idx-1]),Math.abs(ser[idx+1] - ser[idx])) * 0.9 : // if in between
 				0; // if no serie
 
-	let ensure = (obj,prop) => {
+	const ensure = (obj,prop) => {
 		if(utils.isNil(obj[prop])){ 
 			obj[prop] = {};
 		}
 	};
 
-	let writeIfUndef = (obj,prop,val) => {
+	const writeIfUndef = (obj,prop,val) => {
 		if(utils.isNil(obj[prop])){
 			obj[prop] = val;
 		}
@@ -305,11 +305,11 @@ let addOffset = function(series,stacked){
 	}
 };
 
-let makeSpan = function(series,data){
+const makeSpan = function(series,data){
 
-let spanSer = (barType) => {
+	const spanSer = (barType) => {
 
-	let makeOffset = (serie,n,s,sb) => {
+		const makeOffset = (serie,n,s,sb) => {
 			if(utils.isNil(serie.Span) || series[s].length === 0){
 				return;
 			}
@@ -317,11 +317,11 @@ let spanSer = (barType) => {
 				serie.offset = {};
 			}
 
-		let dir = barType[0] === 'y' ? 'y' : 'x';
-		let othdir = dir === 'y' ? 'x' : 'y';
+		const dir = barType[0] === 'y' ? 'y' : 'x';
+		const othdir = dir === 'y' ? 'x' : 'y';
 
-		let mgr = utils.mgr(series[s][0][dir]);
-		let othmgr = utils.mgr(series[s][0][othdir]);
+		const mgr = utils.mgr(series[s][0][dir]);
+		const othmgr = utils.mgr(series[s][0][othdir]);
 
 	// start[s] = x - span * n / 2 + sb * span => offset = (sb *	span	- span * n / 2 ) = span * (sb - n / 2 )
 			serie.offset[dir] = mgr.multiply(serie.span, sb - (n - 1) / 2);
@@ -337,18 +337,18 @@ let spanSer = (barType) => {
 			});
 		};
 
-	let spanDiv = (serie,n,idx,idxb) => {
+		const spanDiv = (serie,n,idx,idxb) => {
 			if(utils.isNil(serie.Span)){
 				return;
 			}
-		let mgr = utils.mgr(serie.span);
+			const mgr = utils.mgr(serie.span);
 			serie.span = mgr.divide(serie.span,n);
 			makeOffset(serie,n,idx,idxb);
 		};
 
-	let n = 0;
-	let out = [];
-	let oidx = [];
+		let n = 0;
+		let out = [];
+		let oidx = [];
 		each(series, (serie,idx) => {
 			if(data[idx].type === barType){
 				out[idx] = serie.length ? spanify(serie, data[idx]) : {};
@@ -368,15 +368,15 @@ let spanSer = (barType) => {
 
 };
 
-let spanify = function(serie,data){
+const spanify = function(serie,data){
 	let out = {};
 	if(utils.isNil(data.span) || data.span === 0){
 		let d;
-		let dir = (data.type[0] === 'y')?'y':'x';
-		let mgr = utils.mgr(serie[0][dir]);
+		const dir = (data.type[0] === 'y')?'y':'x';
+		const mgr = utils.mgr(serie[0][dir]);
 
 		for(let i = 1; i < serie.length; i++){
-		let dd = mgr.distance(serie[i][dir],serie[i - 1][dir]);
+		const dd = mgr.distance(serie[i][dir],serie[i - 1][dir]);
 			if(utils.isNil(d) || mgr.lowerThan(dd, d)){
 				d = mgr.multiply(dd,0.99);
 			}
@@ -392,7 +392,7 @@ let spanify = function(serie,data){
 
 // if stairs, we need an offset
 // at one boundary value
-let offStairs = function(serie,gprops){
+const offStairs = function(serie,gprops){
 	if(serie.length < 2){
 		return undefined;
 	}
@@ -416,7 +416,7 @@ export function process(getNode, rawProps, getMgr){
 
 	let acti = filter(map(props.graphProps, (g,idx) => g.show ? idx : null), (l) => !utils.isNil(l));
 
-	let filterData = (series) => {
+	const filterData = (series) => {
 		let out = [];
 		for(let i = 0; i < acti.length; i++){
 			out.push(series[acti[i]]);
@@ -445,7 +445,7 @@ export function process(getNode, rawProps, getMgr){
 	}
 
 		// so we have all the keywords
-	let marginalize = (mar) => {
+	const marginalize = (mar) => {
 		for(let m in {left: true, right: true, bottom: true, top: true}){
 			if(utils.isNil(mar[m])){
 				mar[m] = null;
@@ -597,7 +597,7 @@ export function process(getNode, rawProps, getMgr){
 	// 4 - Title
 	imVM.title = titleVM.create(() => getNode().title, {
 		title: props.title,
-		FSize: props.titleFSize,
+		titleFSize: props.titleFSize,
 		width: props.width,
 		// as of now, it's not used
 		height: props.height,
@@ -627,7 +627,5 @@ export function processLegend(rawProps){
 		};
 	});
 
-	let out = legendVM.create(() => {}, props);
-
-	return out;
+	return legendVM.create(() => {}, props);
 }

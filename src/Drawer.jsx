@@ -29,8 +29,8 @@ export default class Drawer extends React.Component {
 	}
 
 	orderAG(){
-		let { state } = this.props;
-		let { css } = state;
+		const { state } = this.props;
+		const { css } = state;
 		return state.axisOnTop === true ? <g>
 			{map(state.curves, (curve, gIdx) => grapher(curve.type,curve, {css, gIdx}))}
 			<Axes state={state.axes}/>
@@ -42,7 +42,7 @@ export default class Drawer extends React.Component {
 	}
 
 	render(){
-		let state = this.props.state;
+		const state = this.props.state;
 		return <svg width={state.width} height={state.height}>
 			{ state.cadre ? <Cadre width={state.width} height={state.height}/> : null }
 			{ state.background ? <Background state={state.background}/> : null }

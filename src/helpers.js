@@ -15,7 +15,7 @@ export function init(rawProps,type){
 	let updatee = {};
 
 	// super quick, should not be needed to be strong
-	let genKey = () => {
+	const genKey = () => {
 		let key = rnd() + rnd();
 		while(!isNil(updatee[key])){
 			key = rnd() + rnd();
@@ -23,7 +23,7 @@ export function init(rawProps,type){
 		return key;
 	};
 
-	let updateDeps = () => {
+	const updateDeps = () => {
 		for(let i in updatee){
 			if(updatee[i].forceUpdate){
 				updatee[i].forceUpdate();

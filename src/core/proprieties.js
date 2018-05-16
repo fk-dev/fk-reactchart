@@ -275,8 +275,8 @@ export function Graph(axis){
 }
 
 const type = (arr,dir) => {
-	let v = arr.length === 0 ? 0 : arr[0][dir];
-	let lab = arr.length !== 0 && arr[0].label && arr[0].label[dir];
+	const v = arr.length === 0 ? 0 : arr[0][dir];
+	const lab = arr.length !== 0 && arr[0].label && arr[0].label[dir];
 	return lab ? 'label' : v instanceof Date ? 'date' : 'number';
 };
 
