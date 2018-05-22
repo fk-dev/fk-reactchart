@@ -313,14 +313,14 @@ export function roundDown(p){ return roundPeriod(p,'down');}
 
 //m.multiply     = (p,f) => _makePeriod(moment.duration({days: processPeriod(p).total * f}));
 export function multiply(p,f){
-	let sp = processPeriod(p);
+	let sp = {};
 	for(let u in p){
 		if(u === 'offset'){
 			continue;
 		}
-		sp[u] *= f;
+		sp[u] = p[u] * f;
 	}
-	return sp;
+	return processPeriod(sp);
 }
 
 //m.divide       = (p,f) => _makePeriod(moment.duration({days: processPeriod(p).total / f}));
