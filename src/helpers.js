@@ -90,9 +90,17 @@ export function init(rawProps,type){
 			curve: rc.addCurve,
 			mark: (cidx,midx, position) => manip.removeMark(cidx, midx, position,  {props, mgr: rc})
 		},
+		toggle: {
+			curve: (idx) => manip.toggle(idx, { props, mgr: rc}),
+			mark:  (cidx,midx) => manip.toggleMark(cidx, midx, {props, mgr: rc}) 
+		},
 		hide: {
 			curve: (idx) => manip.hide(idx, { props, mgr: rc}),
 			mark:  (cidx,midx) => manip.hideMark(cidx, midx, {props, mgr: rc}) 
+		},
+		show: {
+			curve: (idx) => manip.show(idx, { props, mgr: rc}),
+			mark:  (cidx,midx) => manip.showMark(cidx, midx, {props, mgr: rc}) 
 		}
 	};
 
