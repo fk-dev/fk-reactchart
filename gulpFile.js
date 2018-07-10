@@ -16,7 +16,7 @@ var buffer     = require('vinyl-buffer');
 var rootdirname = __dirname;
 
 gulp.task('page-js', function(){
-  var headerTxt = '/* ' + new Date().getFullYear() + '- generated at ' + new Date() + '\n*/';
+  var headerTxt = '/* ' + new Date().getUTCFullYear() + '- generated at ' + new Date() + '\n*/';
   var browserifyOption = {
 	    entries: './pages/pages.js',
 	    extensions: ['.js'],
@@ -59,7 +59,7 @@ gulp.task('page-css', function(){
 /////////
 gulp.task('full', function(){
 
-  var headerTxt = '/* ' + new Date().getFullYear() + '- generated at ' + new Date() + '\n*/';
+  var headerTxt = '/* ' + new Date().getUTCFullYear() + '- generated at ' + new Date() + '\n*/';
   var browserifyOption = {
     entries: './src/Graph.jsx',
     extensions: ['.js','.jsx']
@@ -90,7 +90,7 @@ gulp.task('full', function(){
 
 gulp.task('min', function(){
 
-  var headerTxt = '/* ' + new Date().getFullYear() + '- generated at ' + new Date() + '\n*/';
+  var headerTxt = '/* ' + new Date().getUTCFullYear() + '- generated at ' + new Date() + '\n*/';
   var browserifyOption = {
     entries: './src/Graph.jsx',
     extensions: ['.js','.jsx']

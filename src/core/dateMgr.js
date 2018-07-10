@@ -213,15 +213,15 @@ let closestDown = function(date,per){
 	// start of month
 	if(per.months !== 0){
 		let month = 0;
-		while(month < date.getMonth()){
+		while(month < date.getUTCMonth()){
 			month += per.months;
 		}
 		month -= per.months;
-		return utc(new Date(date.getFullYear(),month,1));
+		return utc(new Date(date.getUTCFullYear(),month,1));
 	}
 	// start of year
 	if(per.years !== 0){
-		return utc(new Date(date.getFullYear(),0,1));
+		return utc(new Date(date.getUTCFullYear(),0,1));
 	}
 };
 
@@ -260,49 +260,49 @@ export function orderMag(dop){ return floor(log( ( dop instanceof Date ) ? dop.g
 
 export function orderMagValue(last,first){
 	// end of cur year
-	let nextfst = utc(new Date(first.getFullYear() + 1,0,0));
+	let nextfst = utc(new Date(first.getUTCFullYear() + 1,0,0));
 	if(lowerThan(nextfst,last)){
 		return nextfst;
 	}
 
 	// end of cur semester 
-	if(first.getMonth() < 7){
-		nextfst = utc(new Date(first.getFullYear(),7,0));
+	if(first.getUTCMonth() < 7){
+		nextfst = utc(new Date(first.getUTCFullYear(),7,0));
 		if(lowerThan(nextfst,last)){
 			return nextfst;
 		}
 	}
 
 	// end of cur trimester
-	let mm = first.getMonth() + 3 - first.getMonth() % 3;
-	nextfst = utc(new Date(first.getFullYear(),mm,0));
+	let mm = first.getUTCMonth() + 3 - first.getUTCMonth() % 3;
+	nextfst = utc(new Date(first.getUTCFullYear(),mm,0));
 	if(lowerThan(nextfst,last)){
 		return nextfst;
 	}
 
 	// end of cur month
-	nextfst = utc(new Date(first.getFullYear(),first.getMonth() + 1,0));
+	nextfst = utc(new Date(first.getUTCFullYear(),first.getUTCMonth() + 1,0));
 	if(lowerThan(nextfst,last)){
 		return nextfst;
 	}
 
 	// end of cur half-month
-	if(first.getDate() < 15){
-		nextfst = utc(new Date(first.getFullYear(),first.getMonth(),14));
+	if(first.getUTCDate() < 15){
+		nextfst = utc(new Date(first.getUTCFullYear(),first.getUTCMonth(),14));
 		if(lowerThan(nextfst,last)){
 			return nextfst;
 		}
 	}
 
 	// end of cur quarter-month (as 7 days)
-	let dd = first.getDate() + 7 - first.getDate() % 7 - 1;
-	nextfst = utc(new Date(first.getFullYear(),first.getMonth(),dd));
+	let dd = first.getUTCDate() + 7 - first.getUTCDate() % 7 - 1;
+	nextfst = utc(new Date(first.getUTCFullYear(),first.getUTCMonth(),dd));
 	if(lowerThan(nextfst,last)){
 		return nextfst;
 	}
 
 	// next day
-	return utc(new Date(first.getFullYear(),first.getMonth(),first.getDate() + 1));
+	return utc(new Date(first.getUTCFullYear(),first.getUTCMonth(),first.getUTCDate() + 1));
 }
 
 export function orderMagDist(r){ return _makePeriod(pow(10,orderMag(r)));}
@@ -380,7 +380,7 @@ export function label(date,period){
 	let format = fetchFormat(period);
 	let out = '';
 	if(format.pref === 'S'){
-		out = (date.getMonth() > 5)? '2/' : '1/';
+		out = (date.getUTCMonth() > 5)? '2/' : '1/';
 		out += moment(date).format('YY');
 	}else{
 		out = moment(date).format(format.string);
@@ -450,8 +450,8 @@ export function getValue(dop){ return (dop instanceof Date) ? dop.getTime() : mo
 
 export function extraTicks(step,start,end, already){
 	let out = [];
-	let startYear = start.getFullYear();
-	let lastYear = end.getFullYear();
+	let startYear = start.getUTCFullYear();
+	let lastYear = end.getUTCFullYear();
 	// every year, whatever happens
 	for(let ye = startYear; ye <= lastYear; ye++){
 		let dat = utc(new Date(ye,0,0));
