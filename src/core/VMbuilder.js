@@ -3,21 +3,21 @@ import { isNil, mgr as typeMgr } from './utils.js';
 import { shader } from './colorMgr.js';
 
 // axis
-import { vm as axisLineVM } from '../axis/axisLine.js';
-import { vm as ticksVM } from '../axis/tick.js';
+import { vm as axisLineVM } from '../axis/axis-line-vm.js';
+import { vm as ticksVM } from '../axis/tick-vm.js';
 
 // charts
-import { vm as plainVM }    from '../graphs/plain.js';
-import { vm as barChartVM } from '../graphs/barChart.js';
-import { vm as stairsVM }   from '../graphs/stairs.js';
-import { vm as pieVM }      from '../graphs/pie.js';
+import { vm as plainVM }    from '../graphs/plain-vm.js';
+import { vm as barChartVM } from '../graphs/bar-chart-vm.js';
+import { vm as stairsVM }   from '../graphs/stairs-vm.js';
+import { vm as pieVM }      from '../graphs/pie-vm.js';
 
 // marks
 import { vm as dotVM, 
-				ovm as odotVM }    from '../marks/dot.js';
+				ovm as odotVM }    from '../marks/dot-vm.js';
 import { vm as squareVM, 
-				ovm as osquareVM } from '../marks/square.js';
-import { vm as barVM }     from '../marks/bar.js';
+				ovm as osquareVM } from '../marks/square-vm.js';
+import { vm as barVM }     from '../marks/bar-vm.js';
 // pin
 import { vm as pinVM } from '../marks/pin.js';
 
