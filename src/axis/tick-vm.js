@@ -56,8 +56,18 @@ export function vm(ds,partner, bounds, dir, locProps, comFac, axisKey){
 	let majGrid  = locProps.grid.major;
 	let minGrid  = locProps.grid.minor;
 
-	// do we have labels? Only majorTicks
-	let ticksLabel = locProps.tickLabels;
+	// do we have labels? Only majorTicks, and unique labels
+	const unique = arr => {
+		let out = [];
+		for(let i = 0; i < arr.length; i++){
+			const { coord, label } = arr[i];
+			if(out.findIndex(w => w.coord === coord && w.label === label) === -1){
+				out.push(arr[i]);
+			}
+		}
+		return out;
+	};
+	const ticksLabel = unique(locProps.tickLabels);
 	// do we want the minor ticks to be computed?
 	// do we want the minor grid?
 	let minor = (minProps.show === true || locProps.grid.minor.show === true);
