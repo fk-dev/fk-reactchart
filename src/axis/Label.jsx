@@ -1,8 +1,8 @@
 import React from 'react';
 
-import { toC } from '../core/space-transf.js';
+import { toC }     from '../core/space-transf.js';
 import { isEqual } from '../core/im-utils.js';
-import { isNil } from '../core/utils.js';
+import { isNil }   from '../core/utils.js';
 
 /*
 	{
@@ -26,7 +26,7 @@ export default class Label extends React.Component {
 	}
 
 	power(label, labProps, props){
-		let { base, power } = label;
+		const { base, power } = label;
 		return <text {...props} {...labProps}>
 			<tspan>{base}</tspan>
 			{ power !== 0 ? <tspan>&#183;10</tspan> : null }
@@ -43,27 +43,29 @@ export default class Label extends React.Component {
 // label
 		// => theta = arctan(y/x) [-90,90]
 
-		let { transform, ds, position, offset, rotate, angle, dir, color, FSize, anchor, label } = this.props.state;
+		const { transform, ds, position, offset, rotate, angle, dir, color, FSize, anchor, label, howToRotate } = this.props.state;
 
-		let xL = ( transform ? toC(ds.x,position.x) : position.x ) + offset.x;
-		let yL = ( transform ? toC(ds.y,position.y) : position.y ) + offset.y;
+		const xL = ( transform ? toC(ds.x,position.x) : position.x ) + offset.x;
+		const yL = ( transform ? toC(ds.y,position.y) : position.y ) + offset.y;
 
-		let theta = isNil(angle) ? rotate ? Math.floor( Math.atan( - Math.sqrt( dir.y / dir.x ) ) * 180 / Math.PI ) : 0 : angle; // in degrees
+		const theta = isNil(angle) ? rotate ? Math.floor( Math.atan( - Math.sqrt( dir.y / dir.x ) ) * 180 / Math.PI ) : 0 : angle; // in degrees
 
-		let rotation = 'rotate(' + theta + ' ' + xL + ' ' + yL + ')';
+		const rotation = 'rotate(' + theta + ' ' + xL + ' ' + yL + ')';
 
-		let labProps = this.props.css ? null :
+		const labProps = this.props.css ? null :
 			{
 				fill: color,
 				fontSize: FSize
 			};
 
-		let props = {
+		const rotateAnchor = theta * howToRotate;
+
+		const props = {
 			className: this.props.className,
 			x: xL,
 			y: yL,
 			transform: rotation,
-			textAnchor: anchor
+			textAnchor: rotateAnchor  > 0 ? 'start' : rotateAnchor < 0 ? 'end' : anchor
 		};
 
 		return typeof label === 'string' ? <text {...props} {...labProps}>

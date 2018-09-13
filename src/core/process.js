@@ -1,4 +1,4 @@
-import { uniq, map, pluck, find, each, filter } from 'underscore';
+import { uniq, map, pluck, find, each } from 'underscore';
 import { spaces } from './space-mgr.js';
 import * as utils from './utils.js';
 import * as gProps from './proprieties.js';
@@ -7,6 +7,8 @@ import { vm as legendVM } from './legendBuilder.jsx';
 
 const preprocessAxis = function(props){
 
+
+	let def = {abs : 'bottom', ord: 'left'};
 	// axisProps is an Array,
 	// can be given as a non array
 	// empty <==> ticks.major.show === false && ticks.minor.show === false
@@ -17,6 +19,9 @@ const preprocessAxis = function(props){
 			}
 			for(let ax = 0; ax < props.axisProps[u].length; ax++){
 				let axe = props.axisProps[u][ax]; // too long
+				if((ax === 0 && axe.placement) || ['left','bottom'].indexOf(axe.placement) !== -1){
+					def[u] = axe.placement;
+				}
 				if(axe.empty){
 					if(!axe.ticks){
 						axe.ticks = {};
@@ -44,9 +49,9 @@ const preprocessAxis = function(props){
 
 	// axis depends on data,
 	// where are they?
-	let axis = {
-		abs: uniq(map(pluck(props.data, 'abs'), (e) => utils.isNil(e) ? 'bottom' : e.axis || 'bottom')),
-		ord: uniq(map(pluck(props.data, 'ord'), (e) => utils.isNil(e) ? 'left'	 : e.axis || 'left')),
+	const axis = {
+		abs: props.data ? uniq(props.data.map( e => !utils.isNil(e.abs) && e.abs.axis ? e.abs.axis : def.abs)) : [def.abs],
+		ord: props.data ? uniq(props.data.map( e => !utils.isNil(e.ord) && e.ord.axis ? e.ord.axis : def.ord)) : [def.ord],
 	};
 
 	// default
@@ -146,7 +151,7 @@ const defaultTheProps = function(props){
 	let dataDef = gProps.defaults('data');
 	for(let ng = 0; ng < fullprops.data.length; ng++){
 		const gprops = gProps.defaults(props.data[ng].type || 'Plain');
-		fullprops.data[ng] = utils.deepCp(dataDef(props.data[ng].series), props.data[ng]);
+		fullprops.data[ng] = utils.deepCp(dataDef(props.data[ng].series, axis, {abs: props.data[ng].abs, ord: props.data[ng].ord}), props.data[ng]);
 		fullprops.graphProps[ng] = utils.deepCp(utils.deepCp({},gprops), props.graphProps[ng]);
 	}
 
@@ -410,11 +415,11 @@ export { defaultTheProps };
 
 export function process(getNode, rawProps, getMgr){
 
-	let props = defaultTheProps(utils.deepCp({},rawProps));
+	const props = defaultTheProps(utils.deepCp({},rawProps));
 
-	let raw = pluck(props.data,'series');
+	const raw = props.data.map( x => x.series);
 
-	let acti = filter(map(props.graphProps, (g,idx) => g.show ? idx : null), (l) => !utils.isNil(l));
+	const acti = props.graphProps.map( (g,idx) => g.show ? idx : null).filter( l => !utils.isNil(l));
 
 	const filterData = (series) => {
 		let out = [];
@@ -434,21 +439,61 @@ export function process(getNode, rawProps, getMgr){
 
 	}else{
 			// data depening on serie, geographical data only
-		state.series = map(raw, (serie) => copySerie(serie) );
+		state.series = raw.map( serie => copySerie(serie) );
 			// offset from stacked
-		addOffset(state.series, map(props.data, (ser) => ser.stacked ));
+		addOffset(state.series, props.data.map( ser => ser.stacked ));
 			// span and offset from Bars || yBars
-		makeSpan(state.series, map(props.data, (ser,idx) => {return {type: ser.type, span: props.graphProps[idx].span};}));
+		makeSpan(state.series, props.data.map( (ser,idx) => {return {type: ser.type, span: props.graphProps[idx].span};}));
 			// offset from Stairs
-		lOffset = map(props.data, (p,idx) => p.type === 'Stairs' ? offStairs(state.series[idx],props.graphProps[idx]) : null);
+		lOffset = props.data.map( (p,idx) => p.type === 'Stairs' ? offStairs(state.series[idx],props.graphProps[idx]) : null);
 
 	}
 
+	// if we have labels, compute lengthes
+	const marginFromLabels = w => {
+		if(!props.data || !props.data.length){
+			return null;
+		}
+
+		const rotateLength = (texts, axis) => {
+			const aProps = (axis === 'left' || axis === 'right' ? props.axisProps.ord : props.axisProps.abs).find( b => b.placement === axis);
+			if(utils.isNil(aProps)){
+				return null;
+			}
+			const lengthes = utils.measure().text(texts,aProps.ticks.major.labelFSize);
+			const rotation = Math.PI * Math.max(Math.min(90, aProps.ticks.major.rotate),-90) / 180;
+			switch(axis){
+				case 'left':
+				case 'right':
+					return Math.abs(Math.cos(rotation) * lengthes.width) + Math.abs(Math.sin(rotation) * lengthes.height);
+				case 'top':
+				case 'bottom':
+					return Math.abs(Math.sin(rotation) * lengthes.width) + Math.abs(Math.cos(rotation) * lengthes.height);
+			}
+		};
+
+		switch(w){
+			case 'left':{
+				const data = props.data.reduce( (m,d) => !d.ord || !d.ord.axis || d.ord.axis === 'left' ? m.concat(d.series) : m, []).map(p => p.label ? p.label.y : null).filter(x => x);
+				return data.length ? rotateLength(data, 'left') : null;
+			}case 'right':{
+				const data = props.data.reduce( (m,d) => d.ord && d.ord.axis === 'right' ? m.concat(d.series) : m, []).map(p => p.label ? p.label.y : null).filter(x => x);
+				return data.length ? rotateLength(data, 'right'): null;
+			}case 'top':{
+				const data = props.data.reduce( (m,d) => d.abs && d.abs.axis === 'top' ? m.concat(d.series) : m, []).map(p => p.label ? p.label.x : null).filter(x => x);
+				return data.length ? rotateLength(data, 'top') : null;
+			}case 'bottom':{
+				const data = props.data.reduce( (m,d) => !d.abs || !d.abs.axis || d.abs.axis === 'bottom' ? m.concat(d.series) : m, []).map(p => p.label ? p.label.x : null).filter(x => x);
+				return data.length ? rotateLength(data, 'bottom') : null;
+			}
+		}
+	};
+
 		// so we have all the keywords
-	const marginalize = (mar) => {
+	const marginalize = (mar, label) => {
 		for(let m in {left: true, right: true, bottom: true, top: true}){
 			if(utils.isNil(mar[m])){
-				mar[m] = null;
+				mar[m] = label ? marginFromLabels(m) : null;
 			}
 		}
 
@@ -475,9 +520,10 @@ export function process(getNode, rawProps, getMgr){
 		}
 	});
 
-	let borders = {
+	const borders = {
 		ord: ord,
 		abs: abs,
+		labels:  marginalize({},true),
 		marginsO: marginalize(props.outerMargin),
 		marginsF: marginalize(props.factorMargin),
 		marginsI: marginalize(props.innerMargin),
@@ -488,17 +534,17 @@ export function process(getNode, rawProps, getMgr){
 	let obMM = {min: true, max: true};
 	for(let dir in obDir){
 		for(let type in obMM){
-		let tmp = dir + type; //xmin, xmax, ...
+		const tmp = dir + type; //xmin, xmax, ...
 			if(!utils.isNil(props[tmp])){
 				borders[obDir[dir]][0][type] = props[tmp];
 			}
 		}
 	}
 
-	let title = {title: props.title, titleFSize: props.titleFSize};
+	const title = {title: props.title, titleFSize: props.titleFSize};
 
 	// getting dsx and dsy
-	let universe = {width: props.width, height: props.height};
+	const universe = {width: props.width, height: props.height};
 
 	// span and offet pointwise
 	// drops if required and not given (default value)
@@ -519,30 +565,20 @@ export function process(getNode, rawProps, getMgr){
 		addDefaultDrop(serie,dir);
 	});
 
-	let data = map(filterData(state.series),(ser,idx) => {
+	const data = map(filterData(state.series),(ser,idx) => {
 		return {
 			series: ser,
 			phantomSeries: props.data[idx].phantomSeries,
 			stacked: props.data[idx].stacked,
 			abs: props.data[idx].abs,
 			ord: props.data[idx].ord,
-			limitOffset: (lOffset[idx]) ? lOffset[idx] : null,
+			limitOffset: lOffset[idx] ? lOffset[idx] : null,
 		};
 	});
 
 	// empty
 	if(data.length === 0){
-		data[0] = {
-			series: [{x: 42, y: 42}],
-			abs: {
-				axis: 'bottom',
-				type: 'number'
-			},
-			ord: {
-				axis: 'left',
-				type: 'number'
-			},
-		};
+		data[0] = gProps.defaults('data')([{x: 42, y: 42}], {abs: [], ord: []});
 	}
 
 	// space = {dsx, dsy}
