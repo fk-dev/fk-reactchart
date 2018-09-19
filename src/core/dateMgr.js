@@ -40,11 +40,11 @@ let processPeriod = function(per, fac){
 		}
 	}
 
-	period.total = per.total === null || per.total === undefined ? moment.duration(period).asDays() * fac : per.total;
+	period.total = per.total === null || per.total === undefined ? moment.duration(period).asDays() : per.total * fac ;
 
   period.offset = per.offset;
 
-	if(period.total > 15 && ( period.offset === null || period.offset === undefined ) ){
+	if(period.months > 0 && ( period.offset === null || period.offset === undefined ) ){
 		period.offset = true;
 	}
 
@@ -59,7 +59,7 @@ let _makePeriod = function(msOrDur){
 		weeks:  dur.weeks(),
 		days:   dur.days() - 7 * dur.weeks(),
 		total:  dur.asDays(),
-		offset: dur.asDays() > 15
+		offset: dur.months() > 0
 	};
 };
 
