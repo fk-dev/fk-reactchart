@@ -151,7 +151,7 @@ const curve = function(get, { spaces, serie, data, gprops, idx }){
 			};
 };
 
-const axis = function(props,state,axe,dir){
+const axis = function(props,state,measurer,axe,dir){
 
 	let partnerAxe = axe === 'abs' ? 'ord' : 'abs';
 	let othdir = dir === 'x' ? 'y' : 'x';
@@ -194,7 +194,7 @@ const axis = function(props,state,axe,dir){
 			show: axisProps.show,
 			key: axisKey,
 			axisLine: axisLineVM(ds,axisProps,partnerDs,dir ),
-			ticks: ticksVM(DS, partner, bounds, dir, axisProps, axisProps.factor, axisKey)
+			ticks: ticksVM(measurer, DS, partner, bounds, dir, axisProps, axisProps.factor, axisKey)
 		};
 	});
 
@@ -266,11 +266,11 @@ export let titleVM = {
 
 export let axesVM = {
 
-	create: (get, { props, state }) => {
+	create: (get, { props, state, measurer }) => {
 		return {
 			css: props.css,
-			abs: axis(props,state,'abs','x'),
-			ord: axis(props,state,'ord','y')
+			abs: axis(props,state,measurer,'abs','x'),
+			ord: axis(props,state,measurer,'ord','y')
 		};
 	}
 
