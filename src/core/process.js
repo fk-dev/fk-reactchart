@@ -156,6 +156,8 @@ const defaultTheProps = function(props){
 		fullprops.graphProps[ng] = utils.deepCp(utils.deepCp({},gprops), props.graphProps[ng]);
 	}
 
+	fullprops.__defaulted = true;
+
 	return fullprops;
 };
 
@@ -416,7 +418,7 @@ export { defaultTheProps };
 
 export function process(getNode, rawProps, getMgr){
 
-	const props = defaultTheProps(utils.deepCp({},rawProps));
+	const props = rawProps && rawProps.__defaulted ? rawProps : defaultTheProps(utils.deepCp({},rawProps));
 
 	const raw = props.data.map( x => x.series);
 
@@ -582,7 +584,7 @@ export function process(getNode, rawProps, getMgr){
 	};
 
 	// 1 - cadre
-	imVM.cadre = cadreVM.create(() => getNode().cadre, props.cadre);
+	imVM.cadre = cadreVM.create(() => getNode().cadre, { show: props.cadre.show, css: props.cadre.css, width: props.width, height: props.height});
 
 	// 2 - background
 	imVM.background = backgroundVM.create(() => getNode().background, { background: props.background, spaces: state.spaces });
