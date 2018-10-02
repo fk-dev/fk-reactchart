@@ -37,7 +37,7 @@ import { ticks } from '../core/ticker.js';
 	}
 */
 
-export function vm(measurer, ds, partner, bounds, dir, locProps, comFac, axisKey){
+export function vm(css, measurer, ds, partner, bounds, dir, locProps, comFac, axisKey, motherCss, placement){
 
 	//// general defs
 	const { measureText, lengthes } = measurer;
@@ -46,6 +46,8 @@ export function vm(measurer, ds, partner, bounds, dir, locProps, comFac, axisKey
 
 	const othdir = dir === 'x' ? 'y' : 'x';
 
+	const majCss = isNil(css.major) ? motherCss : css.major;
+	const minCss = isNil(css.minor) ? motherCss : css.minor;
 
 	// min max of the axis
 	const min  = bounds.min;
@@ -137,8 +139,9 @@ export function vm(measurer, ds, partner, bounds, dir, locProps, comFac, axisKey
 			out:
 		},
 */
-		let ticksProps = {};
-		let p = tick.minor ? minProps : majProps;
+		const p = tick.minor ? minProps : majProps;
+		const css = tick.minor ? minCss : majCss;
+		let ticksProps = {css};
 		let tmp = {
 			show: true,
 			color: true,
@@ -183,6 +186,7 @@ export function vm(measurer, ds, partner, bounds, dir, locProps, comFac, axisKey
 
 		// label
 		let labelProps = {
+			css,
 			ds: ds,
 			label:	p.labelize(tick.position, prevTick(idx), nextTick(idx)) === false ? tick.label : p.labelize(tick.position, prevTick(idx), nextTick(idx)),
 			FSize:	p.labelFSize,
@@ -280,8 +284,8 @@ export function vm(measurer, ds, partner, bounds, dir, locProps, comFac, axisKey
 			width: 
 		},
 */
-		let gridProps = {};
-		p = tick.extra ? tick.grid : tick.minor ? minGrid : majGrid;
+		let gridProps = {css};
+		const pg = tick.extra ? tick.grid : tick.minor ? minGrid : majGrid;
 		tmp = {
 			show: true,
 			color: true,
@@ -290,16 +294,18 @@ export function vm(measurer, ds, partner, bounds, dir, locProps, comFac, axisKey
 
 		const cus = tick.grid || {};
 		for(let u in tmp){
-			gridProps[u] = isNil(cus[u]) ? p[u] : cus[u];
+			gridProps[u] = isNil(cus[u]) ? pg[u] : cus[u];
 		}
 		gridProps.length = partner.length;
 
 		const tickKey = axisKey + '.t.' + idx;
 		return {
+			placement,
 			key: tickKey,
 			tick: ticksProps,
 			grid: gridProps,
-			label: labelProps
+			label: labelProps,
+			type: tick.type
 		};
 
 	});

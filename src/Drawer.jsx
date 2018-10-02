@@ -29,13 +29,12 @@ export default class Drawer extends React.Component {
 
 	orderAG(){
 		const { state } = this.props;
-		const { css } = state;
 		return state.axisOnTop === true ? <g>
-			{state.curves.map( (curve, gIdx) => grapher(curve.type,curve, {css, gIdx}))}
+			{state.curves.map( (curve, gIdx) => grapher(curve.type,curve, { gIdx }))}
 			<Axes state={state.axes}/>
 		</g> : <g>
 			<Axes state={state.axes}/>
-			{state.curves.map( (curve, gIdx) => grapher(curve.type,curve, {css, gIdx}))}
+			{state.curves.map( (curve, gIdx) => grapher(curve.type,curve, { gIdx }))}
 		</g>;
 	}
 
@@ -48,12 +47,11 @@ export default class Drawer extends React.Component {
 	render(){
 
 		const state = this.props.state || {width: 200, height: 200};
-		const { css } = state;
 
-		return <svg width={state.width} height={state.height} id={this.props.id}>
-			{ state.cadre ?      <Cadre width={state.width} height={state.height}/> : null }
+		return <svg width={state.width} height={state.height} id={this.props.id} className='reactchart'>
+			{ state.cadre.show ? <Cadre state={state.cadre}/> : null }
 			{ state.background ? <Background state={state.background}/>  : null }
-			{ state.title && state.title.title.length ? <Title css={css} state={state.title} /> : null }
+			{ state.title && state.title.title.length ? <Title state={state.title} /> : null }
 			{ state.axis || state.curves ? this.orderAG() : null}
 			{ state.foreground ? <Foreground state={state.foreground} pWidth={state.width} pHeight={state.height}/> : null }
 			{ this.empty() }

@@ -25,12 +25,12 @@ export default class Label extends React.Component {
 		return !isEqual(props.state,this.props.state);
 	}
 
-	power(label, labProps, props){
+	power(label, props){
 		const { base, power } = label;
-		return <text {...props} {...labProps}>
+		return <text {...props}>
 			<tspan>{base}</tspan>
 			{ power !== 0 ? <tspan>&#183;10</tspan> : null }
-			{ power !== 0 ? <tspan dy={-0.5 * toNumber(labProps.fontSize)}>{power}</tspan> : null }
+			{ power !== 0 ? <tspan dy={-0.5 * toNumber(props.fontSize)}>{power}</tspan> : null }
 		</text>;
 	}
 
@@ -43,7 +43,9 @@ export default class Label extends React.Component {
 // label
 		// => theta = arctan(y/x) [-90,90]
 
-		const { transform, ds, position, offset, rotate, angle, dir, color, FSize, anchor, label, howToRotate, LLength } = this.props.state;
+		const { state, className } = this.props;
+
+		const { transform, ds, position, offset, rotate, angle, dir, color, FSize, anchor, label, howToRotate, LLength, css } = state;
 
 		const xL = ( transform ? toC(ds.x,position.x) : position.x ) + offset.x;
 		const yL = ( transform ? toC(ds.y,position.y) : position.y ) + offset.y;
@@ -58,22 +60,18 @@ export default class Label extends React.Component {
 		const lx =  LLength ?  dir.x * (1 - Math.cos(alpha)) * LLength : 0;
 		const translation = lx && ly && ( Math.abs(lx) > 1 || Math.abs(ly) > 1 ) ? `translate(${lx},${2 *ly})` : ''; // projection
 
-		const labProps = this.props.css ? null :
-			{
-				fill: color,
-				fontSize: typeof FSize === 'number' ? `${FSize}pt` : FSize
-			};
-
 		const rotateAnchor = theta * howToRotate;
 
 		const props = {
-			className: this.props.className,
+			className: css ? className : '',
 			x: xL,
 			y: yL, 
 			transform: `${translation} ${rotation}`,
-			textAnchor: rotateAnchor  > 0 ? 'start' : rotateAnchor < 0 ? 'end' : anchor
+			textAnchor: rotateAnchor  > 0 ? 'start' : rotateAnchor < 0 ? 'end' : anchor,
+			fill: color,
+			fontSize: typeof FSize === 'number' ? `${FSize}pt` : FSize
 		};
 
-		return typeof label === 'string' ? <text {...props} {...labProps}>{label}</text> : this.power(label,labProps, props);
+		return typeof label === 'string' ? <text {...props}>{label}</text> : this.power(label,props);
 	}
 }

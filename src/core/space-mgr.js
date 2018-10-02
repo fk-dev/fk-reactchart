@@ -412,7 +412,7 @@ const _filter = (datas,dir) => {
 
 };
 
-export function spaces(universe, datas, axis, borders, title, lengthMgr){
+export function spaces(universe, datas, axis, borders, titleProps, lengthMgr){
 
 	const ob = {right: 'ord', left: 'ord', top: 'abs', bottom: 'abs'};
 	const getDir = w => w === 'right' || w === 'left' ? 'y' : 'x';
@@ -446,7 +446,7 @@ export function spaces(universe, datas, axis, borders, title, lengthMgr){
 		top: {
 			marginsI: borders.marginsI.top,
 			marginsF: borders.marginsF.top,
-			marginsO: borders.marginsO.top ? borders.marginsO.top : computeOuterMargin('top', limits.top, axises.top, lengthMgr, title, minVals)
+			marginsO: borders.marginsO.top ? borders.marginsO.top : computeOuterMargin('top', limits.top, axises.top, lengthMgr, titleProps, minVals)
 		},
 		bottom: {
 			marginsI: borders.marginsI.bottom,

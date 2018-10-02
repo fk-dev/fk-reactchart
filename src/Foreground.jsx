@@ -32,7 +32,7 @@ export default class Foreground extends React.Component {
 			}
 			return out;
 		};
-		return <g>
+		return <g className='foreground'>
 			{renderAll()}
 		</g>;
 	}

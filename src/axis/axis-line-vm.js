@@ -1,4 +1,4 @@
-import { direction } from '../core/utils.js';
+import { direction, isNil } from '../core/utils.js';
 
 /*
 	{
@@ -34,9 +34,11 @@ import { direction } from '../core/utils.js';
 	}
 */
 
-export function vm(ds,props,partnerDs,dir){
+export function vm(ds,props,partnerDs,dir, motherCss){
 
-	let show = props.show;
+	const { show } = props;
+
+	const css = isNil(props.css) ? motherCss : props.css;
 
 /*
 		line: {
@@ -50,14 +52,14 @@ export function vm(ds,props,partnerDs,dir){
 		},
 */
 
-	let line = {};
+	let line = { css };
 
-	let tmp = {
+	const tmp = {
 		color: true,
 		width: true
 	};
 
-	let othdir = dir === 'x' ? 'y' : 'x';
+	const othdir = dir === 'x' ? 'y' : 'x';
 	line.CS = props.CS;
 		// cart
 	line.start = {};
@@ -91,8 +93,9 @@ export function vm(ds,props,partnerDs,dir){
 		},
 */
 
-	let lineDir = direction(line);
+	const lineDir = direction(line);
 	let label = {
+		css,
 		label: props.label,
 		FSize: props.labelFSize,
 		LLength: 10,
@@ -112,11 +115,11 @@ export function vm(ds,props,partnerDs,dir){
 	};
 
 	// & anchoring the text
-	let fd = 0.25 * label.FSize; // font depth, 25 %
-	let fh = 0.75 * label.FSize; // font height, 75 %
-	let defOff = props.marginOff;
+	const fd = 0.25 * label.FSize; // font depth, 25 %
+	const fh = 0.75 * label.FSize; // font height, 75 %
+	const defOff = props.marginOff;
 
-	let offsetLab = (() => {
+	const offsetLab = (() => {
 		switch(props.placement){
 			case 'top':
 				return {
@@ -168,6 +171,7 @@ export function vm(ds,props,partnerDs,dir){
 	fds[othdir] = partnerDs;
 
 	let comFac = {
+		css,
 		factor:     props.factor,
 		offset:     props.factorOffset,
 		anchor:     props.factorAnchor,
