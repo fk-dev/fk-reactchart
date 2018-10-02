@@ -34,7 +34,10 @@ export default class Graph extends React.Component {
 		if(!this.sh){
 			this.init();
 			this.myKey = this.sh.updateGraph(this, this.myKey);
-		}
+		}else if(this.props.__preprocessed && this.props.__mgrId !== this.sh.__mgrId){
+			this.sh = this.props;
+			this.myKey = this.sh.updateGraph(this, this.myKey);
+    }
 	}
 
 	init(){
