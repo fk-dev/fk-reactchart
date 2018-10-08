@@ -502,6 +502,8 @@ export function process(getNode, rawProps, getMgr){
 		marginsO: marginalize(props.outerMargin),
 		marginsF: marginalize(props.factorMargin),
 		marginsI: marginalize(props.innerMargin),
+    abs: {min: null, max: null},
+    ord: []
 	};
 
 	// xmin, xmax...
@@ -511,7 +513,11 @@ export function process(getNode, rawProps, getMgr){
 		for(let type in obMM){
 		const tmp = dir + type; //xmin, xmax, ...
 			if(!utils.isNil(props[tmp])){
-				borders[obDir[dir]][0][type] = props[tmp];
+				if(obDir[dir] === 'abs'){
+          abs[0][type] = props[tmp];
+        }else{
+          ord[0][type] = props[tmp];
+        }
 			}
 		}
 	}

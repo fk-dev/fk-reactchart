@@ -114,17 +114,29 @@ export function measure(gid){
 
 	if(isNil(mother)){
 		return {
-			text: () => {
+			text: (txt,fs) => {
 				return {
-					width:  0, 
-					height: 0
+					width:  txt.length * toNumber(fs) * 2/3, 
+					height: toNumber(fs)
 				};
 			},
-			cadratin: () => {
+			cadratin: (props) => {
+				const { titleFSize } = props;
+
+				const places = {left: 'ord', right: 'ord', bottom: 'abs', top: 'abs'};
+
+				// axis label
+				// ticks label
+				let axisLabel = {};
+				let tickLabel = {};
+				for(let u in places){
+					axisLabel[u] = ( props.axisProps[places[u]].find(x => x.placement === u) || {labelFSize: 0}).labelFSize;
+					tickLabel[u] = ( props.axisProps[places[u]].find(x => x.placement === u) || {ticks: { major: {labelFSize: 0} } }).ticks.major.labelFSize;
+				}
 				return {
-					title: 0,
-					axisLabel: {left: 0, right: 0, top: 0, bottom: 0},
-					tickLabel: {left: 0, right: 0, top: 0, bottom: 0},
+					title: titleFSize,
+					axisLabel,
+					tickLabel
 				};
 			},
 			active
@@ -184,12 +196,12 @@ export function measure(gid){
 
 		// axis label
 		// ticks label
-			let axisLabel = {};
-			let tickLabel = {};
-			for(let u in places){
-				axisLabel[u] = getCadratin( ( props.axisProps[places[u]].find(x => x.placement === u) || {labelFSize: 0}).labelFSize, `${axe[u]}AxisLabel`);
-				tickLabel[u] = getCadratin( ( props.axisProps[places[u]].find(x => x.placement === u) || {ticks: { major: {labelFSize: 0} } }).ticks.major.labelFSize, `${axe[u]}AxisTickLabel`);
-			}
+		let axisLabel = {};
+		let tickLabel = {};
+		for(let u in places){
+			axisLabel[u] = getCadratin( ( props.axisProps[places[u]].find(x => x.placement === u) || {labelFSize: 0}).labelFSize, `${axe[u]}AxisLabel`);
+			tickLabel[u] = getCadratin( ( props.axisProps[places[u]].find(x => x.placement === u) || {ticks: { major: {labelFSize: 0} } }).ticks.major.labelFSize, `${axe[u]}AxisTickLabel`);
+		}
 
 		return {
 			title: getCadratin(titleFSize),
