@@ -22,8 +22,8 @@ export default class StairsChart extends React.Component {
 	render(){
 		const { state, gIdx } = this.props;
 		const opts = { gIdx };
-		const { marks, path, markType, css } = state;
-		return marks.length === 0 ? <Bins className={css ? 'stairs' : ''} {...opts} state={path} /> : <g className={css ? 'stairs' : ''}>
+		const { marks, path, markType} = state;
+		return marks.length === 0 ? <Bins className='stairs' {...opts} state={path} /> : <g className='stairs'>
 			<Bins {...opts} state={path} />
 			{map(marks, (point) => <Mark {...opts} key={point.key} state={point} type={markType}/>)}
 			</g>;

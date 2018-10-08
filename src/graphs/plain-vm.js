@@ -1,37 +1,38 @@
 import { isNil } from '../core/utils.js';
-import { map } from 'underscore';
 
-export let vm = {
-	create: (get, { serie, props, ds }) => {
+export const vm = {
+	create: (get, { serie, props, ds, motherCss }) => {
 
 		// easy stuff
-		let color = props.color || 'back';
-		let fill = props.fill || 'none';
-		let	width = isNil(props.width) ? 1 : props.width; // 0 is valid
-		let shade = props.shade || 1;
+		const color = props.color || 'back';
+		const fill  = props.fill || 'none';
+		const	width = isNil(props.width) ? 1 : props.width; // 0 is valid
+		const shade = props.shade || 1;
+		const css   = isNil(props.css) ? motherCss : css;
 
-		let positions = map(serie, ({ x, y }) => {
+		const positions = serie.map( ({ x, y }) => {
 			return {
 				x,
 				y
 			};
 		});
-		let drops = map(serie, ({ drop }) => {
-			let { x, y } = drop;
+		const drops = serie.map( ({ drop }) => {
+			const { x, y } = drop;
 			return {
 				x,
 				y
 			};
 		});
 
-		let clx = false;
-		let cly = fill !== 'none';
+		const clx = false;
+		const cly = fill !== 'none';
 
-		let dlx = props.dropLine.x || false;
-		let dly = props.dropLine.y || false;
+		const dlx = props.dropLine.x || false;
+		const dly = props.dropLine.y || false;
 
 		return {
 			ds,
+			css,
 			color,
 			fill,
 			shade,

@@ -35,10 +35,10 @@ export default class Mark extends React.Component {
 	}
 
 	pin(pinS){
-		const { css, gIdx } = this.props;
-		const { pinColor, path, width, labelFS, labelAnc, color } = pinS;
+		const { gIdx } = this.props;
+		const { pinColor, path, pinWidth, labelFS, labelAnc, color, css } = pinS;
 		const fontSize = typeof labelFS === 'number' ? `${labelFS}pt` : labelFS;
-		const pathProps = { strokeWidth: width, stroke: pinColor, fill: 'none'};
+		const pathProps = { strokeWidth: pinWidth, stroke: pinColor, fill: 'none'};
 		const textProps = { fontSize, fill: color } ;
 		return pinS.path ? <g>
 			<path className={css ? `pin pin-${gIdx}` : ''} {...pathProps} d={path}/>

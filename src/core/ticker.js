@@ -1,4 +1,5 @@
 import { isNil, mgr as typeMgr } from '../core/utils.js';
+import { defMargins } from './proprieties.js';
 import { map } from 'underscore';
 
 const nInterval = (length, height) => {
@@ -143,6 +144,13 @@ const computeTicks = function(first, last, step, majLabelize, minor, mStep, minL
 			tick.label = majLabelize(out,idx,mgr.label(tick.position,majDist,fac));
 		}
 	});
+	const { position, offset, label } = out[0];
+	const fl = square(label, true);
+  const labelPos = mgr.add(position,offset.along);
+	const dist = mgr.lowerThan(labelPos, first) ? -1 : mgr.getValue( mgr.distance( labelPos, first) ) * toPixel ;
+	if(dist + defMargins.outer.min < fl / 2){ // we can go a little more that the origin
+		out[0].label = '';
+	}
 
 	out = out.concat(mgr.extraTicks(majDist,first,last, out));
 	return out;
