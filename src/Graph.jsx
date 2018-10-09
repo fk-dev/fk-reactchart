@@ -6,11 +6,11 @@ import { map } from 'underscore';
 
 export default class Graph extends React.Component {
 
-	componentDidMount(){
+	componentWillMount(){
 		this.init();
 	}
 
-	componentDidReceiveProps(pr){
+	componentWillReceiveProps(pr){
 		this.init(pr);
 	}
 
@@ -25,8 +25,8 @@ export default class Graph extends React.Component {
 	}
 
 	render(){
-		const state = this.sh ? this.sh.get() : null;
-		return state ? <Drawer state={state} /> : null;
+		let state = this.sh.get();
+		return <Drawer state={state} />;
 	}
 }
 
@@ -110,7 +110,7 @@ class Legend extends Graph {
 	}
 
 	render(){
-		return this.sh ? this.props.line ? this.line() : this.table() : null;
+		return this.props.line ? this.line() : this.table();
 	}
 }
 
