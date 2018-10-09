@@ -96,49 +96,45 @@ export function direction(line, ds){
 // to make proper period objects
 export function makePeriod(p){ return date.makePeriod(p);}
 
-export function measure(gid){
+export function measure(id){
 
-	let mother =  document.getElementById(`fkchartmeasurer-${gid}`);
-
-	if(typeof document === 'undefined' || !mother){
+	if(typeof document === 'undefined'){
 		return {
-			text: () => {
-				return {
-					width:  0, 
-					height: 0
-				};
-			},
-			cadratin: () => {
-				return {
-					title: 0,
-					axisLabel: {left: 0, right: 0, top: 0, bottom: 0},
-					tickLabel: {left: 0, right: 0, top: 0, bottom: 0},
-				};
-			},
-			active: false
+			text: () => {return {width: null, height: null};},
+			measureAll: () => null,
+			drawing: () => null
 		};
 	}
 
-	const _measureText = (str, fontSize, clN) => {
+	if(!document.getElementById('fkchartmeasurer')){
+		const tmp  = document.createElement('div');
+		tmp.style.position   = 'absolute';
+		tmp.style.visibility = 'hidden';
+		tmp.style.width      = 'auto';
+		tmp.style.height     = 'auto';
+		const ttp = document.createElement('span');
+		ttp.setAttribute('id','fkchartmeasurer');
+		tmp.appendChild(ttp);
+		document.body.appendChild(tmp);
+	}
+	const mother = document.getElementById('fkchartmeasurer');
+	const anchor = document.getElementById(id);
+	if(anchor){
+		anchor.appendChild(mother);
+	}
+
+	const _measureText = (str, fontSize) => {
 		if(!str){
 			return { width: 0, height: 0};
 		}
-
-		if(clN){
-			mother.setAttribute('class', clN);
-			mother.style.fontSize = "";
-		}else{
-			mother.style.fontSize = typeof fontSize === 'number' ? `${fontSize}pt` : fontSize;
-			mother.removeAttribute('class');
-		}
+		mother.style.fontSize = `${fontSize}`;
 		mother.innerHTML = str;
-		const rect = mother.getBoundingClientRect();
-		const { width, height }  = rect;
+		const width  = mother.offsetWidth;
+		const height = mother.offsetHeight;
 		return { width, height };
 	};
 
-	const measureText = (texts,fontSize,cn) => {
-
+	const measureText = (texts,fontSize) => {
 		if(!Array.isArray(texts)){
 			texts = [texts];
 		}
@@ -149,45 +145,26 @@ export function measure(gid){
 			return {width, height};
 		};
 
-		return texts.map( str => _measureText(str,fontSize,cn )).reduce( (memo,v) => compare(memo,v) , {width: 0, height: 0});
+		return texts.map( str => _measureText(str,fontSize)).reduce( (memo,v) => compare(memo,v) , {width: 0, height: 0});
 	};
 
-	const cadratin = (props) => {
-
+	const measureAll = (props) => {
+		const { css } = props;
 		// title
-		const { titleFSize, css } = props;
+		const { titleFSize } = props;
 		
-
-		const getCadratin = (fs,cn) => _measureText('&mdash;', fs, css ? cn : null).width;
-
-		const places = {left: 'ord', right: 'ord', bottom: 'abs', top: 'abs'};
-		const axe    = {left: 'y',   right: 'y',   bottom: 'x',   top: 'x'};
-
 		// axis label
+			// x
+			// y
 		// ticks label
-			let axisLabel = {};
-			let tickLabel = {};
-			for(let u in places){
-				axisLabel[u] = getCadratin( ( props.axisProps[places[u]].find(x => x.placement === u) || {labelFSize: 0}).labelFSize, `${axe[u]}AxisLabel`);
-				tickLabel[u] = getCadratin( ( props.axisProps[places[u]].find(x => x.placement === u) || {ticks: { major: {labelFSize: 0} } }).ticks.major.labelFSize, `${axe[u]}AxisTickLabel`);
-			}
-
-		return {
-			title: getCadratin(titleFSize),
-			axisLabel,
-			tickLabel
-		};
-	};
-
-	const kill = () => {
-		mother = null;
+			// x
+			// y
 	};
 
 	return {
 		text: measureText,
-		cadratin,
-		active: true,
-		kill
+		measureAll,
+		drawing: () => null// measureDrawing
 	};
 
 }
@@ -198,16 +175,4 @@ const rnd = () => letters.charAt(Math.floor(Math.random() * letters.length));
 // 3 letters
 export function rndKey(){
 	return rnd() + rnd() + rnd();
-}
-
-// font sizes
-export function toNumber(fs){
-	let num = Number(fs);
-	let c = fs.length - 1;
-	while(isNaN(num) && c){
-		num = Number(fs.substring(0,c));
-		c--;
-	}
-
-	return isNaN(num) ? 0 : num;
 }
