@@ -212,8 +212,7 @@ const axe = {
 	label:      '',
 	labelOffset: {x: 0, y: 0},
 	labelAnchor: 'middle',
-	labelFSize:  20,
-	labelRotate: 0,
+	labelFSize: 20,
 	labelColor: 'black',
 	empty:      false,
 	CS:         'cart',
@@ -256,7 +255,6 @@ export function Graph(axis){
 		background: null,
 		title: '',
 		titleFSize: 30,
-		titleRotate: 0,
 		axisOnTop: false,
 		// margins
 		innerMargin: {left: null, bottom: null, right: null, top: null}, // left, bottom, right, top

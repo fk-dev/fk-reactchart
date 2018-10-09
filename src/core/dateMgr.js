@@ -487,7 +487,7 @@ export function smallestStep(){ return _makePeriod(moment.duration({days: 1}));}
 export function makePeriod(per){ return processPeriod(per);}
 
 // in years
-export function value(num,period){ return period ? moment.duration(num) : utc(new Date(num * 1000 * 3600 * 24 * 365));}
+export function value(num){ return utc(new Date(num * 1000 * 3600 * 24 * 365));}
 
 // in years
 export function step(num){ return _makePeriod({years: num});}

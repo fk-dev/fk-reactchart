@@ -139,7 +139,6 @@ const defaultTheProps = function(props){
 	const noMark = (idx) => {
 		fullprops.graphProps[idx].markType = 'pie';
 		fullprops.graphProps[idx].mark = false;
-		fullprops.data[idx].coordSys = 'polar';
 	};
 
 	if(find(props.data, (data) => data.type === 'Pie')){
@@ -450,11 +449,58 @@ export function process(getNode, rawProps, getMgr){
 
 	}
 
+	// if we have labels, compute lengthes
+	const marginFromLabels = w => {
+		if(!props.data || !props.data.length){
+			return null;
+		}
+
+		const rotateLength = (texts, axis) => {
+			const aProps = (axis === 'left' || axis === 'right' ? props.axisProps.ord : props.axisProps.abs).find( b => b.placement === axis);
+			if(utils.isNil(aProps)){
+				return null;
+			}
+			const lengthes = utils.measure().text(texts,aProps.ticks.major.labelFSize);
+			const rotation = Math.PI * Math.max(Math.min(90, aProps.ticks.major.rotate),-90) / 180;
+			switch(axis){
+				case 'left':
+				case 'right':
+					return Math.abs(Math.cos(rotation) * lengthes.width) + Math.abs(Math.sin(rotation) * lengthes.height);
+				case 'top':
+				case 'bottom':
+					return Math.abs(Math.sin(rotation) * lengthes.width) + Math.abs(Math.cos(rotation) * lengthes.height);
+			}
+		};
+
+		let length;
+		switch(w){
+			case 'left':{
+				const data = props.data.reduce( (m,d) => !d.ord || !d.ord.axis || d.ord.axis === 'left' ? m.concat(d.series) : m, []).map(p => p.label ? p.label.y : null).filter(x => x);
+				length = data.length ? rotateLength(data, 'left') : null;
+				break;
+			}case 'right':{
+				const data = props.data.reduce( (m,d) => d.ord && d.ord.axis === 'right' ? m.concat(d.series) : m, []).map(p => p.label ? p.label.y : null).filter(x => x);
+				length = data.length ? rotateLength(data, 'right'): null;
+				break;
+			}case 'top':{
+				const data = props.data.reduce( (m,d) => d.abs && d.abs.axis === 'top' ? m.concat(d.series) : m, []).map(p => p.label ? p.label.x : null).filter(x => x);
+				length = data.length ? rotateLength(data, 'top') : null;
+				break;
+			}case 'bottom':{
+				const data = props.data.reduce( (m,d) => !d.abs || !d.abs.axis || d.abs.axis === 'bottom' ? m.concat(d.series) : m, []).map(p => p.label ? p.label.x : null).filter(x => x);
+				length = data.length ? rotateLength(data, 'bottom') : null;
+				break;
+			}
+		}
+
+		return length;
+	};
+
 		// so we have all the keywords
-	const marginalize = mar => {
+	const marginalize = (mar, label) => {
 		for(let m in {left: true, right: true, bottom: true, top: true}){
 			if(utils.isNil(mar[m])){
-				mar[m] = null;
+				mar[m] = label ? marginFromLabels(m) : null;
 			}
 		}
 
@@ -467,30 +513,32 @@ export function process(getNode, rawProps, getMgr){
 
 	// let's look for labels given in the data
 	each(props.data, (dat,idx) => {
-		const locObDir = {x: 'abs', y: 'ord'};
-		const ser = state.series[idx];
+	let locObDir = {x: 'abs', y: 'ord'};
+	let ser = state.series[idx];
 		for(let u in locObDir){
-			const dir = locObDir[u];
-			const locAxis = find(props.axisProps[dir], (ax) => ax.placement === dat[dir].axis);
-			const mm = utils.mgr(ser[0]);
-			for(let p = 0; p < ser.length; p++){
-				const point = ser[p];
-				if(point.label[u] && locAxis.tickLabels.findIndex( l => mm.equal(l.coord,point[u]) && l.label === point.label[u]) === -1 ){
-					locAxis.tickLabels.push({coord: point[u], label: point.label[u]});
+			let dir = locObDir[u];
+			let locAxis = find(props.axisProps[dir], (ax) => ax.placement === dat[dir].axis);
+				for(let p = 0; p < ser.length; p++){
+				let point = ser[p];
+					if(point.label[u]){
+						locAxis.tickLabels.push({coord: point[u], label: point.label[u]});
+					}
 				}
-			}
 		}
 	});
 
 	const borders = {
+		ord: ord,
+		abs: abs,
+		labels:  marginalize({},true),
 		marginsO: marginalize(props.outerMargin),
 		marginsF: marginalize(props.factorMargin),
 		marginsI: marginalize(props.innerMargin),
 	};
 
 	// xmin, xmax...
-	const obDir = {x: 'abs', y: 'ord'};
-	const obMM = {min: true, max: true};
+	let obDir = {x: 'abs', y: 'ord'};
+	let obMM = {min: true, max: true};
 	for(let dir in obDir){
 		for(let type in obMM){
 		const tmp = dir + type; //xmin, xmax, ...
@@ -500,9 +548,10 @@ export function process(getNode, rawProps, getMgr){
 		}
 	}
 
-	const title = {title: props.title, titleFSize: props.titleFSize, angle: props.titleRotate};
+	const title = {title: props.title, titleFSize: props.titleFSize};
 
 	// getting dsx and dsy
+	const universe = {width: props.width, height: props.height};
 
 	// span and offet pointwise
 	// drops if required and not given (default value)
@@ -530,7 +579,6 @@ export function process(getNode, rawProps, getMgr){
 			stacked: props.data[idx].stacked,
 			abs: props.data[idx].abs,
 			ord: props.data[idx].ord,
-			coordSys: props.data[idx].coordSys,
 			limitOffset: lOffset[idx] ? lOffset[idx] : null,
 		};
 	});
@@ -541,7 +589,7 @@ export function process(getNode, rawProps, getMgr){
 	}
 
 	// space = {dsx, dsy}
-	state.spaces = spaces({width: props.width, height: props.height}, data, {abs, ord}, borders, title, getMgr());
+	state.spaces = spaces(data,universe,borders,title);
 
 	// defaut drops for those that don't have them
 	state.series = map(state.series, (serie,idx) => {
@@ -577,8 +625,7 @@ export function process(getNode, rawProps, getMgr){
 	let imVM = {
 		width: props.width,
 		height: props.height,
-		axisOnTop: props.axisOnTop,
-		css: props.css
+		axisOnTop: props.axisOnTop
 	};
 
 	// 1 - cadre
@@ -601,19 +648,19 @@ export function process(getNode, rawProps, getMgr){
 	});
 
 	// 5 - Axes
-	imVM.axes = axesVM.create(() => getNode().axes, { props, state, measurer: getMgr()});
+	imVM.axes = axesVM.create(() => getNode().axes, { props, state});
 
 	// 6 - Curves
 	imVM.curves = curvesVM.create(() => getNode().curves, { props, state } );
 
 	// 7 - legend
-	imVM.legend = legendVM.create(() => getNode().legend, { props } );
+	imVM.legend = legendVM.create(getMgr, { props } );
 
 	return imVM;
 
 }
 
-export function processLegend(getNode,rawProps){
+export function processLegend(rawProps){
 	let props = defaultTheProps(utils.deepCp({},rawProps));
 	// data depening on serie, geographical data only
 	props.data = map(props.data, (dat,idx) =>  {
@@ -623,5 +670,5 @@ export function processLegend(getNode,rawProps){
 		};
 	});
 
-	return legendVM.create(getNode, { props });
+	return legendVM.create(() => {}, props);
 }

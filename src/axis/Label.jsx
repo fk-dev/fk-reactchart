@@ -1,8 +1,8 @@
 import React from 'react';
 
-import { toC }             from '../core/space-transf.js';
-import { isEqual }         from '../core/im-utils.js';
-import { isNil, toNumber } from '../core/utils.js';
+import { toC }     from '../core/space-transf.js';
+import { isEqual } from '../core/im-utils.js';
+import { isNil }   from '../core/utils.js';
 
 /*
 	{
@@ -30,7 +30,7 @@ export default class Label extends React.Component {
 		return <text {...props} {...labProps}>
 			<tspan>{base}</tspan>
 			{ power !== 0 ? <tspan>&#183;10</tspan> : null }
-			{ power !== 0 ? <tspan dy={-0.5 * toNumber(labProps.fontSize)}>{power}</tspan> : null }
+			{ power !== 0 ? <tspan dy={-0.5 * labProps.fontSize}>{power}</tspan> : null }
 		</text>;
 	}
 
@@ -61,7 +61,7 @@ export default class Label extends React.Component {
 		const labProps = this.props.css ? null :
 			{
 				fill: color,
-				fontSize: typeof FSize === 'number' ? `${FSize}pt` : FSize
+				fontSize: FSize
 			};
 
 		const rotateAnchor = theta * howToRotate;

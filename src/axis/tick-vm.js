@@ -1,4 +1,4 @@
-import { isNil, mgr as typeMgr } from '../core/utils.js';
+import { isNil, mgr as typeMgr, measure } from '../core/utils.js';
 import { ticks } from '../core/ticker.js';
 
 /*
@@ -37,36 +37,46 @@ import { ticks } from '../core/ticker.js';
 	}
 */
 
-export function vm(measurer, ds,partner, bounds, dir, locProps, comFac, axisKey){
+export function vm(ds,partner, bounds, dir, locProps, comFac, axisKey){
 
 	//// general defs
-	const { measureText } = measurer;
-	const lengthOfText = (txt,fs) => measureText(txt,fs,`${dir}AxisTickLabel`).width;
+	const { text } = measure();
+	const lengthOfText = (txt,fs) => text(txt,fs).width;
 
-	const othdir = dir === 'x' ? 'y' : 'x';
+	let othdir = dir === 'x' ? 'y' : 'x';
 
 
 	// min max of the axis
-	const min  = bounds.min;
-	const max  = bounds.max;
+	let min  = bounds.min;
+	let max  = bounds.max;
 
 	// all ticks are computed along, we need to 
 	// know for each tick which it is
-	const majProps = locProps.ticks.major;
-	const minProps = locProps.ticks.minor;
-	const majGrid  = locProps.grid.major;
-	const minGrid  = locProps.grid.minor;
+	let majProps = locProps.ticks.major;
+	let minProps = locProps.ticks.minor;
+	let majGrid  = locProps.grid.major;
+	let minGrid  = locProps.grid.minor;
 
-	// do we have labels? Only majorTicks
-	const ticksLabel = locProps.tickLabels;
+	// do we have labels? Only majorTicks, and unique labels
+	const unique = arr => {
+		let out = [];
+		for(let i = 0; i < arr.length; i++){
+			const { coord, label } = arr[i];
+			if(out.findIndex(w => w.coord === coord && w.label === label) === -1){
+				out.push(arr[i]);
+			}
+		}
+		return out;
+	};
+	const ticksLabel = unique(locProps.tickLabels);
 	// do we want the minor ticks to be computed?
 	// do we want the minor grid?
-	const minor = (minProps.show === true || locProps.grid.minor.show === true);
+	let minor = (minProps.show === true || locProps.grid.minor.show === true);
 
 	// to have absolute lengthes
-	const toPixel = Math.abs(ds[dir].d2c);
+	let toPixel = Math.abs(ds[dir].d2c);
 		// cheat to treat height as if it's length
-	const height = dir === 'x' ? majProps.labelFSize : majProps.labelFSize * 2 / 3.5;
+	let height = dir === 'x' ? majProps.labelFSize : majProps.labelFSize * 2 / 3.5;
 
 	// step
 	let majStep = majProps.step;
@@ -167,6 +177,7 @@ export function vm(measurer, ds,partner, bounds, dir, locProps, comFac, axisKey)
 		labelProps.dir[othdir] = 0;
 		labelProps.LLength = lengthOfText(labelProps.label, labelProps.FSize);
 
+
 		const addPerp =  tick.minor ? 3.75 : 0;
 		const perpOff = isNil(p.labelOffset.perp) ? tick.offset.perp : p.labelOffset.perp ;
 		let offsetCspace = {
@@ -185,7 +196,7 @@ export function vm(measurer, ds,partner, bounds, dir, locProps, comFac, axisKey)
 		let fd = 0.25 * labelProps.FSize; // font depth, 25 %
 		let fh = 0.75 * labelProps.FSize; // font height, 75 %
 			// see space mgr
-		let mar = p.labelFMargin || 0;
+		let mar = p.labelFMargin;
 		let outTick = p.length * p.out;
 
 		// know where you are, label rotation anchor handling
@@ -196,7 +207,7 @@ export function vm(measurer, ds,partner, bounds, dir, locProps, comFac, axisKey)
 						anchor: p.rotate > 0 ? 'end' : p.rotate < 0 ? 'start' : 'middle',
 						off: {
 							x: 0,
-							y: - fh - fd - mar - outTick
+							y: - fh - fd - mar
 						}
 					};
 				case 'bottom':
@@ -204,7 +215,7 @@ export function vm(measurer, ds,partner, bounds, dir, locProps, comFac, axisKey)
 						anchor: p.rotate > 0 ? 'start' : p.rotate < 0 ? 'end' : 'middle',
 						off: {
 							x: 0,
-							y: fh + fd + mar + outTick
+							y: fh + fd + mar
 						}
 					};
 				case 'left':
@@ -241,6 +252,7 @@ export function vm(measurer, ds,partner, bounds, dir, locProps, comFac, axisKey)
 
 		labelProps.offset = offsetCspace;
 
+
 /*
 		grid: {
 			show: true || false,
@@ -249,21 +261,21 @@ export function vm(measurer, ds,partner, bounds, dir, locProps, comFac, axisKey)
 			width: 
 		},
 */
-		let gridProps = {};
-		p = tick.extra ? tick.grid : tick.minor ? minGrid : majGrid;
-		tmp = {
-			show: true,
-			color: true,
-			width: true
-		};
+			let gridProps = {};
+			p = tick.extra ? tick.grid : tick.minor ? minGrid : majGrid;
+			tmp = {
+				show: true,
+				color: true,
+				width: true
+			};
 
-		const cus = tick.grid || {};
-		for(let u in tmp){
-			gridProps[u] = isNil(cus[u]) ? p[u] : cus[u];
-		}
-		gridProps.length = partner.length;
+			let cus = tick.grid || {};
+			for(let u in tmp){
+				gridProps[u] = isNil(cus[u]) ? p[u] : cus[u];
+			}
+			gridProps.length = partner.length;
 
-		const tickKey = axisKey + '.t.' + idx;
+		let tickKey = axisKey + '.t.' + idx;
 		return {
 			key: tickKey,
 			tick: ticksProps,

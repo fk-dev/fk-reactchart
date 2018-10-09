@@ -11,7 +11,7 @@ const nInterval = (length, height) => {
  * values (date), see {date,nbr}Mgr.js
 */
 const computeTicks = function(first, last, step, minor, mStep, fac, toPixel, height){
-	const mgr = typeMgr(first);
+	let mgr = typeMgr(first);
 	// smart guess
 	let start = mgr.closestRoundUp(first,mgr.divide(mgr.distance(first,last),10));
 	let length = mgr.distance(start,last);
@@ -19,12 +19,6 @@ const computeTicks = function(first, last, step, minor, mStep, fac, toPixel, hei
 	// distance min criteria 1
 	// 10 ticks max
 	let dec = mgr.divide(length,nInterval(mgr.getValue(length) * toPixel, height));
-	// at least one
-	let ALO = mgr.subtract(length, dec);
-	while(mgr.lowerThan(ALO,mgr.value(0,true)) || mgr.isZero(ALO)){
-		dec = mgr.divide(dec,2);
-		ALO = mgr.subtract(length, dec);
-	}
 		// we ensure we have a correctly defined step
 	let majDist = mgr.isValidStep(step)  ? mgr.multiply(step,1)  : mgr.roundUp(dec);
 	if(step && !isNil(step.offset)){
@@ -92,7 +86,7 @@ const computeTicks = function(first, last, step, minor, mStep, fac, toPixel, hei
 };
 
 export function ticks(start, length, majStep, labels, minor, minStep, fac, toPixel, height){
-	if(labels && labels.length > 0){
+	if(!!labels && labels.length > 0){
 		return map(labels, (lab) => {
 			return {
 				position: lab.coord, 
