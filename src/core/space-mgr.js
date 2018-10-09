@@ -118,49 +118,62 @@ const space = function(datas,universe,borders,title, exData){
 		// min and max of coord space
 		// margins between borders and axis
 		let margins = {};
-
-		const tickOMargin = w => {
-			const axis = find(borders.axis, ax => ax.placement === w);
-			if(!axis){
-				return 0;
-			}
-			const tick = axis.ticks.major.show ? axis.ticks.major : axis.ticks.minor;
-			return tick.show ? tick.length * tick.out + 2 : defMargins.outer.ticks[w];
-		};
-
-		const tickLabelOMargin = w => {
-			const axis = find(borders.axis, ax => ax.placement === w);
-			if(!axis){
-				return 0;
-			}
-
-			const angle = axis.ticks.major.rotate;
-			const _rotate = Math.cos(angle * Math.PI/180);
-			const factor = axis.ticks.major.labelFSize / 9;
-			const rotate = w === 'left' || w === 'right' ? _rotate : 1/_rotate;
-
-			return borders.labels[w] ? borders.labels[w] : defMargins.outer.tickLabels[w] * rotate * factor;
-		};
-
-		const labelOMargin = w => {
-			const axis = find(borders.axis, ax => ax.placement === w);
-			return axis && axis.label.length ? defMargins.outer.label[w] : 0;
-		};
-
-		const computeMargin = w => {
-			const tickMar      = tickOMargin(w);
-			const tickLabelMar = tickLabelOMargin(w);
-			const labelMar     = labelOMargin(w);
-			const out = Math.max(defMargins.outer.min,tickMar + tickLabelMar + labelMar);
-	console.log(`will return ${w} => ${out}`);
-		return out;
-		};
-
-		// ticks, tickLabels, labels
-		// if outer defined, no computations
 		for(let p = 0; p < places.length; p++){
-			const w = places[p];
-			margins[w] = utils.isNil(borders.marginsO[w]) ? computeMargin(w) : borders.marginsO[w];
+			margins[places[p]] = defMargins.min;
+		}
+
+		// fetch the margin (label + ticks + default) for an axis
+		let bigMargin = (axis) => {
+			if(!axis.show){
+				return defMargins.outer.min;
+			}
+			let marg = defMargins.outer.label[axis.placement];
+			if(!axis.empty){
+				marg += defMargins.outer.ticks[axis.placement];
+			}
+			if(axis.label.length !== 0){
+				marg += ( axis.labelFSize + defMargins.outer.label.mar );
+			}
+			return marg;
+		};
+
+		const smallMargin = (axis) => {
+			if(!axis.show){
+				return 0;
+			}
+			return relO[axis.placement];
+		};
+
+		const margin = (axis) => Math.min(smallMargin(axis),bigMargin(axis));
+
+		// labels
+		for(let l = 0; l < borders.axis.length; l++){
+			const key = borders.axis[l].placement;
+			margins[key] = Math.max(margins[key],margin(borders.axis[l])); 
+		}
+
+		// title is at the top
+		if(!utils.isNil(margins.top) && !utils.isNil(title)){
+			margins.top += title.title.length !== 0 ? title.titleFSize + defMargins.title : 0;
+		}
+
+		// more suppleness, but less
+		// efficiencies: automatic
+		// margins computed whatever
+		// happens, overwrite here
+		// if defined
+		for(let p = 0; p < places.length; p++){
+			const k = places[p];
+			// overwrite
+			if(!utils.isNil(borders.marginsO[k])){
+				margins[k] = Math.max(defMargins.outer.min,borders.marginsO[k]);
+			// label ?
+			}else if(!utils.isNil(borders.labels[k])){
+				margins[k] = Math.max(defMargins.outer.min,borders.labels[k]);
+			// default computations
+			}else{
+				margins[k] = Math.max(margins[k],defMargins.outer.min);
+			}
 		}
 
 		for(let om in {bottom: true, top: true, left: true, right: true}){
@@ -169,6 +182,7 @@ const space = function(datas,universe,borders,title, exData){
 				if(axis){
 					let marLength = margins[om];
 					if(axis.label.length > 0){
+						axis.labelFSize = Math.min(axis.labelFSize, 0.48 * marLength);
 						axis.marginOff = 0.52 * marLength;
 						marLength /= 2;
 					}
@@ -177,8 +191,12 @@ const space = function(datas,universe,borders,title, exData){
 						if(!ticks.show){
 							continue;
 						}
+						ticks.labelFSize = Math.min(ticks.labelFSize, 0.68 * marLength);
 						ticks.length = ticks.out !== 0 ? Math.min(ticks.length, 0.2 * marLength / ticks.out) : ticks.length;
-						ticks.labelFMargin =  Math.min(marLength - ticks.labelFSize - ticks.length * ticks.out, ticks.labelFSize / 2); // no more that FSize/2 pixels out
+						ticks.labelFMargin =  Math.min(marLength - ticks.labelFSize - ticks.length * ticks.out, 8); // no more that 8 pixels out
+						if(borders.labels[om]){
+							margins[om] += ticks.labelFMargin + ticks.labelFSize;
+						}
 					}
 				}
 			}
@@ -239,7 +257,6 @@ const space = function(datas,universe,borders,title, exData){
 			min: minVals(allValues),
 			max: maxVals(allValues)
 		};
-
 		// empty graph
 		if(!isFinite(bounds.min) || utils.isNil(bounds.min)){
 			bounds.min = mgr.value(0);
@@ -441,7 +458,7 @@ export function spaces(datas,universe,borders,title){
       right: findType(flatten(pluck(datas,'ord')), 'right')
     }
   };
-console.log('\n\n');
+
 	return {
 		y: {
 			left:  space(lefts, universe.height,bor.left, title, typeData.y.left),

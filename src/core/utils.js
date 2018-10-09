@@ -2,7 +2,7 @@
 import * as date from './dateMgr.js';
 import * as nbr from './nbrMgr.js';
 
-const isPeriod = function(v){
+let isPeriod = function(v){
 	let out = false;
 	for(let t in {years: true, 	months: true, weeks: true, days: true}){
 		out = out || !isNil(v[t]);
@@ -96,7 +96,7 @@ export function direction(line, ds){
 // to make proper period objects
 export function makePeriod(p){ return date.makePeriod(p);}
 
-export function measure(id){
+export function measure(){
 
 	if(!document){
 		return {
@@ -108,7 +108,8 @@ export function measure(id){
 	if(!document.getElementById('fkchartmeasurer')){
 		const tmp  = document.createElement('div');
 		tmp.style.position = 'absolute';
-		tmp.style.hidden   = true;
+		tmp.style.top      = '-1000px';
+		tmp.style.left     = '-1000px';
 		tmp.style.width    = 'auto';
 		tmp.style.height   = 'auto';
 		const ttp = document.createElement('span');
@@ -117,16 +118,12 @@ export function measure(id){
 		document.body.appendChild(tmp);
 	}
 	const mother = document.getElementById('fkchartmeasurer');
-	const anchor = document.getElementById(id);
-	if(anchor){
-		anchor.appendChild(mother);
-	}
 
 	const _measureText = (str, fontSize) => {
 		if(!str){
 			return { width: 0, height: 0};
 		}
-		mother.style.fontSize = `${fontSize}`;
+		mother.style.fontSize = `${fontSize}px`;
 		mother.innerHTML = str;
 		const width  = mother.offsetWidth;
 		const height = mother.offsetHeight;
@@ -147,27 +144,9 @@ export function measure(id){
 		return texts.map( str => _measureText(str,fontSize)).reduce( (memo,v) => compare(memo,v) , {width: 0, height: 0});
 	};
 
-	const getMeasures = () => {
-		// axis label
-			// x
-			// y
-		// ticks label
-			// x
-			// y
-	};
-
 	return {
 		text: measureText,
-		getMeasures,
 		drawing: () => null// measureDrawing
 	};
 
-}
-
-const letters = 'azertyuiopqsdfghjklmwxcvbnAZERTYUIOPQSDFGHJKLMWXCVBN^$*,;:!<&(-_)=¨£%µ?./§>1234567890~#{[|@]}+';
-const rnd = () => letters.charAt(Math.floor(Math.random() * letters.length));
-
-// 3 letters
-export function rndKey(){
-	return rnd() + rnd() + rnd();
 }

@@ -472,28 +472,21 @@ export function process(getNode, rawProps, getMgr){
 			}
 		};
 
-		let length;
 		switch(w){
 			case 'left':{
 				const data = props.data.reduce( (m,d) => !d.ord || !d.ord.axis || d.ord.axis === 'left' ? m.concat(d.series) : m, []).map(p => p.label ? p.label.y : null).filter(x => x);
-				length = data.length ? rotateLength(data, 'left') : null;
-				break;
+				return data.length ? rotateLength(data, 'left') : null;
 			}case 'right':{
 				const data = props.data.reduce( (m,d) => d.ord && d.ord.axis === 'right' ? m.concat(d.series) : m, []).map(p => p.label ? p.label.y : null).filter(x => x);
-				length = data.length ? rotateLength(data, 'right'): null;
-				break;
+				return data.length ? rotateLength(data, 'right'): null;
 			}case 'top':{
 				const data = props.data.reduce( (m,d) => d.abs && d.abs.axis === 'top' ? m.concat(d.series) : m, []).map(p => p.label ? p.label.x : null).filter(x => x);
-				length = data.length ? rotateLength(data, 'top') : null;
-				break;
+				return data.length ? rotateLength(data, 'top') : null;
 			}case 'bottom':{
 				const data = props.data.reduce( (m,d) => !d.abs || !d.abs.axis || d.abs.axis === 'bottom' ? m.concat(d.series) : m, []).map(p => p.label ? p.label.x : null).filter(x => x);
-				length = data.length ? rotateLength(data, 'bottom') : null;
-				break;
+				return data.length ? rotateLength(data, 'bottom') : null;
 			}
 		}
-
-		return length;
 	};
 
 		// so we have all the keywords

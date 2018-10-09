@@ -1,4 +1,5 @@
-import { isNil, mgr as typeMgr, measure } from '../core/utils.js';
+import { map } from 'underscore';
+import { isNil, mgr as typeMgr } from '../core/utils.js';
 import { ticks } from '../core/ticker.js';
 
 /*
@@ -40,8 +41,6 @@ import { ticks } from '../core/ticker.js';
 export function vm(ds,partner, bounds, dir, locProps, comFac, axisKey){
 
 	//// general defs
-	const { text } = measure();
-	const lengthOfText = (txt,fs) => text(txt,fs).width;
 
 	let othdir = dir === 'x' ? 'y' : 'x';
 
@@ -94,12 +93,12 @@ export function vm(ds,partner, bounds, dir, locProps, comFac, axisKey){
 		minStep.offset = locProps.interval;
 	}
 
-	const tickers = ticks(min, max, majStep, ticksLabel, minor, minStep, comFac, toPixel, height);
+	let tickers = ticks(min, max, majStep, ticksLabel, minor, minStep, comFac, toPixel, height);
 
-	const prevTick = (idx) => idx > 0 ? tickers[idx - 1].position : null;
-	const nextTick = (idx) => idx < tickers.length - 1 ? tickers[idx + 1].position : null;
+	let prevTick = (idx) => idx > 0 ? tickers[idx - 1].position : null;
+	let nextTick = (idx) => idx < tickers.length - 1 ? tickers[idx + 1].position : null;
 
-	return locProps.empty ? [] : tickers.map( (tick,idx) => {
+	return locProps.empty ? [] : map(tickers, (tick,idx) => {
 /*
 		tick: {
 			show: true || false,
@@ -157,8 +156,8 @@ export function vm(ds,partner, bounds, dir, locProps, comFac, axisKey){
 
 		// label
 		if(typeof p.labelize === 'string'){
-			const lmgr = typeMgr(tick.position);
-			const maxDist = ds[dir].d.max - ds[dir].d.min;
+			let lmgr = typeMgr(tick.position);
+			let maxDist = ds[dir].d.max - ds[dir].d.min;
 			p.labelize = lmgr.labelize(p.labelize, maxDist);
 		}
 		let labelProps = {
@@ -175,18 +174,17 @@ export function vm(ds,partner, bounds, dir, locProps, comFac, axisKey){
 		labelProps.dir = {};
 		labelProps.dir[dir] = locProps.placement === 'top' || locProps.placement === 'right' ? -1 : 1;
 		labelProps.dir[othdir] = 0;
-		labelProps.LLength = lengthOfText(labelProps.label, labelProps.FSize);
 
 
-		const addPerp =  tick.minor ? 3.75 : 0;
-		const perpOff = isNil(p.labelOffset.perp) ? tick.offset.perp : p.labelOffset.perp ;
+		let addPerp =  tick.minor ? 3.75 : 0;
+		let perpOff = isNil(p.labelOffset.perp) ? tick.offset.perp : p.labelOffset.perp ;
 		let offsetCspace = {
 			x: p.labelOffset.x, 
 			y: perpOff + addPerp + p.labelOffset.y 
 		};
 
-		const alOff = isNil(p.labelOffset.along) ? p.labelize(tick.position, prevTick(idx), nextTick(idx)) !== false ? tick.offset.along : 0 : p.labelOffset.along;
-		const offset = {
+		let alOff = isNil(p.labelOffset.along) ? tick.offset.along : p.labelOffset.along;
+		let offset = {
 			x: labelProps.dir.x !== 0 ? alOff : 0,
 			y: labelProps.dir.y !== 0 ? alOff : 0
 		};
@@ -200,11 +198,11 @@ export function vm(ds,partner, bounds, dir, locProps, comFac, axisKey){
 		let outTick = p.length * p.out;
 
 		// know where you are, label rotation anchor handling
-		const anchor = (() => {
+		let anchor = (() => {
 			switch(locProps.placement){
 				case 'top':
 					return {
-						anchor: p.rotate > 0 ? 'end' : p.rotate < 0 ? 'start' : 'middle',
+						anchor: 'middle',
 						off: {
 							x: 0,
 							y: - fh - fd - mar
@@ -212,7 +210,7 @@ export function vm(ds,partner, bounds, dir, locProps, comFac, axisKey){
 					};
 				case 'bottom':
 					return {
-						anchor: p.rotate > 0 ? 'start' : p.rotate < 0 ? 'end' : 'middle',
+						anchor: 'middle',
 						off: {
 							x: 0,
 							y: fh + fd + mar

@@ -332,17 +332,11 @@ export const defMargins = {
 			right: 20,
 			mar: 10
 		},
-		tickLabels: {
+		ticks: {
 			left: 20,
 			right: 20,
 			bottom: 15,
 			top: 15
-		},
-		ticks: {
-			left: 4, // Math.ceil(15 * 0.25)
-			right: 4,
-			bottom: 4,
-			top: 4
 		},
 		factor: {
 			right: 30,

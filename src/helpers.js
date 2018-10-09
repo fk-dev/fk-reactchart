@@ -1,10 +1,13 @@
 import { process, defaultTheProps } from './core/process.js';
 import { freeze } from './core/im-utils.js';
-import { deepCp, isNil, measure, rndKey } from './core/utils.js';
+import { deepCp, isNil } from './core/utils.js';
 import { toC } from './core/space-transf.js';
 import * as manip from './core/data-manip.js';
 
-export function init(rawProps,type,key){
+const letters = 'azertyuiopqsdfghjklmwxcvbnAZERTYUIOPQSDFGHJKLMWXCVBN';
+const rnd = () => letters.charAt(Math.floor(Math.random() * letters.length));
+
+export function init(rawProps,type){
 
 	let props;
 	let freezer;
@@ -13,9 +16,9 @@ export function init(rawProps,type,key){
 
 	// super quick, should not be needed to be strong
 	const genKey = () => {
-		let key = rndKey();
+		let key = rnd() + rnd();
 		while(!isNil(updatee[key])){
-			key = rndKey();
+			key = rnd() + rnd();
 		}
 		return key;
 	};
@@ -37,10 +40,6 @@ export function init(rawProps,type,key){
 	freezer = freeze(process(() => freezer.get(), props, () => rc));
 	freezer.on('update',updateDeps);
 
-	rc.graphKey = key || genKey();
-
-	rc.lengthes = measure(rc.graphKey);
-
 	rc.defaults = (p) => defaultTheProps(p || props);
 
 	rc.props = rc.get = () => freezer.get();
@@ -61,7 +60,7 @@ export function init(rawProps,type,key){
 
   rc.updateGraph = (obj, key) => {
 		if(isNil(key)){
-			key = rc.graphKey;
+			key = genKey();
 		}
 		if(!updatee[key]){
 			updatee[key] = obj;
@@ -75,7 +74,7 @@ export function init(rawProps,type,key){
 		newProps = newProps || props;
 		props   = defaultTheProps(deepCp({},newProps));
 		props.freeze = type;
-		freezer = freeze(process(() => freezer.get(), props, () => rc));
+		freezer = freeze(process(() => freezer.get(), props));
 		freezer.on('update', updateDeps);
 		updateDeps();
 	};

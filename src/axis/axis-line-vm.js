@@ -95,7 +95,6 @@ export function vm(ds,props,partnerDs,dir){
 	let label = {
 		label: props.label,
 		FSize: props.labelFSize,
-		LLength: 10,
 		anchor: props.labelAnchor,
 		color: props.labelColor,
 		dir: {
