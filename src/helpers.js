@@ -108,7 +108,7 @@ export function init(rawProps, type, Obj){
 	};
 
 	rc.kill = key => {
-		delete updatee[key];
+		updatee[key] = undefined;
 	};
 
 	// dyn graph
