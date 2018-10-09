@@ -248,7 +248,7 @@ const computeOuterMargin = (where, limits, axis, measure, title, minimumValues) 
 	// tickLabelLength
 	// cadratin
 	let tickLabelLength = 0;
-	const cadMar = Math.max(cadratin.tickLabel[where]/3, 3);
+	const cadMar = cadratin.tickLabel[where]/3;
 	if(axis){
 		const { labelFSize, css } = axis.ticks.major;
 		const { tickLabels } = axis;
@@ -307,8 +307,8 @@ const computeOuterMargin = (where, limits, axis, measure, title, minimumValues) 
 	let labelLength = 0;
 	if(axis.label.length){
 		const cN = `${dir}AxisLabel`;
-		const { label, labelFSize, labelRotate } = axis;
-		const {width, height} = measureText(label, labelFSize, cN);
+		const { label, labelFontSize, labelRotate } = axis;
+		const {width, height} = measureText(label, labelFontSize, cN);
 		const angle = labelRotate * Math.PI / 180;
 		labelLength = computeSquare(angle,width,height).height + cadratin.axisLabel[where] / 3;
 	}
@@ -318,7 +318,7 @@ const computeOuterMargin = (where, limits, axis, measure, title, minimumValues) 
 
 };
 
-const _filter = (datas,dir, user) => {
+const _filter = (datas,dir) => {
 
 	const ex = datas.length && datas[0].series.length && !isNil(datas[0].series[0][dir]) ? datas[0].series[0][dir] : null;
 
@@ -329,8 +329,8 @@ const _filter = (datas,dir, user) => {
 	const mm = mgrU(ex);
 	const curType = mm.type;
 
-	let min = isNil(user.min) ? ex : user.min;
-	let max = isNil(user.max) ? ex : user.max;
+	let min = ex;
+	let max = ex;
 
 	const checkType = v => {
 		const type = mgrU(v).type;
@@ -340,9 +340,6 @@ const _filter = (datas,dir, user) => {
 	};
 
 	const doMin = v => {
-		if(!isNil(user.min)){
-			return;
-		}
 		const _doMin = r => {
 			if(mm.lowerThan(r,min)){
 				min = r;
@@ -352,9 +349,6 @@ const _filter = (datas,dir, user) => {
 		return Array.isArray(v) ? v.forEach(_doMin) : _doMin(v);
 	};
 	const doMax = v => {
-		if(!isNil(user.max)){
-			return;
-		}
 		const _doMax = r => {
 			if(mm.greaterThan(r,max)){
 				max = r;
@@ -364,57 +358,55 @@ const _filter = (datas,dir, user) => {
 		return Array.isArray(v) ? v.forEach(_doMax) : _doMax(v);
 	};
 
-	if(isNil(user.min) || isNil(user.max)){
-		datas.forEach( serie => {
-			// global characteristics
-			const loff = serie.limitOffset;
-			const limOfIdx = dir === 'y' || isNil(loff) ? -1 : loff > 0 ? serie.series.length - 1: 0;
-			serie.series.forEach( (point,idx) => {
-				// if label
-				if(isString(point[dir])){
-					return idx;
+	datas.forEach( serie => {
+		// global characteristics
+		const loff = serie.limitOffset;
+		const limOfIdx = dir === 'y' || isNil(loff) ? -1 : loff > 0 ? serie.series.length - 1: 0;
+		serie.series.forEach( (point,idx) => {
+			// if label
+			if(isString(point[dir])){
+				return idx;
+			}
+			let val = point[dir];
+			checkType(val);
+
+			// modifiers are span, drop and offset
+			// offset changes the value
+			if(!isNil(point.offset) && !isNil(point.offset[dir])){
+				val = mm.add(val,point.offset[dir]);
+			}
+			// drop adds a value
+			if(!isNil(point.drop) && !isNil(point.drop[dir])){
+				val = [val];
+				val.push(point.drop[dir]);
+			}
+
+			// span makes value into two values,
+			// we do it three, to keep the ref value
+			if(!isNil(point.span) && !isNil(point.span[dir])){
+				// beware, do we have a drop?
+				val = isArray(val) ? val : [val];
+				val.push(mm.subtract(val[0],mm.divide(point.span[dir],2)));
+				val.push(mm.add(val[0],mm.divide(point.span[dir],2)));
+			}
+
+			// limitOffset changes only one boundary
+			if(limOfIdx === idx){
+				if(isArray(val)){
+					val = map(val, (v) => v + loff);
+				}else{
+					val += loff;
 				}
-				let val = point[dir];
-				checkType(val);
-	
-				// modifiers are span, drop and offset
-				// offset changes the value
-				if(!isNil(point.offset) && !isNil(point.offset[dir])){
-					val = mm.add(val,point.offset[dir]);
-				}
-				// drop adds a value
-				if(!isNil(point.drop) && !isNil(point.drop[dir])){
-					val = [val];
-					val.push(point.drop[dir]);
-				}
-	
-				// span makes value into two values,
-				// we do it three, to keep the ref value
-				if(!isNil(point.span) && !isNil(point.span[dir])){
-					// beware, do we have a drop?
-					val = isArray(val) ? val : [val];
-					val.push(mm.subtract(val[0],mm.divide(point.span[dir],2)));
-					val.push(mm.add(val[0],mm.divide(point.span[dir],2)));
-				}
-	
-				// limitOffset changes only one boundary
-				if(limOfIdx === idx){
-					if(isArray(val)){
-						val = map(val, (v) => v + loff);
-					}else{
-						val += loff;
-					}
-				}
-	
-				doMax(val);
-				doMin(val);
-			});
-			serie.phantomSeries.forEach( p => {
-				doMax(p[dir]);
-				doMin(p[dir]);
-			});
+			}
+
+			doMax(val);
+			doMin(val);
 		});
-	}
+		serie.phantomSeries.forEach( p => {
+			doMax(p[dir]);
+			doMin(p[dir]);
+		});
+	});
 	
 	return { min, max };
 
@@ -424,6 +416,12 @@ export function spaces(universe, datas, axis, borders, titleProps, lengthMgr){
 
 	const ob = {right: 'ord', left: 'ord', top: 'abs', bottom: 'abs'};
 	const getDir = w => w === 'right' || w === 'left' ? 'y' : 'x';
+	let dats = {};
+	let limits = {};
+	for(let w in ob){
+		dats[w] = datas.filter( series => series[ob[w]] && series[ob[w]].axis === w);
+		limits[w] = _filter(datas.filter( series => series[ob[w]] && series[ob[w]].axis === w), getDir(w) );
+	}
 
 	const axises = {
 		left:   axis.ord.find(x => x.placement === 'left'),	
@@ -431,13 +429,6 @@ export function spaces(universe, datas, axis, borders, titleProps, lengthMgr){
 		top:    axis.abs.find(x => x.placement === 'top'),
 		bottom: axis.abs.find(x => x.placement === 'bottom')
 	};
-
-	let dats = {};
-	let limits = {};
-	for(let w in ob){
-		dats[w] = datas.filter( series => series[ob[w]] && series[ob[w]].axis === w);
-		limits[w] = _filter(datas.filter( series => series[ob[w]] && series[ob[w]].axis === w), getDir(w), {min: axises[w] ? axises[w].min : null, max: axises[w] ? axises[w].max : null} );
-	}
 
 	let minVals = {left: 0, right: 0, top: 0, bottom: 0};
 

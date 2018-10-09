@@ -83,23 +83,16 @@ const computeTicks = function(first, last, step, majLabelize, minor, mStep, minL
 	let out = [];
 	let curValue = start;
 	let along = mgr.offset(majDist);
-	let tries = majDist;
 // careful for infinite looping
 	if(isNil(curValue) || isNil(majDist)){
 		throw new Error("Ticker cannot compute with nil");
 	}
-	let cycle = false;
 	while(mgr.lowerThan(curValue,last)){
-		if(!cycle && out.length === 4 && !minor && square){
+		if(out.length === 4 && !minor && square){
 			out.forEach( (t,i) => {
 				t.label = majLabelize(out,i,mgr.label(t.position,majDist,fac));
 			});
 			const reset = checkMajDist(out,majDist, mgr.getValue(majDist) * toPixel, start, curValue, square, mgr);
-			if(reset.majDist > tries){
-				tries = reset.majDist;
-			}else if(reset.majDist === tries && reset.store.length === 0){
-				cycle = true;
-			}
 			curValue = reset.curValue;
 			majDist = reset.majDist;
 			out = reset.store;
