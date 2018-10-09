@@ -1,4 +1,3 @@
-/* global document */
 import * as date from './dateMgr.js';
 import * as nbr from './nbrMgr.js';
 
@@ -95,58 +94,3 @@ export function direction(line, ds){
 
 // to make proper period objects
 export function makePeriod(p){ return date.makePeriod(p);}
-
-export function measure(){
-
-	if(!document){
-		return {
-			text: () => null,
-			drawing: () => null
-		};
-	}
-
-	if(!document.getElementById('fkchartmeasurer')){
-		const tmp  = document.createElement('div');
-		tmp.style.position = 'absolute';
-		tmp.style.top      = '-1000px';
-		tmp.style.left     = '-1000px';
-		tmp.style.width    = 'auto';
-		tmp.style.height   = 'auto';
-		const ttp = document.createElement('span');
-		ttp.setAttribute('id','fkchartmeasurer');
-		tmp.appendChild(ttp);
-		document.body.appendChild(tmp);
-	}
-	const mother = document.getElementById('fkchartmeasurer');
-
-	const _measureText = (str, fontSize) => {
-		if(!str){
-			return { width: 0, height: 0};
-		}
-		mother.style.fontSize = `${fontSize}px`;
-		mother.innerHTML = str;
-		const width  = mother.offsetWidth;
-		const height = mother.offsetHeight;
-		return { width, height };
-	};
-
-	const measureText = (texts,fontSize) => {
-		if(!Array.isArray(texts)){
-			texts = [texts];
-		}
-
-		const compare = (ref,cand) => {
-			const width  = ref.width  > cand.width  ? ref.width  : cand.width;
-			const height = ref.height > cand.height ? ref.height : cand.height;
-			return {width, height};
-		};
-
-		return texts.map( str => _measureText(str,fontSize)).reduce( (memo,v) => compare(memo,v) , {width: 0, height: 0});
-	};
-
-	return {
-		text: measureText,
-		drawing: () => null// measureDrawing
-	};
-
-}

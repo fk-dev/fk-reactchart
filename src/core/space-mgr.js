@@ -4,9 +4,9 @@
  * ds is { c : {min, max}, d: {min,max}}
  */
 import { find, flatten, map, extend, filter, pluck } from 'underscore';
-import * as utils     from './utils.js';
+import * as utils from './utils.js';
 import { defMargins } from './proprieties.js';
-import { errorMgr }   from './errorMgr.js';
+import { errorMgr } from './errorMgr.js';
 
 /* universe is {width , height}, this
  * is the total size of the svg picture.
@@ -93,7 +93,7 @@ const space = function(datas,universe,borders,title, exData){
 		}
 
 		// quick utils
-		const ifNil = (a,b) => utils.isNil(a) ? b : a;
+		let ifNil = (a,b) => utils.isNil(a) ? b : a;
 
 		// get the (right,left) or (top,bottom)
 		let places = [];
@@ -104,7 +104,7 @@ const space = function(datas,universe,borders,title, exData){
 		// axis/ticks label
 		let relO = {};
 		for(let idx = 0; idx < borders.axis.length; idx++){
-			const w = borders.axis[idx].placement; 
+			let w = borders.axis[idx].placement; 
 			let s = borders.axis[idx].label.length > 0 ? 1 : 0;
 			s += borders.axis[idx].ticks.major.show || borders.axis[idx].ticks.minor.show ? 1 : 0;
 			relO[w] = s === 0 ? defMargins.outer.min :
@@ -137,18 +137,18 @@ const space = function(datas,universe,borders,title, exData){
 			return marg;
 		};
 
-		const smallMargin = (axis) => {
+		let smallMargin = (axis) => {
 			if(!axis.show){
 				return 0;
 			}
 			return relO[axis.placement];
 		};
 
-		const margin = (axis) => Math.min(smallMargin(axis),bigMargin(axis));
+		let margin = (axis) => Math.min(smallMargin(axis),bigMargin(axis));
 
 		// labels
 		for(let l = 0; l < borders.axis.length; l++){
-			const key = borders.axis[l].placement;
+			let key = borders.axis[l].placement;
 			margins[key] = Math.max(margins[key],margin(borders.axis[l])); 
 		}
 
@@ -163,22 +163,16 @@ const space = function(datas,universe,borders,title, exData){
 		// happens, overwrite here
 		// if defined
 		for(let p = 0; p < places.length; p++){
-			const k = places[p];
-			// overwrite
+			let k = places[p];
 			if(!utils.isNil(borders.marginsO[k])){
-				margins[k] = Math.max(defMargins.outer.min,borders.marginsO[k]);
-			// label ?
-			}else if(!utils.isNil(borders.labels[k])){
-				margins[k] = Math.max(defMargins.outer.min,borders.labels[k]);
-			// default computations
-			}else{
-				margins[k] = Math.max(margins[k],defMargins.outer.min);
+				margins[k] = borders.marginsO[k];
 			}
+			margins[k] = Math.max(margins[k],defMargins.outer.min);
 		}
 
 		for(let om in {bottom: true, top: true, left: true, right: true}){
 			if(margins[om]){
-				const axis = find(borders.axis, ax => ax.placement === om);
+				let axis = find(borders.axis, ax => ax.placement === om);
 				if(axis){
 					let marLength = margins[om];
 					if(axis.label.length > 0){
@@ -187,16 +181,13 @@ const space = function(datas,universe,borders,title, exData){
 						marLength /= 2;
 					}
 					for(let ti in {major: true, minor: true}){
-						const ticks = axis.ticks[ti];
+						let ticks = axis.ticks[ti];
 						if(!ticks.show){
 							continue;
 						}
 						ticks.labelFSize = Math.min(ticks.labelFSize, 0.68 * marLength);
 						ticks.length = ticks.out !== 0 ? Math.min(ticks.length, 0.2 * marLength / ticks.out) : ticks.length;
 						ticks.labelFMargin =  Math.min(marLength - ticks.labelFSize - ticks.length * ticks.out, 8); // no more that 8 pixels out
-						if(borders.labels[om]){
-							margins[om] += ticks.labelFMargin + ticks.labelFSize;
-						}
 					}
 				}
 			}
@@ -220,23 +211,23 @@ const space = function(datas,universe,borders,title, exData){
 			rmax = max - ifNil(borders.marginsI.right, defMargins.inner.right);
 		}
 
-		const cWorld = {
+		let cWorld = {
 			min: min,
 			max: max
 		};
-		const posCWorld = {
+		let posCWorld = {
 			min: rmin,
 			max: rmax
 		};
 
 	// 2 - the data space
 
-		const allValues = flatten(datas);
+		let allValues = flatten(datas);
 
-		const mgr = allValues.length === 0 ? utils.mgr(exData) : utils.mgr(allValues[0]);
+		let mgr = allValues.length === 0 ? utils.mgr(exData) : utils.mgr(allValues[0]);
 
 	// either data defined or explicitely defined
-		const minVals = (vals) => {
+		let minVals = (vals) => {
 			if(vals.length === 0){
 				return null;
 			}
@@ -244,7 +235,7 @@ const space = function(datas,universe,borders,title, exData){
 			return mgr.min(vals);
 		};
 
-		const maxVals = (vals) => {
+		let maxVals = (vals) => {
 			if(vals.length === 0){
 				return null;
 			}
@@ -253,7 +244,7 @@ const space = function(datas,universe,borders,title, exData){
 		};
 
 
-		const bounds = {
+		let bounds = {
 			min: minVals(allValues),
 			max: maxVals(allValues)
 		};
@@ -266,11 +257,11 @@ const space = function(datas,universe,borders,title, exData){
 		}
 
 		// on augmente la distance totale
-		const cRelMinMore = Math.abs( (cWorld.min - posCWorld.min) / (posCWorld.max - posCWorld.min) );
-		const cRelMaxMore = Math.abs( (cWorld.max - posCWorld.max) / (posCWorld.max - posCWorld.min) );
-		const dMinMore = mgr.multiply(mgr.distance(bounds.max,bounds.min),cRelMinMore);
-		const dMaxMore = mgr.multiply(mgr.distance(bounds.max,bounds.min),cRelMaxMore);
-		const dWorld = {
+		let cRelMinMore = Math.abs( (cWorld.min - posCWorld.min) / (posCWorld.max - posCWorld.min) );
+		let cRelMaxMore = Math.abs( (cWorld.max - posCWorld.max) / (posCWorld.max - posCWorld.min) );
+		let dMinMore = mgr.multiply(mgr.distance(bounds.max,bounds.min),cRelMinMore);
+		let dMaxMore = mgr.multiply(mgr.distance(bounds.max,bounds.min),cRelMaxMore);
+		let dWorld = {
 			min: mgr.subtract(bounds.min, dMinMore),
 			max: mgr.add(bounds.max, dMaxMore)
 		};
@@ -303,7 +294,7 @@ const space = function(datas,universe,borders,title, exData){
     d2c
   }
 */
-		const fromCtoD = mgr.getValue( mgr.divide( mgr.distance( dWorld.max , dWorld.min ), cWorld.max - cWorld.min));
+		let fromCtoD = mgr.getValue( mgr.divide( mgr.distance( dWorld.max , dWorld.min ), cWorld.max - cWorld.min));
 		return {
 			c: {
 				min: cWorld.min,
@@ -321,12 +312,12 @@ const space = function(datas,universe,borders,title, exData){
 
 export function spaces(datas,universe,borders,title){
 
-	const _filter = (datas,dir) => {
-		return datas.map( serie => {
+	let _filter = (datas,dir) => {
+		return map(datas, (serie) => {
 			// global characteristics
 			let loff = serie.limitOffset;
 			let limOfIdx = dir === 'y' || utils.isNil(loff) ? -1 : loff > 0 ? serie.series.length - 1: 0;
-			return serie.series.map( (point,idx) => {
+			return map(serie.series, (point,idx) => {
 					// if label
 					if(utils.isString(point[dir])){
 						return idx;
@@ -365,7 +356,7 @@ export function spaces(datas,universe,borders,title){
 					}
 
 					return val;
-				}).concat(serie.phantomSeries.map( p => p[dir]));
+				}).concat(map(serie.phantomSeries,(p) => {return p[dir];}));
 			});
 	};
 
@@ -414,7 +405,6 @@ export function spaces(datas,universe,borders,title){
 		marginsO: {top: borders.marginsO.top, bottom: borders.marginsO.bottom},
 		marginsI: {top: borders.marginsI.top, bottom: borders.marginsI.bottom},
 		marginsF: {top: borders.marginsF.top, bottom: borders.marginsF.bottom},
-		labels:   {top: borders.labels.top,   bottom: borders.labels.bottom},
 		axis: borders.abs
 	};
 
@@ -422,7 +412,6 @@ export function spaces(datas,universe,borders,title){
 		marginsO: {left: borders.marginsO.left, right: borders.marginsO.right},
 		marginsI: {left: borders.marginsI.left, right: borders.marginsI.right},
 		marginsF: {left: borders.marginsF.left, right: borders.marginsF.right},
-		labels:   {left: borders.labels.left,   right: borders.labels.right},
 		axis: borders.ord
 	};
 
@@ -461,12 +450,12 @@ export function spaces(datas,universe,borders,title){
 
 	return {
 		y: {
-			left:  space(lefts, universe.height,bor.left, title, typeData.y.left),
+			left:  space(lefts, universe.height,bor.left,title, typeData.y.left),
 			right: space(rights,universe.height,bor.right,title, typeData.y.right)
 		}, 
 		x: {
 			bottom: space(bottom,universe.width,bor.bottom, null, typeData.x.bottom),
-			top:    space(top,   universe.width,bor.top,    null, typeData.x.top)
+			top:    space(top,   universe.width,bor.top, null, typeData.x.top)
 		}
 	};
 }
