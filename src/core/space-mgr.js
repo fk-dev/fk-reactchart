@@ -4,7 +4,7 @@
  * ds is { c : {min, max}, d: {min,max}}
  */
 import { map } from 'underscore';
-import { isNil, mgr as mgrU, isString, isArray, computeSquare } from './utils.js';
+import * as utils     from './utils.js';
 import { defMargins } from './proprieties.js';
 import { errorMgr }   from './errorMgr.js';
 import { ticks }      from './ticker.js';
@@ -87,10 +87,10 @@ import { ticks }      from './ticker.js';
  * the cs/ds correspondance is found with:
  *    universe - marginsO - marginsI = datas
  */
-const space = function(where, universe, margins, bounds, minVals){
+const space = function(where, universe, margins, bounds){
 
 		// quick utils
-		const ifNil = (a,b) => isNil(a) ? b : a;
+		const ifNil = (a,b) => utils.isNil(a) ? b : a;
 
 		const _marginMap = {
 			y: {
@@ -118,8 +118,8 @@ const space = function(where, universe, margins, bounds, minVals){
 		// margins between borders and axis
 
 		let OMargin = {
-			min: margins[marginMap[where].min].marginsO ? margins[marginMap[where].min].marginsO : Math.max(defMargins.outer.min,minVals[where]),
-			max: margins[marginMap[where].max].marginsO ? margins[marginMap[where].max].marginsO : Math.max(defMargins.outer.min,minVals[where])
+			min: margins[marginMap[where].min].marginsO ? margins[marginMap[where].min].marginsO : defMargins.outer.min,
+			max: margins[marginMap[where].max].marginsO ? margins[marginMap[where].max].marginsO : defMargins.outer.min
 		};
 
 		// we have the world's corners
@@ -150,13 +150,13 @@ const space = function(where, universe, margins, bounds, minVals){
 		};
 
 	// empty graph
-		if(!isFinite(bounds.min) || isNil(bounds.min)){
+		if(!isFinite(bounds.min) || utils.isNil(bounds.min)){
 			bounds.min = 0;
 		}
-		if(!isFinite(bounds.max) || isNil(bounds.max)){
+		if(!isFinite(bounds.max) || utils.isNil(bounds.max)){
 			bounds.max = 4;
 		}
-		const mgr = mgrU(bounds.min);
+		const mgr = utils.mgr(bounds.min);
 
 		// on augmente la distance totale
 		const cRelMinMore = Math.abs( (cWorld.min - posCWorld.min) / (posCWorld.max - posCWorld.min) );
@@ -206,17 +206,18 @@ const space = function(where, universe, margins, bounds, minVals){
 
 
 
-const computeOuterMargin = (where, limits, axis, measure, title, minimumValues) => {
+const computeOuterMargin = (where, limits, axis, measure, title) => {
 
 	measure = measure || {};
 	const { measureText, lengthes } = measure;
 	const cadratin = lengthes();
 	const dir = where === 'left' || where === 'right' ? 'y' : 'x';
-	const otherWhere = dir === 'x' ? ['left','right'] : ['top','bottom'];
+
+	const computeWithAngle = (alpha, c, s) => Math.abs(Math.cos(alpha) * c) + Math.abs(Math.sin(alpha) * s);
 
 	let { min , max } = limits;
 
-	const mgr = mgrU(limits.min);
+	const mgr = utils.mgr(limits.min);
 
 	const titleMeasure = () => {
 		let titleLength = 0;
@@ -234,10 +235,10 @@ const computeOuterMargin = (where, limits, axis, measure, title, minimumValues) 
 	}
 
 	// empty graph
-	if(!isFinite(min) || isNil(min)){
+	if(!isFinite(min) || utils.isNil(min)){
 		min = mgr.value(0);
 	}
-	if(!isFinite(max) || isNil(max)){
+	if(!isFinite(max) || utils.isNil(max)){
 		max = mgr.value(4);
 	}
 
@@ -269,14 +270,7 @@ const computeOuterMargin = (where, limits, axis, measure, title, minimumValues) 
 			const cn = `${dir}AxisTickLabel`;
 			const { width, height } = measureText(labels,labelFSize, cn );
 			const angle = axis.ticks.major.rotate * Math.PI/180;
-			const square = computeSquare(angle,  width, height);
-			tickLabelLength = dir === "y" ? square.width : square.height;
-			otherWhere.forEach( w => {
-				const m = dir === "x" ? square.width : square.height;
-				if(!minimumValues[w] || minimumValues[w] < m){
-					minimumValues[w] = m;
-				}
-			});
+			tickLabelLength = computeWithAngle(angle,  dir === 'y'  ? width : height, dir === 'x'  ? width : height );
 
 			axis.marginOff = Math.max(tickLength + tickLabelLength + 2 * cadMar, defMargins.outer.min);
 			// offset for the label
@@ -300,7 +294,7 @@ const computeOuterMargin = (where, limits, axis, measure, title, minimumValues) 
 		const { label, labelFontSize, labelRotate } = axis;
 		const {width, height} = measureText(label, labelFontSize, cN);
 		const angle = labelRotate * Math.PI / 180;
-		labelLength = computeSquare(angle,width,height).height + cadratin.axisLabel[where] / 3;
+		labelLength = computeWithAngle(angle,height,width) + cadratin.axisLabel[where] / 3;
 	}
 
 	const titleLength = titleMeasure();
@@ -310,20 +304,20 @@ const computeOuterMargin = (where, limits, axis, measure, title, minimumValues) 
 
 const _filter = (datas,dir) => {
 
-	const ex = datas.length && datas[0].series.length && !isNil(datas[0].series[0][dir]) ? datas[0].series[0][dir] : null;
+	const ex = datas.length && datas[0].series.length && !utils.isNil(datas[0].series[0][dir]) ? datas[0].series[0][dir] : null;
 
 	if(ex === null){
 		return [];
 	}
 
-	const mm = mgrU(ex);
+	const mm = utils.mgr(ex);
 	const curType = mm.type;
 
 	let min = ex;
 	let max = ex;
 
 	const checkType = v => {
-		const type = mgrU(v).type;
+		const type = utils.mgr(v).type;
 		if(type !== curType){
 			errorMgr(`Types of ${dir} is not consistent, I have ${curType} and ${type}`);
 		}
@@ -351,10 +345,10 @@ const _filter = (datas,dir) => {
 	datas.forEach( serie => {
 		// global characteristics
 		const loff = serie.limitOffset;
-		const limOfIdx = dir === 'y' || isNil(loff) ? -1 : loff > 0 ? serie.series.length - 1: 0;
+		const limOfIdx = dir === 'y' || utils.isNil(loff) ? -1 : loff > 0 ? serie.series.length - 1: 0;
 		serie.series.forEach( (point,idx) => {
 			// if label
-			if(isString(point[dir])){
+			if(utils.isString(point[dir])){
 				return idx;
 			}
 			let val = point[dir];
@@ -362,27 +356,27 @@ const _filter = (datas,dir) => {
 
 			// modifiers are span, drop and offset
 			// offset changes the value
-			if(!isNil(point.offset) && !isNil(point.offset[dir])){
+			if(!utils.isNil(point.offset) && !utils.isNil(point.offset[dir])){
 				val = mm.add(val,point.offset[dir]);
 			}
 			// drop adds a value
-			if(!isNil(point.drop) && !isNil(point.drop[dir])){
+			if(!utils.isNil(point.drop) && !utils.isNil(point.drop[dir])){
 				val = [val];
 				val.push(point.drop[dir]);
 			}
 
 			// span makes value into two values,
 			// we do it three, to keep the ref value
-			if(!isNil(point.span) && !isNil(point.span[dir])){
+			if(!utils.isNil(point.span) && !utils.isNil(point.span[dir])){
 				// beware, do we have a drop?
-				val = isArray(val) ? val : [val];
+				val = utils.isArray(val) ? val : [val];
 				val.push(mm.subtract(val[0],mm.divide(point.span[dir],2)));
 				val.push(mm.add(val[0],mm.divide(point.span[dir],2)));
 			}
 
 			// limitOffset changes only one boundary
 			if(limOfIdx === idx){
-				if(isArray(val)){
+				if(utils.isArray(val)){
 					val = map(val, (v) => v + loff);
 				}else{
 					val += loff;
@@ -420,40 +414,113 @@ export function spaces(universe, datas, axis, borders, title, lengthMgr){
 		bottom: axis.abs.find(x => x.placement === 'bottom')
 	};
 
-	let minVals = {};
-
 	const margins = {
 		left: {
 			marginsI: borders.marginsI.left,
 			marginsF: borders.marginsF.left,
-			marginsO: borders.marginsO.left ? borders.marginsO.left : computeOuterMargin('left', limits.left, axises.left, lengthMgr,null, minVals)
+			marginsO: borders.marginsO.left ? borders.marginsO.left : computeOuterMargin('left', limits.left, axises.left, lengthMgr)
 		},
 		right: {
 			marginsI: borders.marginsI.right,
 			marginsF: borders.marginsF.right,
-			marginsO: borders.marginsO.right ? borders.marginsO.right : computeOuterMargin('right', limits.right, axises.right, lengthMgr,null,minVals)
+			marginsO: borders.marginsO.right ? borders.marginsO.right : computeOuterMargin('right', limits.right, axises.right, lengthMgr)
 		},
 		top: {
 			marginsI: borders.marginsI.top,
 			marginsF: borders.marginsF.top,
-			marginsO: borders.marginsO.top ? borders.marginsO.top : computeOuterMargin('top', limits.top, axises.top, lengthMgr, title, minVals)
+			marginsO: borders.marginsO.top ? borders.marginsO.top : computeOuterMargin('top', limits.top, axises.top, lengthMgr, title)
 		},
 		bottom: {
 			marginsI: borders.marginsI.bottom,
 			marginsF: borders.marginsF.bottom,
-			marginsO: borders.marginsO.bottom ? borders.marginsO.bottom : computeOuterMargin('bottom', limits.bottom, axises.bottom, lengthMgr,null, minVals)
+			marginsO: borders.marginsO.bottom ? borders.marginsO.bottom : computeOuterMargin('bottom', limits.bottom, axises.bottom, lengthMgr)
 		},
 	};
 
 	return {
 		y: {
-			left:  axises.left  ? space('left',  universe.height, margins, limits.left,  minVals)  : null,
-			right: axises.right ? space('right', universe.height, margins, limits.right, minVals) : null
+			left:  axises.left  ? space('left',  universe.height, margins, limits.left)  : null,
+			right: axises.right ? space('right', universe.height, margins, limits.right) : null
 		},
 		x: {
-			top:    axises.top    ? space('top',    universe.width, margins, limits.top,    minVals)    : null,
-			bottom: axises.bottom ? space('bottom', universe.width, margins, limits.bottom, minVals) : null
+			top:    axises.top    ? space('top',    universe.width, margins, limits.top)    : null,
+			bottom: axises.bottom ? space('bottom', universe.width, margins, limits.bottom) : null
 		}
 	};
 
+/*
+	// worlds = (l,b), (l,t), (r,b), (r,t)
+	const rights  = boundaries('y', limits.right, axis.ord.find(x => x.placement === 'right'),  lengthMgr);
+	const lefts   = boundaries('y', _filter(dats.left,   'y'), borders.ord.find(x => x.placement === 'left'),   lengthMgr);
+	const tops    = boundaries('x', _filter(dats.top,    'x'), borders.abs.find(x => x.placement === 'top'),    lengthMgr);
+	const bottoms = boundaries('x', _filter(dats.bottom, 'x'), borders.abs.find(x => x.placement === 'bottom'), lengthMgr);
+
+	const left = {
+		mgr: lefts.mgr,
+		bounds: lefts.bounds,
+		margin: {
+			max: tops.labelLength,
+			min: bottoms.labelLength
+			}
+	};
+	const right = {
+		mgr: rights.mgr,
+		bounds: rights.bounds,
+		margin: {
+			max: tops.labelLength,
+			min: bottoms.labelLength
+		}
+	};
+	const top = {
+		mgr: tops.mgr,
+		bounds: tops.bounds,
+		margin: {
+			min: lefts.labelLength,
+			max: rights.labelLength
+		}
+	};
+	const bottom = {
+		mgr: bottoms.mgr,
+		bounds: bottoms.bounds,
+		margin: {
+			min: lefts.labelLength,
+			max: rights.labelLength
+		}
+	};
+
+
+	let border = {};
+	border.ord = {
+		marginsO: {top: borders.marginsO.top, bottom: borders.marginsO.bottom},
+		marginsI: {top: borders.marginsI.top, bottom: borders.marginsI.bottom},
+		marginsF: {top: borders.marginsF.top, bottom: borders.marginsF.bottom},
+		labels:   {top: borders.labels.top,   bottom: borders.labels.bottom},
+		axis: borders.abs
+	};
+
+	border.abs = {
+		marginsO: {left: borders.marginsO.left, right: borders.marginsO.right},
+		marginsI: {left: borders.marginsI.left, right: borders.marginsI.right},
+		marginsF: {left: borders.marginsF.left, right: borders.marginsF.right},
+		labels:   {left: borders.labels.left,   right: borders.labels.right},
+		axis: borders.ord
+	};
+
+	let bor = {};
+	for(let w in ob){
+		// copy/expand
+		bor[w] = extend(extend({},border[ob[w]]), {min: mins[w], max: maxs[w]});
+	}
+
+	return {
+		y: {
+			left:  space('left',  left,  universe.height, bor.left, title, cadratin),
+			right: space('right', right, universe.height, bor.right,title, cadratin)
+		}, 
+		x: {
+			bottom: space('bottom', bottom, universe.width, bor.bottom, null, cadratin),
+			top:    space('top',    top,    universe.width, bor.top,    null, cadratin)
+		}
+	};
+*/
 }

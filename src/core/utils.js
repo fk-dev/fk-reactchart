@@ -12,11 +12,11 @@ const isPeriod = function(v){
 
 export { misc as math } from './mathMgr.js';
 
-export function isDate(v){ return v && (v instanceof Date || isPeriod(v));}
+export function isDate(v){ return !!v && (v instanceof Date || isPeriod(v));}
 
-export function isArray(v){ return v && Array.isArray(v);}
+export function isArray(v){ return !!v && Array.isArray(v);}
 
-export function isString(v){ return v && typeof v === 'string';}
+export function isString(v){ return !!v && typeof v === 'string';}
 
 export function isNil(v){ return v === null || v === undefined;}
 
@@ -95,16 +95,6 @@ export function direction(line, ds){
 
 // to make proper period objects
 export function makePeriod(p){ return date.makePeriod(p);}
-
-export function computeSquare(angle,width,height){
-	const aLength = (c,s) => Math.abs(Math.cos(angle) * c ) + Math.abs(Math.sin(angle) * s );
-
-	return {
-		width: aLength(width,height),
-		height: aLength(height,width)
-	};
-
-}
 
 export function measure(gid){
 
