@@ -10,41 +10,27 @@ export default class Graph extends React.Component {
 	constructor(props){
 		super(props);
 		this.myKey = rndKey();
-		this.init();
 	}
 
 	componentDidMount(){
-		if(!this.sh){
-			this.init();
-		}
-		this.myKey = this.sh.updateGraph(this, this.myKey);
-	}
-
-	shouldComponentUpdate(pr){
-		if(!pr.__preprocessed){
-			this.sh = init(pr,'',{ key: this.myKey, obj: this});
-		}else if(pr.__mgrId !== this.sh.__mgrId){
-			this.sh = pr;
-			this.myKey = this.sh.updateGraph(this, this.myKey);
-		}
-		return true;
+		this.init();
 	}
 
 	componentDidUpdate(){
 		if(!this.sh){
-			this.init();
-			this.myKey = this.sh.updateGraph(this, this.myKey);
+			this.init(this.props);
 		}
 	}
 
-	init(){
-		const pr = this.props;
+	init(pr){
+		pr = pr || this.props;
 		if(pr.__preprocessed){ // done outside graph
 			this.sh = pr;
 			this.myKey = pr.graphKey;
 		}else{ // to be done here
-			this.sh = init(pr,'',{ key: this.myKey, obj: this});
+			this.sh = init(pr,'',this.myKey);
 		}
+		this.myKey = this.sh.updateGraph(this, this.myKey);
 	}
 
 	render(){

@@ -98,20 +98,19 @@ export function makePeriod(p){ return date.makePeriod(p);}
 
 export function measure(id){
 
-	if(typeof document === 'undefined'){
+	if(!document){
 		return {
-			text: () => {return {width: null, height: null};},
-			measureAll: () => null,
+			text: () => null,
 			drawing: () => null
 		};
 	}
 
 	if(!document.getElementById('fkchartmeasurer')){
 		const tmp  = document.createElement('div');
-		tmp.style.position   = 'absolute';
-		tmp.style.visibility = 'hidden';
-		tmp.style.width      = 'auto';
-		tmp.style.height     = 'auto';
+		tmp.style.position = 'absolute';
+		tmp.style.hidden   = true;
+		tmp.style.width    = 'auto';
+		tmp.style.height   = 'auto';
 		const ttp = document.createElement('span');
 		ttp.setAttribute('id','fkchartmeasurer');
 		tmp.appendChild(ttp);
@@ -148,11 +147,7 @@ export function measure(id){
 		return texts.map( str => _measureText(str,fontSize)).reduce( (memo,v) => compare(memo,v) , {width: 0, height: 0});
 	};
 
-	const measureAll = (props) => {
-		const { css } = props;
-		// title
-		const { titleFSize } = props;
-		
+	const getMeasures = () => {
 		// axis label
 			// x
 			// y
@@ -163,7 +158,7 @@ export function measure(id){
 
 	return {
 		text: measureText,
-		measureAll,
+		getMeasures,
 		drawing: () => null// measureDrawing
 	};
 
