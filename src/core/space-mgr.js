@@ -135,7 +135,7 @@ const space = function(datas,universe,borders,title, exData){
 			}
 
 			const angle = axis.ticks.major.rotate;
-			const _rotate = Math.abs(Math.cos(angle * Math.PI/180));
+			const _rotate = Math.cos(angle * Math.PI/180);
 			const factor = axis.ticks.major.labelFSize / 9;
 			const rotate = w === 'left' || w === 'right' ? _rotate : 1/_rotate;
 
@@ -151,7 +151,9 @@ const space = function(datas,universe,borders,title, exData){
 			const tickMar      = tickOMargin(w);
 			const tickLabelMar = tickLabelOMargin(w);
 			const labelMar     = labelOMargin(w);
-			return Math.max(defMargins.outer.min,tickMar + tickLabelMar + labelMar);
+			const out = Math.max(defMargins.outer.min,tickMar + tickLabelMar + labelMar);
+	console.log(`will return ${w} => ${out}`);
+		return out;
 		};
 
 		// ticks, tickLabels, labels
@@ -439,6 +441,7 @@ export function spaces(datas,universe,borders,title){
       right: findType(flatten(pluck(datas,'ord')), 'right')
     }
   };
+console.log('\n\n');
 	return {
 		y: {
 			left:  space(lefts, universe.height,bor.left, title, typeData.y.left),
