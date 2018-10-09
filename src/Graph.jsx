@@ -3,45 +3,31 @@ import Drawer from './Drawer.jsx';
 
 import { init }   from './helpers.js';
 import { rndKey } from './core/utils.js';
+import { map }    from 'underscore';
 
 export default class Graph extends React.Component {
 
 	constructor(props){
 		super(props);
 		this.myKey = rndKey();
-		this.type = 'graph';
 		this.init();
 	}
 
 	componentDidMount(){
 		if(!this.sh){
 			this.init();
-		}else{
-			this.sh.setKey(this.myKey);
-			this.sh.reinit();
 		}
-		this.sh.updateGraph(this, this.myKey);
-	}
-
-	componentWillUnmount(){
-		if(this.sh){
-			this.sh.kill(this.myKey);
-		}
+		this.myKey = this.sh.updateGraph(this, this.myKey);
 	}
 
 	shouldComponentUpdate(pr){
-
-		if(!pr.__preprocessed){ // not sh, we update anyway
-			this.sh = init(pr,this.type,{ key: this.myKey, obj: this});
-			return true;
-		}
-
-		// sh managing updates
-		if(pr.__mgrId !== this.sh.__mgrId){
+		if(!pr.__preprocessed){
+			this.sh = init(pr,'',{ key: this.myKey, obj: this});
+		}else if(pr.__mgrId !== this.sh.__mgrId){
 			this.sh = pr;
-			this.sh.updateGraph(this, this.myKey);
+			this.myKey = this.sh.updateGraph(this, this.myKey);
 		}
-		return false;
+		return true;
 	}
 
 	componentDidUpdate(){
@@ -51,19 +37,16 @@ export default class Graph extends React.Component {
 		}else if(this.props.__preprocessed && this.props.__mgrId !== this.sh.__mgrId){
 			this.sh = this.props;
 			this.myKey = this.sh.updateGraph(this, this.myKey);
-		}else if(!this.sh.canMeasure() || this.myKey !== this.sh.graphKey()){
-			this.sh.setKey(this.myKey);
-			this.sh.reinit();
-		}
+    }
 	}
 
 	init(){
 		const pr = this.props;
 		if(pr.__preprocessed){ // done outside graph
 			this.sh = pr;
-			this.sh.setKey(this.myKey);
+			this.myKey = pr.graphKey;
 		}else{ // to be done here
-			this.sh = init(pr,this.type,{ key: this.myKey, obj: this });
+			this.sh = init(pr,'',{ key: this.myKey, obj: this});
 		}
 	}
 
@@ -73,33 +56,7 @@ export default class Graph extends React.Component {
 	}
 }
 
-class Legend extends React.Component {
-
-	constructor(props){
-		super(props);
-		this.myKey = rndKey();
-		this.type = 'legend';
-		this.init();
-	}
-
-	shouldComponentUpdate(pr){
-
-		if(!pr.__preprocessed){ // not sh, we update anyway
-			this.sh = init(pr,this.type,{ key: this.myKey, obj: this});
-			return true;
-		}
-		return false;
-	}
-
-	init(){
-		const pr = this.props;
-		if(pr.__preprocessed){ // done outside graph
-			this.sh = pr;
-			this.sh.setKey(this.myKey);
-		}else{ // to be done here
-			this.sh = init(pr,this.type,{ key: this.myKey, obj: this });
-		}
-	}
+class Legend extends Graph {
 
 	table(){
 
@@ -175,7 +132,7 @@ class Legend extends React.Component {
 			</span>;
 		};
 
-		return <div {...this.props}>{this.sh.legend().map( (l, idx) => print(l,idx) )}</div>;
+		return <div {...this.props}>{map(this.sh.legend(), (l, idx) => print(l,idx) )}</div>;
 	}
 
 	render(){
