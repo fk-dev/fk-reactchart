@@ -7,6 +7,7 @@ import { map } from 'underscore';
 import { isNil, mgr as mgrU, isString, isArray, computeSquare } from './utils.js';
 import { defMargins } from './proprieties.js';
 import { errorMgr }   from './errorMgr.js';
+import { ticks }      from './ticker.js';
 
 /* universe is {width , height}, this
  * is the total size of the svg picture.
@@ -117,8 +118,8 @@ const space = function(where, universe, margins, bounds, minVals){
 		// margins between borders and axis
 
 		let OMargin = {
-			min: margins[marginMap[where].min].marginsO ? margins[marginMap[where].min].marginsO : Math.max(defMargins.outer.min,minVals[marginMap[where].min]),
-			max: margins[marginMap[where].max].marginsO ? margins[marginMap[where].max].marginsO : Math.max(defMargins.outer.min,minVals[marginMap[where].max])
+			min: margins[marginMap[where].min].marginsO ? margins[marginMap[where].min].marginsO : Math.max(defMargins.outer.min,minVals[where]),
+			max: margins[marginMap[where].max].marginsO ? margins[marginMap[where].max].marginsO : Math.max(defMargins.outer.min,minVals[where])
 		};
 
 		// we have the world's corners
@@ -250,18 +251,12 @@ const computeOuterMargin = (where, limits, axis, measure, title, minimumValues) 
 	let tickLabelLength = 0;
 	const cadMar = cadratin.tickLabel[where]/3;
 	if(axis){
-		const { labelFSize, css } = axis.ticks.major;
+		const { step, labelFSize } = axis.ticks.major;
 		const { tickLabels } = axis;
+		const tickers = ticks(min, max, step, tickLabels, false, null, 1, 1, 10);
 
-		const computeLabels = () => {
-			const step = mgr.divide(mgr.distance(min,max),10);
-			let tickers = [min];
-			for(let i = 0; i < 10; i++){
-				const pos = tickers[tickers.length - 1];
-				tickers.push(mgr.add(pos,step));
-			}
-
-			let { labelize } = axis.ticks.major;
+		let { labelize } = axis.ticks.major;
+		if(tickers.length){
 			if(typeof labelize === 'string'){
 				const maxDist = max - min;
 				labelize = mgr.labelize(labelize, maxDist);
@@ -270,13 +265,8 @@ const computeOuterMargin = (where, limits, axis, measure, title, minimumValues) 
 			const prevTick = i => i > 0 ? tickers[i - 1] : null;
 			const nextTick = i => i < tickers.length - 1 ? tickers[i + 1] : null;
 
-			return tickers.map( (tick,idx) => labelize(tick, prevTick(idx), nextTick(idx)) === false ? mgr.label(tick,step,1) : labelize(tick, prevTick(idx), nextTick(idx)));
-		};
-
-		const labels = tickLabels && tickLabels.length ? tickLabels.map(x => x.label) : computeLabels();
-
-		if(labels.length){
-			const cn = css ? `${dir}AxisTickLabel` : null;
+			const labels  = tickers.map( (tick,idx) => labelize(tick.position, prevTick(idx), nextTick(idx)) === false ? tick.label : labelize(tick.position, prevTick(idx), nextTick(idx)));
+			const cn = `${dir}AxisTickLabel`;
 			const { width, height } = measureText(labels,labelFSize, cn );
 			const angle = axis.ticks.major.rotate * Math.PI/180;
 			const square = computeSquare(angle,  width, height);
@@ -430,7 +420,7 @@ export function spaces(universe, datas, axis, borders, title, lengthMgr){
 		bottom: axis.abs.find(x => x.placement === 'bottom')
 	};
 
-	let minVals = {left: 0, right: 0, top: 0, bottom: 0};
+	let minVals = {};
 
 	const margins = {
 		left: {

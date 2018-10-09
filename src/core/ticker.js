@@ -42,7 +42,7 @@ const checkMajDist = (labels,ref,D,start,cv, getLength,mgr) => {
  * beware of distance (period) versus
  * values (date), see {date,nbr}Mgr.js
 */
-const computeTicks = function(first, last, step, majLabelize, minor, mStep, minLabelize, fac, toPixel, height, square){
+const computeTicks = function(first, last, step, minor, mStep, fac, toPixel, height, square){
 	const mgr = typeMgr(first);
 	// smart guess
 	let start = mgr.closestRoundUp(first,mgr.divide(mgr.distance(first,last),10));
@@ -77,34 +77,28 @@ const computeTicks = function(first, last, step, majLabelize, minor, mStep, minL
 	}
 	start = mgr.add(start,majDist);
 	length = mgr.distance(start,last);
-	//const llength = mgr.getValue(mgr.multiply(majDist,mgr.labelF)) * toPixel;
+	const llength = mgr.getValue(mgr.multiply(majDist,mgr.labelF)) * toPixel;
 
 	let out = [];
 	let curValue = start;
-	let along = mgr.offset(majDist);
-// careful for infinite looping
-	if(isNil(curValue) || isNil(majDist)){
-		throw new Error("Ticker cannot compute with nil");
-	}
 	while(mgr.lowerThan(curValue,last)){
-		if(out.length === 4 && !minor && square){
-			out.forEach( (t,i) => {
-				t.label = majLabelize(out,i,mgr.label(t.position,majDist,fac));
-			});
+		if(out.length === 3 && !minor && square){
 			const reset = checkMajDist(out,majDist, mgr.getValue(majDist) * toPixel, start, curValue, square, mgr);
 			curValue = reset.curValue;
 			majDist = reset.majDist;
 			out = reset.store;
-			along = mgr.offset(majDist);
 		}
+		const fte = mgr.getValue(mgr.distance(curValue,first)) * toPixel;
+		const label = mgr.label(curValue,majDist,fac);
+		const l = square ? square(label,true) : llength;
 		out.push({
 			position: curValue,
 			offset: {
-				along,
+				along: mgr.offset(majDist),
 				perp: 0
 			},
 			extra: false,
-			label: null,
+			label: fte < 0.5 * l ? '' : label,
 			minor: false
 		});
 		// minor ticks
@@ -135,18 +129,11 @@ const computeTicks = function(first, last, step, majLabelize, minor, mStep, minL
 		}
 	}
 
-	// labelize
-	out.forEach( (tick,idx) => {
-		if(isNil(tick.label)){
-			tick.label = majLabelize(out,idx,mgr.label(tick.position,majDist,fac));
-		}
-	});
-
 	out = out.concat(mgr.extraTicks(majDist,first,last, out));
 	return out;
 };
 
-export function ticks(start, length, majStep, labels, majLabelize, minor, minStep, minLabelize, fac, toPixel, height, square){
+export function ticks(start, length, majStep, labels, minor, minStep, fac, toPixel, height, square){
 	if(labels && labels.length > 0){
 		return map(labels, (lab) => {
 			return {
@@ -160,5 +147,5 @@ export function ticks(start, length, majStep, labels, majLabelize, minor, minSte
 		});
 	}
 
-	return computeTicks(start, length, majStep, majLabelize, minor, minStep, minLabelize, fac, toPixel, height, square);
+	return computeTicks(start, length, majStep, minor, minStep, fac, toPixel, height, square);
 }

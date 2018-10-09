@@ -86,27 +86,6 @@ export function vm(measurer, ds, partner, bounds, dir, locProps, comFac, axisKey
 	// step
 	let majStep = majProps.step;
 	let minStep = minProps.step;
-	// labelize
-		// transform here if needed the labelize fct
-	['major','minor'].forEach( x => {
-		let p = locProps.ticks[x];
-		if(typeof p.labelize === 'string'){
-			const lmgr = typeMgr(ds[dir].d.max);
-			const maxDist = ds[dir].d.max - ds[dir].d.min;
-			p.labelize = lmgr.labelize(p.labelize, maxDist);
-		}
-	});
-
-	const majorLabelize = (ticks,idx, def) => {
-		const prev = idx > 0 ? ticks[idx - 1].position : null;
-		const next = idx < ticks.length - 1 ? ticks[idx + 1].position : null;
-		return majProps.labelize(ticks[idx].position, prev, next) === false ? def : majProps.labelize(ticks[idx].position, prev, next);
-	};
-	const minorLabelize = (ticks,idx, def) => {
-		const prev = idx > 0 ? ticks[idx - 1].position : null;
-		const next = idx < ticks.length - 1 ? ticks[idx + 1].position : null;
-		return minProps.labelize(ticks[idx].position, prev, next) === false ? def : minProps.labelize(ticks[idx].position, prev, next);
-	};
 
 	if(!isNil(locProps.interval)){
 		if(!majStep){
@@ -120,7 +99,7 @@ export function vm(measurer, ds, partner, bounds, dir, locProps, comFac, axisKey
 		minStep.offset = locProps.interval;
 	}
 
-	const tickers = ticks(min, max, majStep, ticksLabel, majorLabelize, minor, minStep, minorLabelize, comFac, toPixel, height, labelSquare);
+	const tickers = ticks(min, max, majStep, ticksLabel, minor, minStep, comFac, toPixel, height, labelSquare);
 
 	const prevTick = (idx) => idx > 0 ? tickers[idx - 1].position : null;
 	const nextTick = (idx) => idx < tickers.length - 1 ? tickers[idx + 1].position : null;
@@ -182,6 +161,11 @@ export function vm(measurer, ds, partner, bounds, dir, locProps, comFac, axisKey
 */
 
 		// label
+		if(typeof p.labelize === 'string'){
+			const lmgr = typeMgr(tick.position);
+			const maxDist = ds[dir].d.max - ds[dir].d.min;
+			p.labelize = lmgr.labelize(p.labelize, maxDist);
+		}
 		let labelProps = {
 			ds: ds,
 			label:	p.labelize(tick.position, prevTick(idx), nextTick(idx)) === false ? tick.label : p.labelize(tick.position, prevTick(idx), nextTick(idx)),
@@ -205,7 +189,7 @@ export function vm(measurer, ds, partner, bounds, dir, locProps, comFac, axisKey
 			y: perpOff + addPerp + p.labelOffset.y 
 		};
 
-		const alOff = isNil(p.labelOffset.along) ? tick.offset.along : p.labelOffset.along;
+		const alOff = isNil(p.labelOffset.along) ? p.labelize(tick.position, prevTick(idx), nextTick(idx)) !== false ? tick.offset.along : 0 : p.labelOffset.along;
 		const offset = {
 			x: labelProps.dir.x !== 0 ? alOff : 0,
 			y: labelProps.dir.y !== 0 ? alOff : 0
