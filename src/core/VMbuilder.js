@@ -153,17 +153,17 @@ const curve = function(get, { spaces, serie, data, gprops, idx }){
 
 const axis = function(props,state,measurer,axe,dir){
 
-	const partnerAxe = axe === 'abs' ? 'ord' : 'abs';
-	const othdir = dir === 'x' ? 'y' : 'x';
+	let partnerAxe = axe === 'abs' ? 'ord' : 'abs';
+	let othdir = dir === 'x' ? 'y' : 'x';
 
 	// for every abscissa
-	const out = map(state.spaces[dir], (ds,key) => {
+	let out = map(state.spaces[dir], (ds,key) => {
 
 		if(isNil(ds)){
 			return null;
 		}
 
-		const find = (key) => {
+		let find = (key) => {
 			switch(key){
 				case 'top':
 				case 'right':
@@ -173,22 +173,22 @@ const axis = function(props,state,measurer,axe,dir){
 			}
 		};
 
-		const axisKey = axe + '.' + key;
+		let axisKey = axe + '.' + key;
 
-		const axisProps = findWhere(props.axisProps[axe], {placement: key});
+		let axisProps = findWhere(props.axisProps[axe], {placement: key});
 
-		const partnerAxis = props.axisProps[partnerAxe][axisProps.partner];
-		const partnerDs = state.spaces[othdir][partnerAxis.placement];
+		let partnerAxis = props.axisProps[partnerAxe][axisProps.partner];
+		let partnerDs = state.spaces[othdir][partnerAxis.placement];
 
 		let DS = {};
 		DS[dir] = ds;
 		DS[othdir] = partnerDs;
-		const mgr = typeMgr(partnerDs.d.max);
-		const partner = {
+		let mgr = typeMgr(partnerDs.d.max);
+		let partner = {
 			pos: partnerDs.d[find(key)],
 			length: mgr.distance(partnerDs.d.max,partnerDs.d.min)
 		};
-		const bounds = {min: ds.d.min, max: ds.d.max};
+		let bounds = {min: ds.d.min, max: ds.d.max};
 
 		return {
 			show: axisProps.show,
@@ -226,7 +226,7 @@ export let backgroundVM = {
 
 const defaultTo = (v,def) => isNil(v) ? def : v;
 
-export const foregroundVM = {
+export let foregroundVM = {
 	create: (get, { foreground, spaces }) => {
 		if(isNil(foreground)){
 			return null;
