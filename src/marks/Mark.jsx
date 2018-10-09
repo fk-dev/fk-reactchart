@@ -13,8 +13,8 @@ export default class Mark extends React.Component {
 	}
 
 	mark(state){
-		const { css, gIdx, type, index } = this.props;
-		const opts = {css, gIdx, index };
+		let { css, gIdx, type } = this.props;
+		let opts = {css, gIdx };
 		switch(type){
 			case 'square':
 			case 'Square':
@@ -30,21 +30,19 @@ export default class Mark extends React.Component {
 			case 'Bar':
 				return <Bar {...opts} state={state} />;
 			default:
-				throw new Error(`unrecognized mark type: "${this.props.type}"`);
+				throw new Error('unrecognized mark type: "' + this.props.type + '"');
 		}
 	}
 
 	pin(pinS){
-		const { css, gIdx } = this.props;
-		const { pinColor, path, width, labelFS, labelAnc, color } = pinS;
-		const fontSize = typeof labelFS === 'number' ? `${labelFS}pt` : labelFS;
-		const pathProps = { strokeWidth: width, stroke: pinColor, fill: 'none'};
-		const textProps = { fontSize, fill: color } ;
+		let { css, gIdx } = this.props;
+		let pathProps = css ? null : { strokeWidth: 1, stroke: pinS.pinColor, fill: 'none', d: pinS.path };
+		let textProps = css ? null : { fontSize: pinS.labelFS, style: {textAnchor: pinS.labelAnc}, fill: pinS.color } ;
 		return pinS.path ? <g>
-			<path className={css ? `pin pin-${gIdx}` : ''} {...pathProps} d={path}/>
-			<text className={css ? `tag tag-${gIdx}` : ''} {...textProps} style={{textAnchor: labelAnc}} x={pinS.xL} y={pinS.yL}>{pinS.label}</text>
+			<path className={'pin pin-' + gIdx} {...pathProps}/>
+			<text className={'tag tag-' + gIdx} {...textProps} x={pinS.xL} y={pinS.yL}>{pinS.label}</text>
 		</g> : 
-		<text className={css ? `tag tag-${gIdx}` : ''} {...textProps} x={pinS.xL} y={pinS.yL}>{pinS.label}</text>;
+		<text className={'tag tag-' + gIdx} {...textProps} x={pinS.xL} y={pinS.yL}>{pinS.label}</text>;
 	}
 
 	render(){

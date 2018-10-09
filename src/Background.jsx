@@ -24,16 +24,11 @@ export default class Background extends React.Component {
 	}
 
 	render(){
-		const { spaceX, spaceY, color, css } = this.props.state;
-
-		const x = spaceX.min;
-		const y = spaceY.max;
-		const width = spaceX.max - spaceX.min;
-		const height = spaceY.min - spaceY.max;
-		const opts = {
-			fill: color
-		}; 
-		return !css && color === 'none' ? null : <rect className={css ? 'background' : ''} width={width} height={height} {...opts} strokeWidth='0' x={x} y={y}/>;
+		const x = this.props.state.spaceX.min;
+		const y = this.props.state.spaceY.max;
+		const width = this.props.state.spaceX.max - this.props.state.spaceX.min;
+		const height = this.props.state.spaceY.min - this.props.state.spaceY.max;
+		return this.props.state.color === 'none' ? null : <rect width={width} height={height} strokeWidth='0' fill={this.props.state.color} x={x} y={y}/>;
 
 	}
 }

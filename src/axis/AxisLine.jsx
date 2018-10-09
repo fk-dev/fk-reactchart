@@ -43,45 +43,43 @@ export default class AxisLine extends React.Component {
 	}
 
 	axis(){
-		const lprops = this.props.state.line;
-		const { placement } = this.props;
-		const { css } = this.props.state;
+		let lprops = this.props.state.line;
 
-		const lp = {
+		let lp = this.props.css ? null: {
 			stroke: lprops.color,
 			strokeWidth: lprops.width
 		};
 
 		switch(lprops.CS){
 			case 'cart':
-				return <line className={css ? `axis-line axis-line-${placement} ${this.props.className}` : ''} {...lp}
+				return <line className={this.props.className} {...lp}
 					x1={lprops.start.x} x2={lprops.end.x} y1={lprops.start.y} y2={lprops.end.y}/>;
 			case 'polar':
-				return <ellipse className={css ? `axis-line axis-line-${placement} ${this.props.className}` : '' } {...lp}
+				return <ellipse className={this.props.className} {...lp}
 					cx={lprops.origin.x} cy={lprops.origin.y} rx={lprops.radius.x} ry={lprops.radius.y}/>;
 			default:
-				throw new Error(`Unknown coordinate system: "${this.props.state.CS}"`);
+				throw new Error('Unknown coordinate system: "' + this.props.state.CS + '"' );
 		}
 	}
 
 	factor(){
-		const { state, placement } = this.props;
-		const { comFac, line, css } = state;
-		const { factor, Fsize, offset, color, ds } = comFac;
+		let { state } = this.props;
+		let { comFac, line } = state;
+		let { factor, Fsize, offset, color, ds } = comFac;
 		if(isNil(factor) || factor === 1){
 			return null;
 		}
 
-		const dir = direction(line, ds);
+		let dir = direction(line, ds);
 		dir.x = Math.sqrt(dir.x / dir.line);
 		dir.y = Math.sqrt(dir.y / dir.line);
 
-		const mgr = mgrUtil(factor);
-		const om = mgr.orderMag(factor);
+		let mgr = mgrUtil(factor);
+		let om = mgr.orderMag(factor);
 
-		const labMar = defMargins.outer.label.bottom; // = top, left, right
-		const width  = 5 * (3 + ( om > 100 ? 0.8 : om > 10 ? 0.5 : 0.2 )); // 5px for 10^(123)
-		const height = Fsize;
+		let labMar = defMargins.outer.label.bottom; // = top, left, right
+		let width  = 5 * (3 + ( om > 100 ? 0.8 : om > 10 ? 0.5 : 0.2 )); // 5px for 10^(123)
+		let height = Fsize;
 
 		let off = {x: 0, y: 0};
 		switch(dir.corner){
@@ -97,14 +95,13 @@ export default class AxisLine extends React.Component {
 				off.x = width;
 				off.y = height + labMar;
 		}
-		const props = {
+
+		let pos = {
 			x: offset.x + line.end.x + off.x,
-			y: offset.y + line.end.y + off.y,
-			fill: color,
-			fontSize: typeof Fsize === 'number' ? `${Fsize}pt` : Fsize
+			y: offset.y + line.end.y + off.y
 		};
 
-		return <text className={css ? `axis-factor axis-factor-${placement}` : ''} {...props}>
+		return <text {...pos} fill={color} fontSize={typeof Fsize === 'number' ? `${Fsize}pt` : Fsize}>
 			<tspan textAnchor='end'>&#183;10</tspan>
 			<tspan dy={-0.5 * toNumber(Fsize)} textAnchor='start'>{om}</tspan>
 		</text>;
@@ -112,13 +109,12 @@ export default class AxisLine extends React.Component {
 
 	render(){
 
-		const { className, placement } = this.props;
-		const labName = `axis-label axis-label-${placement} ${className}Label`;
+		let labName = this.props.className + 'Label';
 
 		return this.props.state.show === false ? null : <g>
 			{this.axis()}
 			{this.factor()}
-			<Label className={labName} state={this.props.state.label}/>
+			<Label className={labName} css={this.props.css} state={this.props.state.label}/>
 		</g>;
 	}
 

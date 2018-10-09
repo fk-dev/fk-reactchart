@@ -17,16 +17,16 @@ export default class BarChart extends React.Component {
 	}
 
 	render() {
-		const { state, gIdx } = this.props;
-		const opts = { gIdx };
-		const { marks, css } = state;
+		let { state, css, gIdx } = this.props;
+		let opts = { css, gIdx };
+		let { marks } = state;
 
 		if(marks.length === 0){
 			return null;
 		}
 
-		return <g className={ css ? 'barchart' : null }>
-			{map(marks, (bar,i) => <Mark {...opts} index={i} key={bar.key} state={bar} type='bar'/>)}
+		return <g>
+			{map(marks, (bar) => <Mark {...opts} key={bar.key} state={bar} type='bar'/>)}
 		</g>;
 	}
 }

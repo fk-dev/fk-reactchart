@@ -98,7 +98,6 @@ const computeTicks = function(first, last, step, majLabelize, minor, mStep, minL
 			along = mgr.offset(majDist);
 		}
 		out.push({
-			type: 'major',
 			position: curValue,
 			offset: {
 				along,
@@ -117,7 +116,6 @@ const computeTicks = function(first, last, step, majLabelize, minor, mStep, minL
 					break;
 				}
 				out.push({
-					type: 'minor',
 					position: curminValue,
 					offset: {
 						along: mgr.offset(minDist),

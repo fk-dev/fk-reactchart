@@ -6,53 +6,74 @@ import { extend, extendOwn } from 'underscore';
 // defaults for marks
 let marks = {};
 
-const commonMark = () => {
+marks.dot = marks.Dot = () => {
 	return {
 		draw: false,
-		css: null,
 		ds: {
 			x: {},
-			y: {}
+			y:{}
 		},
 		position: {
 			x: 0,
 			y: 0
 		},
+		radius: 3,
+		color: 'black',
 		width: 0,
+		fill: null,
+		size: null,
 		shade: 1
 	};
 };
 
-marks.dot = marks.Dot = () => extend(commonMark(), {
-	radius: 3,
-	color: 'black',
-	fill: null,
-	size: null
-});
+marks.square = marks.Square = () => {
+	return {
+		draw: false,
+		ds: {
+			x: {},
+			y: {}
+		},
+		position:{
+			x: 0,
+			y: 0
+		},
+		color: 'black',
+		width: 0,
+		fill: null,
+		size: 0,
+		shade: 1
+	};
+};
 
-marks.square = marks.Square = () => extend(commonMark(),{
-	color: 'black',
-	fill: null,
-	size: 0,
-});
-
-marks.bar = marks.Bar = () => extend(commonMark(),{
-	drop:{
-		x:null,
-		y:0
-	},
-	span:0.5,
-	offset: {
-		x: 0,
-		y: 0
-	}
-});
+marks.bar = marks.Bar = () => {
+	return {
+		draw: false,
+		ds: {
+			x: {}, // see space-mgr for details
+			y: {}
+		}, // see space-mgr for details
+		position:{
+			x:0,
+			y:0
+		},
+		drop:{
+			x:null,
+			y:0
+		},
+		width: 0,
+		span:0.5,
+		offset: {
+			x: 0,
+			y: 0
+		},
+		shade: 1
+	};
+};
 
 // defaults for graphs
 let graph = {};
 graph.common = () => {
 	return {
-		css: null,
 		color: 'black',
 		width: 1,
 		fill: 'none',
@@ -74,14 +95,12 @@ graph.common = () => {
 		shader: null, //playing with colors
 		process: null, //playing with data {dir: x || y, type: 'histogram'}
 		tag: {
-			css: null,
 			show: false, // show the tag
 			print: (p) => p.tag,
 			fontSize: 10,
 			pin: false, // show the pin
 			pinColor: 'black', // color of the pin
 			pinLength: 10, // 10 px as pin length
-			pinWidth: 1, // 1 px as pin width
 			pinAngle: 90, // direction of pin
 			pinHook: 3, // 3px for hook
 			color: 'black' // color of the tag
@@ -151,7 +170,6 @@ export const Grid = {
 // that's a major
 export const Tick = {
 	show: true,
-	css: null,
 	width: 1,
 	length: 15,
 	out: 0.25, // proportion that is outside
@@ -174,7 +192,7 @@ const axe = {
 			length: 7,
 			out: 0,
 			color: 'gray',
-			labelize: () => false
+			labelize: () => ''
 		})
 	},
 	grid: {
@@ -184,7 +202,6 @@ const axe = {
 		})
 	},
 	show: true,
-	css: null, //
 	// to force locally definition
 	min: null,
 	max: null,
@@ -219,32 +236,13 @@ export function Axes(axis){
 ///
 export function Graph(axis){
 	return {
-		////// general
+		// general
 		css: false,
 		name: 'G',
 		height: 400,	// defines the universe's height
 		width:	600,	// defines the universe's width
-		axisOnTop: false,
-		// margins
-		innerMargin: {left: null, bottom: null, right: null, top: null}, // left, bottom, right, top
-		// defMargins.axis.ticks
-		// if defined, overwrite
-		factorMargin: {left: null, bottom: null, right: null, top: null}, // left, bottom, right, top
-		// factorMargin + defMargins.axis.label + defMargins.axis.ticks
-		// if defined, overwrite
-		outerMargin: {left: null, bottom: null, right: null, top: null}, // left, bottom, right, top
-		// data process, what to do with failed points
-		discard: true,
-
-		////// cadre
-    cadre: {
-			show: false,
-			css: false
-		},
-
-		////// legend
+    cadre: null,
 		legend: {
-			css: false,
 			iconWidth: 30,
 			iconHeight: 20,
 			iconHMargin: 0, // offset from center
@@ -254,30 +252,27 @@ export function Graph(axis){
 				onClick: null // fade or suppress
 			}
 		},
-
-		////// foreground
 		foreground: null,
-
-		////// background
-		background: {
-			css: null,
-			color: 'none'
-		},
-
-		////// title
-		titleProps: {
-			title: '',
-			titleFSize: 30,
-			titleRotate: 0,
-			css: null
-		},
-
-		////// data, series
+		background: null,
+		title: '',
+		titleFSize: 30,
+		titleRotate: 0,
+		axisOnTop: false,
+		// margins
+		innerMargin: {left: null, bottom: null, right: null, top: null}, // left, bottom, right, top
+		// defMargins.axis.ticks
+		// if defined, overwrite
+		factorMargin: {left: null, bottom: null, right: null, top: null}, // left, bottom, right, top
+		// factorMargin + defMargins.axis.label + defMargins.axis.ticks
+		// if defined, overwrite
+		outerMargin: {left: null, bottom: null, right: null, top: null}, // left, bottom, right, top
+		// data
 		data: [],
-		////// data, props
 		graphProps: [],
-		////// axis
-		axisProps: Axes(axis)
+		// axis
+		axisProps: Axes(axis),
+		// data process
+		discard: true
 	};
 }
 

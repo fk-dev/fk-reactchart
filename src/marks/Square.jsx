@@ -28,15 +28,15 @@ export default class SquareMark extends React.Component {
 	}
 
 	render(){
-		const { css, gIdx, state, index } = this.props;
-		const { ds, position, size, fill, color, shade, width} = state;
+		let { css, gIdx, state } = this.props;
+		let { ds, position, size, fill, color, shade, width} = state;
 
-		const x = toC(ds.x,position.x) - size;
-		const y = toC(ds.y,position.y) - size;
-		const f = fill || color;
+		let x = toC(ds.x,position.x) - size;
+		let y = toC(ds.y,position.y) - size;
+		let f = fill || color;
 
-		const rectProps = css ? null : { width: 2 * size, height: 2 * size, fill: f, opacity: shade, stroke: color, strokeWidth: width };
+		let rectProps = css ? null : { width: 2 * size, height: 2 * size, fill: f, opacity: shade, stroke: color, strokeWidth: width };
 
-		return <rect className={`mark mark-${gIdx}.${index}`} x={x} y={y} {...rectProps}/>;
+		return <rect className={'mark mark-' + gIdx} x={x} y={y} {...rectProps}/>;
 	}
 }

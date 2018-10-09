@@ -18,17 +18,14 @@ export default class Axe extends React.Component {
 
 	render(){
 
-		const { state, className } = this.props;
-		const { placement } = state;
+		let { state, className, css } = this.props;
 
-		const axisName = `${className}Line`;
-		const tickName = `${className}Tick`;
+		let axisName = className + 'Line';
+		let tickName = className + 'Tick';
 
-		return <g className={`axis axis-${placement}`}>
-			<g className='ticks'>
-				{ map(state.ticks, (tick) => <Tick className={tickName} key={tick.key} state={tick}/> ) }
-			</g>
-			<AxisLine placement={placement} className={axisName} state={state.axisLine}/>
+		return <g>
+			{ map(state.ticks, (tick) => <Tick className={tickName} css={css} key={tick.key} state={tick}/> ) }
+			<AxisLine className={axisName} css={css} state={state.axisLine}/>
 		</g>;
 	}
 }

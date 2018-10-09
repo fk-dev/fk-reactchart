@@ -151,7 +151,7 @@ const curve = function(get, { spaces, serie, data, gprops, idx }){
 			};
 };
 
-const axis = function(props,state,measurer,axe,dir, motherCss){
+const axis = function(props,state,measurer,axe,dir){
 
 	const partnerAxe = axe === 'abs' ? 'ord' : 'abs';
 	const othdir = dir === 'x' ? 'y' : 'x';
@@ -176,10 +176,9 @@ const axis = function(props,state,measurer,axe,dir, motherCss){
 		const axisKey = axe + '.' + key;
 
 		const axisProps = findWhere(props.axisProps[axe], {placement: key});
-		const css = isNil(axisProps.css) ? motherCss : axisProps.css;
 
 		const partnerAxis = props.axisProps[partnerAxe][axisProps.partner];
-		const partnerDs   = state.spaces[othdir][partnerAxis.placement];
+		const partnerDs = state.spaces[othdir][partnerAxis.placement];
 
 		let DS = {};
 		DS[dir] = ds;
@@ -193,10 +192,9 @@ const axis = function(props,state,measurer,axe,dir, motherCss){
 
 		return {
 			show: axisProps.show,
-			placement: axisProps.placement,
 			key: axisKey,
-			axisLine: axisLineVM(ds,axisProps,partnerDs,dir, motherCss),
-			ticks: ticksVM(css: { major: axisProps.ticks.major.css, minor: axisProps.ticks.minor.css}, measurer, DS, partner, bounds, dir, axisProps, axisProps.factor, axisKey, css, axisProps.placement)
+			axisLine: axisLineVM(ds,axisProps,partnerDs,dir ),
+			ticks: ticksVM(measurer, DS, partner, bounds, dir, axisProps, axisProps.factor, axisKey)
 		};
 	});
 
@@ -211,12 +209,9 @@ export let cadreVM = {
 };
 
 export let backgroundVM = {
-	create: (get, { color, spaces, css, motherCss }) => {
-		css = isNil(css) ? motherCss : css;
-		
+	create: (get, { background, spaces }) => {
 		return {
-			color,
-			css,
+			color: background || 'none',
 			spaceX:{
 				min: Math.min.apply(null,map(spaces.x,(ds) => ds ? ds.c.min :  1e6 )),
 				max: Math.max.apply(null,map(spaces.x,(ds) => ds ? ds.c.max : -1e6 ))
@@ -237,7 +232,7 @@ export const foregroundVM = {
 			return null;
 		}
 
-		const fore = Array.isArray(foreground) ? foreground : [ foreground ];
+		let fore = Array.isArray(foreground) ? foreground : [ foreground ];
 		each(fore, f => {
 			let { cx, cy, width, height } = f;
 			cx     = defaultTo(cx,0);
@@ -247,9 +242,9 @@ export const foregroundVM = {
 			extend(f,{ cx, cy, width, height });
 		});
 
-		const { x, y } = spaces;
-		const { bottom } = x;
-		const { left }   = y;
+		let { x, y } = spaces;
+		let { bottom } = x;
+		let { left }   = y;
 		return {
 			ds: {
 				x: bottom,
@@ -261,20 +256,21 @@ export const foregroundVM = {
 };
 
 export let titleVM = {
-	create: (get, { title, titleFSize, css, motherCss, width, height, placement }) => {
+	create: (get, { title, titleFSize, width, height }) => {
 
-		css = isNil(css) ? motherCss : css;
-
-		return { title, titleFSize, width, height, placement, css };
+		return {
+			title, titleFSize, width, height, placement: 'top'
+		};
 	}
 };
 
 export let axesVM = {
 
-	create: (get, { props, state, measurer, motherCss }) => {
+	create: (get, { props, state, measurer }) => {
 		return {
-			abs: axis(props,state,measurer,'abs','x', motherCss),
-			ord: axis(props,state,measurer,'ord','y', motherCss)
+			css: props.css,
+			abs: axis(props,state,measurer,'abs','x'),
+			ord: axis(props,state,measurer,'ord','y')
 		};
 	}
 

@@ -8,13 +8,6 @@ export default class Cadre extends React.Component {
 	}
 
 	render(){
-		const { state } = this.props;
-		const { css, width, height } = state;
-		const props = {
-			strokeWidth: 1,
-			stroke: 'black' 
-		};
-
-		return <rect className={css ? 'cadre' : ''} x='0' y='0' fill='none' width={width} height={height} {...props}/>;
+		return <rect width={this.props.width} height={this.props.height} strokeWidth='1' stroke='black' fill='none' x='0' y='0'/>;
 	}
 }

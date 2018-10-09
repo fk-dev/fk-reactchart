@@ -18,12 +18,12 @@ export default class PlainChart extends React.Component {
 	}
 
 	render(){
-		const { state, css, gIdx } = this.props;
-		const opts = { css, gIdx };
-		const { marks, path, markType } = state;
-		return marks.length === 0 ? <Path className='plain' {...opts} state={path}/> : <g className='plain'>
+		let { state, css, gIdx } = this.props;
+		let opts = { css, gIdx };
+		let { marks, path, markType } = state;
+		return marks.length === 0 ? <Path {...opts} state={path}/> : <g>
 			<Path {...opts} state={path}/>
-			{map(marks, (point,index) => <Mark key={point.key} index={index} {...opts} state={point} type={markType}/>)}
+			{map(marks, (point) => <Mark key={point.key} {...opts} state={point} type={markType}/>)}
 			</g>;
 	}
 }

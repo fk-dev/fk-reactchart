@@ -40,10 +40,7 @@ export default class Graph extends React.Component {
 		if(pr.__mgrId !== this.sh.__mgrId){
 			this.sh = pr;
 			this.sh.updateGraph(this, this.myKey);
-		}else if(!this.sh.canMeasure()){
-			this.sh.reinit();
 		}
-
 		return false;
 	}
 

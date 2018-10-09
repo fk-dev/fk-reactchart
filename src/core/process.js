@@ -126,25 +126,9 @@ const postprocessAxis = function(props){
 
 };
 
-const retroComp = p => {
-
-	if(p.title && typeof p.title === 'string'){
-		p.titleProps = {};
-		['title', 'titleFSize', 'titleRotate'].forEach( x => {
-			p.titleProps[x] = p[x];
-		});
-	}
-
-	return p;
-};
-
-export function defaultTheProps(props){
+const defaultTheProps = function(props){
 
 	let axis = preprocessAxis(props);
-
-	// retro compatibility
-		// title
-	props = retroComp(props);
 
 	// fill by default
 	let fullprops = utils.deepCp(utils.deepCp({},gProps.Graph(axis)), props);
@@ -175,7 +159,7 @@ export function defaultTheProps(props){
 	fullprops.__defaulted = true;
 
 	return fullprops;
-}
+};
 
 const addDefaultDrop = function(serie, dir, ds, after){
 
@@ -430,6 +414,8 @@ const offStairs = function(serie,gprops){
 	}
 };
 
+export { defaultTheProps };
+
 export function process(getNode, rawProps, getMgr){
 
 	const props = rawProps && rawProps.__defaulted ? rawProps : defaultTheProps(utils.deepCp({},rawProps));
@@ -516,6 +502,8 @@ export function process(getNode, rawProps, getMgr){
 		}
 	}
 
+	const title = {title: props.title, titleFSize: props.titleFSize, angle: props.titleRotate};
+
 	// getting dsx and dsy
 
 	// span and offet pointwise
@@ -555,7 +543,7 @@ export function process(getNode, rawProps, getMgr){
 	}
 
 	// space = {dsx, dsy}
-	state.spaces = spaces({width: props.width, height: props.height}, data, {abs, ord}, borders, props.titleProps, getMgr());
+	state.spaces = spaces({width: props.width, height: props.height}, data, {abs, ord}, borders, title, getMgr());
 
 	// defaut drops for those that don't have them
 	state.series = map(state.series, (serie,idx) => {
@@ -599,24 +587,23 @@ export function process(getNode, rawProps, getMgr){
 	imVM.cadre = cadreVM.create(() => getNode().cadre, { show: props.cadre.show, css: props.cadre.css, width: props.width, height: props.height});
 
 	// 2 - background
-	imVM.background = backgroundVM.create(() => getNode().background, { color: props.background.color, css: props.background.css, spaces: state.spaces, motherCss: props.css });
+	imVM.background = backgroundVM.create(() => getNode().background, { background: props.background, spaces: state.spaces });
 
 	// 3 - foreground
 	imVM.foreground = foregroundVM.create(() => getNode().foreground, { foreground: props.foreground, spaces: state.spaces });
 
 	// 4 - Title
-	imVM.title = titleVM.create(() => getNode().title, { 
-		title: props.titleProps.title,
-		titleFSize: props.titleProps.titleFSize,
-		css: props.titleProps.css,
-		motherCss: props.css,
+	imVM.title = titleVM.create(() => getNode().title, {
+		title: props.title,
+		titleFSize: props.titleFSize,
 		width: props.width,
-		height: getMgr().measureText(props.titleProps.title, props.titleProps.titleFSize, props.titleProps.css ? 'title' : null).height + getMgr().lengthes().title, // height + cadratin
+		// as of now, it's not used
+		height: props.height,
 		placement: 'top'
 	});
 
 	// 5 - Axes
-	imVM.axes = axesVM.create(() => getNode().axes, { props, state, measurer: getMgr(), motherCss: props.css});
+	imVM.axes = axesVM.create(() => getNode().axes, { props, state, measurer: getMgr()});
 
 	// 6 - Curves
 	imVM.curves = curvesVM.create(() => getNode().curves, { props, state } );
