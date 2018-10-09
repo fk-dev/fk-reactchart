@@ -4,7 +4,7 @@ import { isEqual } from './core/im-utils.js';
 export default class Cadre extends React.Component {
 
 	shouldComponentUpdate(props){
-		return !isEqual(props.width,this.props.width) || !isEqual(props.height,this.props.height);
+		return !isEqual(props.cadre,this.props.cadre);
 	}
 
 	render(){

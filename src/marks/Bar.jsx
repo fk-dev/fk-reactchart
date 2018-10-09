@@ -81,7 +81,7 @@ export default class BarMark extends React.Component {
 		}
 
 		let { strokeWidth, shade } = state;
-		let rProps = css ? { height, width } : { height, width, stroke, strokeWidth, fill: color, opacity: shade };
+		let rProps = css ? null : { height, width, stroke, strokeWidth, fill: color, opacity: shade };
 
 		return <rect className={'mark mark-' + gIdx} x={x} y={y} {...rProps}/>; 
 	}
