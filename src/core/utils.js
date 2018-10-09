@@ -108,11 +108,11 @@ export function computeSquare(angle,width,height){
 
 export function measure(gid){
 
-	let mother = typeof document === 'undefined' ? null : document.getElementById(`fkchartmeasurer-${gid}`);
+	let mother =  document.getElementById(`fkchartmeasurer-${gid}`);
 
 	let active = false;
 
-	if(isNil(mother)){
+	if(typeof document === 'undefined' || isNil(mother)){
 		return {
 			text: () => {
 				return {
