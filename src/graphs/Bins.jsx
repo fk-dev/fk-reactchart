@@ -148,7 +148,7 @@ export default class Bins extends React.Component {
 		const { state } = this.props;
 		const delta = state.positions.length > 1 ? state.positions[1].x -  state.positions[0].x : 1;
 
-		return <g>
+		return <g className={this.props.className}>
 			{state.positions.map( (pos,idx) => this.bin(pos,state.drops[idx],delta,idx))}
 			{this.path()}
 		</g>;

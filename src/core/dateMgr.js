@@ -59,7 +59,7 @@ let _makePeriod = function(msOrDur){
 		weeks:  dur.weeks(),
 		days:   dur.days() - 7 * dur.weeks(),
 		total:  dur.asDays(),
-		offset: dur.asMonths() > 0
+		offset: dur.months() > 0
 	};
 };
 

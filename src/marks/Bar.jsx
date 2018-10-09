@@ -34,7 +34,7 @@ export default class BarMark extends React.Component {
 
 	render() {
 
-		const { state, gIdx, index } = this.props;
+		const { state, css, gIdx, index } = this.props;
 
 		const mgr = {
 			x: typeMgr(state.position.x),
@@ -80,7 +80,7 @@ export default class BarMark extends React.Component {
 			y -= height;
 		}
 
-		const { strokeWidth, shade, css } = state;
+		const { strokeWidth, shade } = state;
 		const rProps = { height, width, stroke, strokeWidth, fill: color, opacity: shade };
 
 		return <rect className={css ? `mark mark-${gIdx}.${index}` : ''} x={x} y={y} {...rProps}/>; 
