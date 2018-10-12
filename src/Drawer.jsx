@@ -5,6 +5,7 @@ import Cadre from './Cadre.jsx';
 import Background from './Background.jsx';
 import Foreground from './Foreground.jsx';
 import Title from './Title.jsx';
+import Measurer from './Measurer.jsx';
 
 import { isEqual } from './core/im-utils.js';
 
@@ -48,14 +49,14 @@ export default class Drawer extends React.Component {
 
 		const state = this.props.state || {width: 200, height: 200};
 
-		return <svg width={state.width} height={state.height} id={this.props.id} className='reactchart'>
+		return <svg width={state.width} height={state.height} id={this.props.id} className={this.props.className}>
 			{ state.cadre.show ? <Cadre state={state.cadre}/> : null }
-			{ state.background ? <Background state={state.background}/>  : null }
+			{ state.background.show ? <Background state={state.background}/>  : null }
 			{ state.title && state.title.title.length ? <Title state={state.title} /> : null }
 			{ state.axis || state.curves ? this.orderAG() : null}
 			{ state.foreground ? <Foreground state={state.foreground} pWidth={state.width} pHeight={state.height}/> : null }
 			{ this.empty() }
-			<text x={-10} y={-10} anchor='middle' style={{visibility: 'hidden'}} id={`fkchartmeasurer-${this.props.id}`}/>
+			<Measurer id={this.props.id}/>
 		</svg>;
 	}
 }

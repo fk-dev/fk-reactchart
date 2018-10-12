@@ -108,11 +108,9 @@ export function computeSquare(angle,width,height){
 
 export function measure(gid){
 
-	let mother = typeof document === 'undefined' ? null : document.getElementById(`fkchartmeasurer-${gid}`);
+	let active = typeof document !== 'undefined' && document.getElementById(`fkchartmeasurer-${gid}`) ? true : false;
 
-	let active = false;
-
-	if(isNil(mother)){
+	if(!active){
 		return {
 			text: (txt,fs) => {
 				return {
@@ -150,15 +148,18 @@ export function measure(gid){
 			return { width: 0, height: 0};
 		}
 
-		if(clN){
-			mother.setAttribute('class', clN);
-			mother.style.fontSize = "";
-		}else{
-			mother.style.fontSize = typeof fontSize === 'number' ? `${fontSize}pt` : fontSize;
-			mother.removeAttribute('class');
+		const elt = `fkchartmeasurer-${gid}${clN ? `-${clN}` : ''}`;
+		const meas = typeof document === 'undefined' ? null : document.getElementById(elt);
+		if(!meas){
+			return {width:0, height: 0};
 		}
-		mother.innerHTML = str;
-		const rect = mother.getBoundingClientRect();
+		if(clN){
+			meas.style.fontSize = "";
+		}else{
+			meas.style.fontSize = typeof fontSize === 'number' ? `${fontSize}pt` : fontSize;
+		}
+		meas.innerHTML = str;
+		const rect = meas.getBoundingClientRect();
 		const { width, height }  = rect;
 
 		if(fontSize && width === 0 && height === 0){
@@ -199,8 +200,8 @@ export function measure(gid){
 		let axisLabel = {};
 		let tickLabel = {};
 		for(let u in places){
-			axisLabel[u] = getCadratin( ( props.axisProps[places[u]].find(x => x.placement === u) || {labelFSize: 0}).labelFSize, `${axe[u]}AxisLabel`);
-			tickLabel[u] = getCadratin( ( props.axisProps[places[u]].find(x => x.placement === u) || {ticks: { major: {labelFSize: 0} } }).ticks.major.labelFSize, `${axe[u]}AxisTickLabel`);
+			axisLabel[u] = getCadratin( ( props.axisProps[places[u]].find(x => x.placement === u) || {labelFSize: 0}).labelFSize, `axis${axe[u]}${u}`);
+			tickLabel[u] = getCadratin( ( props.axisProps[places[u]].find(x => x.placement === u) || {ticks: { major: {labelFSize: 0} } }).ticks.major.labelFSize, `ticksmajor${axe[u]}${u}`);
 		}
 
 		return {
@@ -210,15 +211,10 @@ export function measure(gid){
 		};
 	};
 
-	const kill = () => {
-		mother = null;
-	};
-
 	return {
 		text: measureText,
 		cadratin,
-		active,
-		kill
+		active
 	};
 
 }

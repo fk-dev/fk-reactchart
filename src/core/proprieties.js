@@ -260,6 +260,7 @@ export function Graph(axis){
 
 		////// background
 		background: {
+      show: false,
 			css: null,
 			color: 'none'
 		},

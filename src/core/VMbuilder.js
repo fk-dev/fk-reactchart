@@ -191,12 +191,16 @@ const axis = function(props,state,measurer,axe,dir, motherCss){
 		};
 		const bounds = {min: ds.d.min, max: ds.d.max};
 
+		const { margins } = state.spaces;
+
+		const ticks = ticksVM(css: { major: axisProps.ticks.major.css, minor: axisProps.ticks.minor.css }, measurer, DS, partner, bounds, dir, axisProps, axisProps.factor, axisKey, motherCss: css, axisProps.placement, margins);
+
 		return {
 			show: axisProps.show,
 			placement: axisProps.placement,
 			key: axisKey,
-			axisLine: axisLineVM(ds,axisProps,partnerDs,dir, motherCss),
-			ticks: ticksVM(css: { major: axisProps.ticks.major.css, minor: axisProps.ticks.minor.css}, measurer, DS, partner, bounds, dir, axisProps, axisProps.factor, axisKey, css, axisProps.placement)
+			axisLine: axisLineVM(ds,axisProps,partnerDs,dir, motherCss, measurer),
+			ticks
 		};
 	});
 

@@ -241,6 +241,38 @@ export function label(value, dist, fac){
 	return (value / fac).toFixed(o);
 }
 
+// if equality, b is preffered
+export function betterStep(a,b){
+	// %10 > %5 > 2 || 1 > any other
+
+		// %10
+	if(b%10 === 0){
+		return b;
+	}
+	if(a%10 === 0){
+		return a;
+	}
+
+		// %5
+	if(b%5 === 0){
+		return b;
+	}
+	if(a%5 === 0){
+		return a;
+	}
+
+	// 2 || 1
+	if(b === 2 || b === 1){
+		return b;
+	}
+	if(a === 2 || a === 1){
+		return a;
+	}
+
+	return b;
+
+}
+
 export function multiply(d,f){ return d * f;}
 
 export function divide(d,f){ return d / f;}

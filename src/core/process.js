@@ -8,6 +8,7 @@ import { vm as legendVM } from './legendBuilder.jsx';
 const preprocessAxis = function(props){
 
 
+  const { css } = props;
 	let def = {abs : 'bottom', ord: 'left'};
 	// axisProps is an Array,
 	// can be given as a non array
@@ -19,26 +20,29 @@ const preprocessAxis = function(props){
 			}
 			for(let ax = 0; ax < props.axisProps[u].length; ax++){
 				let axe = props.axisProps[u][ax]; // too long
+        axe.css = utils.isNil(axe.css) ? css : axe.css;
 				if((ax === 0 && axe.placement) || ['left','bottom'].indexOf(axe.placement) !== -1){
 					def[u] = axe.placement;
 				}
+				if(!axe.ticks){
+					axe.ticks = {};
+				}
+				if(!axe.ticks.major){
+					axe.ticks.major = {};
+				}
+				if(!axe.ticks.minor){
+					axe.ticks.minor = {};
+				}
 				if(axe.empty){
-					if(!axe.ticks){
-						axe.ticks = {};
-					}
-					if(!axe.ticks.major){
-						axe.ticks.major = {};
-					}
-					if(!axe.ticks.minor){
-						axe.ticks.minor = {};
-					}
 					axe.ticks.major.show = false;
 					axe.ticks.minor.show = false;
 				}else{
+					axe.ticks.major.css = utils.isNil(axe.ticks.major.css) ? axe.css : axe.ticks.major.css;
+					axe.ticks.minor.css = utils.isNil(axe.ticks.minor.css) ? axe.css : axe.ticks.minor.css;
 						// no major ticks
-					if(axe.ticks && axe.ticks.major && axe.ticks.major.show === false){
+					if(axe.ticks.major.show === false){
 							// no minor ticks
-							if(!axe.ticks.minor || axe.ticks.minor.show !== true){
+							if(axe.ticks.minor.show !== true){
 								axe.empty = true;
 							}
 					}
@@ -502,8 +506,6 @@ export function process(getNode, rawProps, getMgr){
 		marginsO: marginalize(props.outerMargin),
 		marginsF: marginalize(props.factorMargin),
 		marginsI: marginalize(props.innerMargin),
-    abs: {min: null, max: null},
-    ord: []
 	};
 
 	// xmin, xmax...

@@ -37,12 +37,16 @@ import { ticks } from '../core/ticker.js';
 	}
 */
 
-export function vm(css, measurer, ds, partner, bounds, dir, locProps, comFac, axisKey, motherCss, placement){
+export function vm(css, measurer, ds, partner, bounds, dir, locProps, comFac, axisKey, motherCss, placement, margins){
 
 	//// general defs
 	const { measureText, lengthes } = measurer;
 	const cadratin = lengthes();
-	const lengthOfText = (txt,fs) => measureText(txt,fs,`${dir}AxisTickLabel`);
+	const lengthOfText = (txt,fs) => measureText(txt,fs,css ? `ticksmajor${dir}${locProps.placement}` : '');
+  const outerMargins = {
+    min: dir === 'x' ? margins.left  : margins.bottom,
+    max: dir === 'x' ? margins.right : margins.top,
+  };
 
 	const othdir = dir === 'x' ? 'y' : 'x';
 
@@ -122,7 +126,7 @@ export function vm(css, measurer, ds, partner, bounds, dir, locProps, comFac, ax
 		minStep.offset = locProps.interval;
 	}
 
-	const tickers = ticks(min, max, majStep, ticksLabel, majorLabelize, minor, minStep, minorLabelize, comFac, toPixel, height, labelSquare);
+	const tickers = ticks(min, max, majStep, ticksLabel, majorLabelize, minor, minStep, minorLabelize, comFac, toPixel, height, labelSquare, outerMargins);
 
 	const prevTick = (idx) => idx > 0 ? tickers[idx - 1].position : null;
 	const nextTick = (idx) => idx < tickers.length - 1 ? tickers[idx + 1].position : null;
@@ -217,11 +221,13 @@ export function vm(css, measurer, ds, partner, bounds, dir, locProps, comFac, ax
 
 		// adding a little margin
 		// & anchoring the text
-		let fd = 0.25 * labelProps.FSize; // font depth, 25 %
-		let fh = 0.75 * labelProps.FSize; // font height, 75 %
+    
+		const { height } = lengthOfText(labelProps.label,labelProps.FSize);
+		const fd = 0.25 * height; // font depth, 25 %
+		const fh = 0.75 * height; // font height, 75 %
 			// see space mgr
-		let mar = p.labelFMargin || 0;
-		let outTick = p.length * p.out;
+		const mar = isNil(p.labelFMargin) ? cadratin.tickLabel[locProps.placement] / 2 : p.labelFMargin;
+		const outTick = p.length * p.out;
 
 		// know where you are, label rotation anchor handling
 		const anchor = (() => {
@@ -239,7 +245,7 @@ export function vm(css, measurer, ds, partner, bounds, dir, locProps, comFac, ax
 						anchor: p.rotate > 0 ? 'start' : p.rotate < 0 ? 'end' : 'middle',
 						off: {
 							x: 0,
-							y: fh + fd + mar + outTick
+							y: ( p.rotate !== 0 ? Math.abs(Math.sin(p.rotate * Math.PI / 180) ) * height : fh ) + outTick + mar
 						}
 					};
 				case 'left':

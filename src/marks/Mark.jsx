@@ -42,9 +42,9 @@ export default class Mark extends React.Component {
 		const textProps = { fontSize, fill: color } ;
 		return pinS.path ? <g>
 			<path className={css ? `pin pin-${gIdx}` : ''} {...pathProps} d={path}/>
-			<text className={css ? `tag tag-${gIdx}` : ''} {...textProps} style={{textAnchor: labelAnc}} x={pinS.xL} y={pinS.yL}>{pinS.label}</text>
+			<text className={css ? `tag tag-${gIdx}` : ''} {...textProps} textAnchor={labelAnc} x={pinS.xL} y={pinS.yL}>{pinS.label}</text>
 		</g> : 
-		<text className={css ? `tag tag-${gIdx}` : ''} {...textProps} x={pinS.xL} y={pinS.yL}>{pinS.label}</text>;
+		<text className={css ? `tag tag-${gIdx}` : ''} {...textProps} x={pinS.xL} textAnchor={labelAnc} y={pinS.yL}>{pinS.label}</text>;
 	}
 
 	render(){

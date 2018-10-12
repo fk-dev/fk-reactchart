@@ -10,17 +10,16 @@ export default class Graph extends React.Component {
 		super(props);
 		this.myKey = rndKey();
 		this.type = 'graph';
-		this.init();
 	}
 
 	componentDidMount(){
 		if(!this.sh){
 			this.init();
+			this.sh.updateGraph(this, this.myKey);
 		}else{
-			this.sh.setKey(this.myKey);
+			this.sh.setKey(this.myKey,this);
 			this.sh.reinit();
 		}
-		this.sh.updateGraph(this, this.myKey);
 	}
 
 	componentWillUnmount(){
@@ -32,14 +31,16 @@ export default class Graph extends React.Component {
 	shouldComponentUpdate(pr){
 
 		if(!pr.__preprocessed){ // not sh, we update anyway
-			this.sh = init(pr,this.type,{ key: this.myKey, obj: this});
+			this.sh = init(pr,this.type,{ key: this.myKey, obj: this, namespace: this.props.namespace});
 			return true;
 		}
 
 		// sh managing updates
 		if(pr.__mgrId !== this.sh.__mgrId){
 			this.sh = pr;
-			this.sh.updateGraph(this, this.myKey);
+			this.sh.setKey(this.myKey);
+			this.sh.reinit();
+			this.sh.updateGraph(this,this.myKey);
 		}else if(!this.sh.canMeasure()){
 			this.sh.reinit();
 		}
@@ -50,13 +51,15 @@ export default class Graph extends React.Component {
 	componentDidUpdate(){
 		if(!this.sh){
 			this.init();
-			this.myKey = this.sh.updateGraph(this, this.myKey);
+			this.sh.updateGraph(this, this.myKey);
 		}else if(this.props.__preprocessed && this.props.__mgrId !== this.sh.__mgrId){
 			this.sh = this.props;
-			this.myKey = this.sh.updateGraph(this, this.myKey);
+			this.sh.setKey(this.myKey, this);
+			this.sh.reinit();
 		}else if(!this.sh.canMeasure() || this.myKey !== this.sh.graphKey()){
 			this.sh.setKey(this.myKey);
 			this.sh.reinit();
+			this.sh.updateGraph(this, this.myKey);
 		}
 	}
 
@@ -66,13 +69,14 @@ export default class Graph extends React.Component {
 			this.sh = pr;
 			this.sh.setKey(this.myKey);
 		}else{ // to be done here
-			this.sh = init(pr,this.type,{ key: this.myKey, obj: this });
+			this.sh = init(pr,this.type,{ key: this.myKey, obj: this, namespace: this.props.namespace});
 		}
 	}
 
 	render(){
-		const state = this.sh ? this.sh.get() : null;
-		return <Drawer id={this.myKey} state={state} />;
+		const state = this.sh ? this.sh.get() : {cadre: {}, background: {}};
+		const cn = this.props.namespace || ( this.sh ? this.sh.getNamespace() : 'reactchart' );
+		return <Drawer id={this.myKey} state={state} className={cn}/>;
 	}
 }
 

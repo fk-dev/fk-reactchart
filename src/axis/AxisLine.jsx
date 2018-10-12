@@ -43,22 +43,22 @@ export default class AxisLine extends React.Component {
 	}
 
 	axis(){
-		const lprops = this.props.state.line;
-		const { placement } = this.props;
-		const { css } = this.props.state;
+		const { state, placement } = this.props;
+		const { line } = state;
+		const { css, color, width, CS, start, end, origin, radius } = line;
 
 		const lp = {
-			stroke: lprops.color,
-			strokeWidth: lprops.width
+			stroke: color,
+			strokeWidth: width
 		};
 
-		switch(lprops.CS){
+		switch(CS){
 			case 'cart':
 				return <line className={css ? `axis-line axis-line-${placement} ${this.props.className}` : ''} {...lp}
-					x1={lprops.start.x} x2={lprops.end.x} y1={lprops.start.y} y2={lprops.end.y}/>;
+					x1={start.x} x2={end.x} y1={start.y} y2={end.y}/>;
 			case 'polar':
 				return <ellipse className={css ? `axis-line axis-line-${placement} ${this.props.className}` : '' } {...lp}
-					cx={lprops.origin.x} cy={lprops.origin.y} rx={lprops.radius.x} ry={lprops.radius.y}/>;
+					cx={origin.x} cy={origin.y} rx={radius.x} ry={radius.y}/>;
 			default:
 				throw new Error(`Unknown coordinate system: "${this.props.state.CS}"`);
 		}

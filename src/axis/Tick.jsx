@@ -40,10 +40,10 @@ export default class Tick extends React.Component {
 	// grid
 	grid(){
 
-		const gprops = this.props.state.grid;
-		const { type, placement, css } = this.props.state;
+		const { type, placement, grid } = this.props.state;
+		const { show, css, color, width, length } = grid;
 
-		if(gprops.show === false){
+		if(show === false){
 			return null;
 		}
 
@@ -53,14 +53,14 @@ export default class Tick extends React.Component {
 		};
 
 		const end = {
-			x: start.x + this.props.state.tick.dir.x * toCwidth(this.props.state.tick.ds.x,gprops.length),
-			y: start.y - this.props.state.tick.dir.y * toCwidth(this.props.state.tick.ds.y,gprops.length)
+			x: start.x + this.props.state.tick.dir.x * toCwidth(this.props.state.tick.ds.x,length),
+			y: start.y - this.props.state.tick.dir.y * toCwidth(this.props.state.tick.ds.y,length)
 		};
 
 		const gridName = this.props.className.length ? `${this.props.className}Grid` : '';
 		const tickProps = {
-			stroke: gprops.color, 
-			strokeWidth: gprops.width
+			stroke: color, 
+			strokeWidth: width
 		};
 
 
@@ -69,21 +69,21 @@ export default class Tick extends React.Component {
 
 	tick(){
 
-		const tprops = this.props.state.tick;
-		const { type, placement, css } = this.props.state;
+		const { type, placement, tick } = this.props.state;
+		const { show, css, dir, length, out, position, ds, color, width } = tick;
 
-		if(tprops.show === false){
+		if(show === false){
 			return null;
 		}
 
-		const x1 = toC(tprops.ds.x, tprops.position.x) - tprops.dir.x * tprops.length * tprops.out;
-		const y1 = toC(tprops.ds.y, tprops.position.y) + tprops.dir.y * tprops.length * tprops.out; // beware about y sign!!
-		const x2 = x1 + tprops.dir.x * tprops.length;
-		const y2 = y1 - tprops.dir.y * tprops.length; // beware about y sign!!
+		const x1 = toC(ds.x, position.x) - dir.x * length * out;
+		const y1 = toC(ds.y, position.y) + dir.y * length * out; // beware about y sign!!
+		const x2 = x1 + dir.x * length;
+		const y2 = y1 - dir.y * length; // beware about y sign!!
 
 		const linePar = {
-			stroke: tprops.color, 
-			strokeWidth: tprops.width
+			stroke: color, 
+			strokeWidth: width
 		};
 
 		return <line className={css ? `tick-${type} tick-${type}-${placement} ${this.props.className}` : ''} x1={x1} x2={x2} y1={y1} y2={y2} {...linePar}/>;

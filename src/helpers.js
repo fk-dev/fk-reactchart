@@ -7,14 +7,16 @@ import * as manip from './core/data-manip.js';
 export function init(rawProps, type, Obj){
 
 	Obj = Obj || {};
-	const { key, obj } = Obj;
+	let { key, obj, namespace } = Obj;
 
 	let props;
-	let freezer;
+	let freezer = {get: () => null};
 	let graphKey = key;
 	const _process  = type === 'legend' ? processLegend : process;
 
 	let updatee = {};
+
+	namespace = namespace || 'reactchart';
 
 	const updateDeps = () => {
 		for(let i in updatee){
@@ -38,7 +40,7 @@ export function init(rawProps, type, Obj){
 		// to have a cadratin for every places (labels)
 	rc.lengthes = () => measurer.cadratin(rc.unprocessedProps(),rc.graphKey());
 		// measurer
-	rc.measureText = (t,f,cn) =>  measurer.text(t,f, props.css ? cn : null ,rc.graphKey());
+	rc.measureText = (t,f,cn) =>  measurer.text(t,f, props.css ? cn : null );
 		// usable?
 	rc.canMeasure = () => measurer.active;
 		// reset
@@ -50,9 +52,12 @@ export function init(rawProps, type, Obj){
 		// getter
 	rc.graphKey = () => graphKey;
 		// setter
-	rc.setKey = key => {
+	rc.setKey = (key,obj) => {
 		graphKey = key;
 		rc.setMeasurer();
+		if(obj){
+			updatee[key] = obj;
+		}
 	};
 
 	// update Graph (obj)
@@ -93,6 +98,17 @@ export function init(rawProps, type, Obj){
     updateDeps();
 		return key;
 	};
+
+	rc.setNamespace = (ns,up) => {
+		if(ns && namespace !== ns){
+			namespace = ns;
+			if(up !== false){
+				updateDeps();
+			}
+		}
+	};
+
+	rc.getNamespace = () => namespace;
 
 	rc.reinit = (newProps, type) => {
 		// check measurer

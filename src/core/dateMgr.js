@@ -59,7 +59,7 @@ let _makePeriod = function(msOrDur){
 		weeks:  dur.weeks(),
 		days:   dur.days() - 7 * dur.weeks(),
 		total:  dur.asDays(),
-		offset: dur.asMonths() > 0
+		offset: dur.asMonths() > 3
 	};
 };
 
@@ -463,6 +463,7 @@ export function extraTicks(step,start,end, already){
 		}
 		if(lowerThan(start,dat) && lowerThan(dat,end)){
 			out.push({
+				type: 'major',
 				position: dat,
 				offset: {
 					along: 0,
@@ -504,6 +505,9 @@ export function isValidStep(cand){
 	}
 	return false;
 }
+
+// no preference
+export function betterStep(a,b){return b;}
 
 // no
 export function labelize(){ return false;}

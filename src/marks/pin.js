@@ -3,16 +3,19 @@ import { isNil } from '../core/utils.js';
 
 const angle = (deg) => {
 
-	while(deg < 0){
+	while(deg < -180){
 		deg += 360;
 	}
-	let span = 5;
-	let v = Math.abs(deg - 90) < span || Math.abs(deg - 270) < span;
+  while(deg > 180){
+		deg -= 360;
+  }
+
+	const v = Math.abs(deg) > 45 && Math.abs(deg) < 135;
 
 	return {
 		rad: deg * Math.PI / 180,
 		isVert: v,
-		dir: v ? deg < 180 ? -1 : 1 : deg < 90 || deg > 270 ? 1 : -1
+		dir: v ? deg < 0 ? -1 : 1 : deg > -45 && deg < 45 ? 1 : -1
 	};
 };
 
@@ -67,7 +70,7 @@ const pin = function(get, { pos, tag, ds, motherCss }) {
 
 	const path = `M ${mpos.x},${mpos.y} L ${mpos.x + pl.x},${mpos.y - pl.y} L ${lpos.x},${lpos.y}`;
 	return {
-    css: isNil(tag.css) ? motherCss : css,
+    css: isNil(tag.css) ? motherCss : tag.css,
 		label: tag.print(pos),
 		labelAnc: anchor.top || anchor.bottom ? 'middle' : anchor.left ? 'start' : 'end',
 		labelFS: tag.fontSize,

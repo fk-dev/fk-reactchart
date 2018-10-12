@@ -34,7 +34,11 @@ import { direction, isNil } from '../core/utils.js';
 	}
 */
 
-export function vm(ds,props,partnerDs,dir, motherCss){
+export function vm(ds,props,partnerDs,dir, motherCss, measurer){
+
+	//// general defs
+	const { measureText } = measurer;
+	const lengthOfText = (txt,fs) => measureText(txt,fs,css ? `axis${dir}${props.placement}` : '');
 
 	const { show } = props;
 
@@ -115,8 +119,7 @@ export function vm(ds,props,partnerDs,dir, motherCss){
 	};
 
 	// & anchoring the text
-	const fd = 0.25 * label.FSize; // font depth, 25 %
-	const fh = 0.75 * label.FSize; // font height, 75 %
+	const { height } = lengthOfText(label.label,label.FSize);
 	const defOff = props.marginOff;
 
 	const offsetLab = (() => {
@@ -124,21 +127,21 @@ export function vm(ds,props,partnerDs,dir, motherCss){
 			case 'top':
 				return {
 					x: 0,
-					y: - fd - defOff
+					y: - height - defOff
 				};
 			case 'bottom':
 				return {
 					x: 0,
-					y: fh + defOff
+					y: height + defOff
 				};
 			case 'left':
 				return {
-					x: - fd - defOff,
+					x: - defOff,
 					y: 0
 				};
 			case 'right':
 				return {
-					x: fd + defOff,
+					x: height + defOff,
 					y: 0
 				};
 			default:
