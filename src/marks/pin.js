@@ -1,7 +1,7 @@
 import { toC } from '../core/space-transf.js';
 import { isNil } from '../core/utils.js';
 
-const angle = (deg) => {
+const _angle = (deg) => {
 
 	while(deg < -180){
 		deg += 360;
@@ -19,6 +19,31 @@ const angle = (deg) => {
 	};
 };
 
+const nat = (d,p) => {
+
+	const other = d === 'x' ? 'y' : 'x';
+
+	const ang = {
+		x: {
+			s: 0,
+			i: 180
+		},
+		y: {
+			s: 90,
+			i: -90
+		}
+	};
+
+	return {
+		isVert: d === 'x',
+		rad: (p[other] > 0 ? ang[other].s : ang[other].i) * Math.PI / 180,
+		dir: p[other] > 0 ? 1 : -1
+	};
+
+};
+
+const angle = (ang,dir,pos) => ang === 'nat' ? nat(dir,pos) : _angle(ang);
+
 // in fct so we don't compute if
 // no tag
 // tag = {
@@ -28,9 +53,9 @@ const angle = (deg) => {
 //	 print: // how to print
 //	 theta: // angle from mark
 // }
-const pin = function(get, { pos, tag, ds, motherCss }) {
+const pin = function(get, { pos, tag, ds, motherCss, dir }) {
 	// angle
-	const ang = angle(tag.pinAngle);
+	const ang = angle(tag.pinAngle,dir,pos);
 	// anchor
 	const anchor = {
 		top:		ang.isVert && ang.dir > 0,
