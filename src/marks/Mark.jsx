@@ -35,16 +35,16 @@ export default class Mark extends React.Component {
 	}
 
 	pin(pinS){
-		const { gIdx } = this.props;
+		const { gIdx, index } = this.props;
 		const { pinColor, path, pinWidth, labelFS, labelAnc, color, css } = pinS;
 		const fontSize = typeof labelFS === 'number' ? `${labelFS}pt` : labelFS;
 		const pathProps = { strokeWidth: pinWidth, stroke: pinColor, fill: 'none'};
 		const textProps = { fontSize, fill: color } ;
 		return pinS.path ? <g>
-			<path className={css ? `pin pin-${gIdx}` : ''} {...pathProps} d={path}/>
-			<text className={css ? `tag tag-${gIdx}` : ''} {...textProps} textAnchor={labelAnc} x={pinS.xL} y={pinS.yL}>{pinS.label}</text>
+			<path className={css ? `pin pin-${gIdx} pin-${gIdx}-${index}` : ''} {...pathProps} d={path}/>
+			<text className={css ? `tag tag-${gIdx} tag-${gIdx}-${index}` : ''} {...textProps} textAnchor={labelAnc} x={pinS.xL} y={pinS.yL}>{pinS.label}</text>
 		</g> : 
-		<text className={css ? `tag tag-${gIdx}` : ''} {...textProps} x={pinS.xL} textAnchor={labelAnc} y={pinS.yL}>{pinS.label}</text>;
+		<text className={css ? `tag tag-${gIdx} tag-${gIdx}-${index}` : ''} {...textProps} x={pinS.xL} textAnchor={labelAnc} y={pinS.yL}>{pinS.label}</text>;
 	}
 
 	render(){

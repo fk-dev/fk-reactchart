@@ -39,7 +39,7 @@ const marksVM = {
 	BAR:        barVM
 };
 
-const curve = function(get, { spaces, serie, data, gprops, idx, css }){
+const curve = function(get, { spaces, serie, data, gprops, idx, css, measurer }){
 
 			// 1 - find ds: {x: , y:}
 			// common to everyone
@@ -127,21 +127,22 @@ const curve = function(get, { spaces, serie, data, gprops, idx, css }){
 			});
 
 
-
 			const isBar = (type) => type.search('Bars') >= 0 || type.search('bars') >= 0;
 
 			const graphKey = gtype + '.' + idx;
 			const mtype = isBar(gtype) ? 'bar' : gprops.markType || 'dot';
-			const mprops = gprops.mark ? map(positions,(pos,idx) => {
-				const markKey = `${graphKey}.${mtype[0]}.${idx}`;
+			const mprops = gprops.mark ? map(positions,(pos,midx) => {
+				const markKey = `${graphKey}.${mtype[0]}.${midx}`;
+				const cn = [isBar(gtype) ? 'barchart' : gtype, `tag tag-${idx} tag-${idx}-${midx}`];
 				return {
 					key: markKey,
-					mark: marksVM[mtype.toUpperCase()].create(() => get().marks[idx], { position: pos, props: gprops, ds, motherCss: css}), 
-					pin: pinVM.create(() => get().marks[idx], {pos, tag: gprops.tag, ds, motherCss: css, dir: gtype.startsWith('y') ? 'y' : 'x'}) 
+					mark: marksVM[mtype.toUpperCase()].create(() => get().marks[midx], { position: pos, props: gprops, ds, motherCss: css}), 
+					pin: pinVM.create(() => get().marks[midx], {pos, tag: gprops.tag, ds, motherCss: css, dir: gtype.startsWith('y') ? 'y' : 'x', measurer, cn}) 
 				};
 			}) : [];
 
 			return {
+				css: css || gprops.css || mprops.reduce( (memo,mp) => memo || mp.mark.css || mp.pin.css, false),
 				key: graphKey,
 				type: gtype,
 				path: gprops.onlyMarks && !isBar(gtype)? {show: false} : graphVM[gtype.toUpperCase()].create(() => get().path, { serie: positions, props: gprops, ds, motherCss: css }),
@@ -196,6 +197,7 @@ const axis = function(props,state,measurer,axe,dir, motherCss){
 		const ticks = ticksVM(css: { major: axisProps.ticks.major.css, minor: axisProps.ticks.minor.css }, measurer, DS, partner, bounds, dir, axisProps, axisProps.factor, axisKey, motherCss: css, axisProps.placement, margins);
 
 		return {
+			css: motherCss || axisProps.css || ticks.reduce( (memo,tp) => memo || tp.css, false),
 			show: axisProps.show,
 			placement: axisProps.placement,
 			key: axisKey,
@@ -286,14 +288,14 @@ export let axesVM = {
 
 export let curvesVM = {
 
-	create: (get, { props, state }) => {
+	create: (get, { props, state, measurer }) => {
 
 		const { spaces } = state;
 		return map(state.series, (serie,idx) => {
 			const data   = props.data[idx];
 			const gprops = props.graphProps[idx];
       const { css } = props;
-			return curve(() => get()[idx], { spaces, serie, data, gprops, idx, css });
+			return curve(() => get()[idx], { spaces, serie, data, gprops, idx, css, measurer });
 		});
 	}
 

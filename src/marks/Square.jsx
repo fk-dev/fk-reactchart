@@ -37,6 +37,6 @@ export default class SquareMark extends React.Component {
 
 		const rectProps = { width: 2 * size, height: 2 * size, fill: f, opacity: shade, stroke: color, strokeWidth: width };
 
-		return <rect className={css ? `mark mark-${gIdx}.${index}${open ? ' open' : ''}` : ''} x={x} y={y} {...rectProps}/>;
+		return <rect className={css ? `mark mark-${gIdx} mark-${gIdx}-${index}${open ? ' open' : ''}` : ''} x={x} y={y} {...rectProps}/>;
 	}
 }

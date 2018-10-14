@@ -49,6 +49,8 @@ const computeTicks = function(first, last, step, majLabelize, minor, mStep, minL
 	// smart guess
 	let start = mgr.closestRoundUp(first,mgr.divide(mgr.distance(first,last),10));
 	let length = mgr.distance(start,last);
+	// in px
+	const upperBounds = mgr.getValue(mgr.distance(first,last));
 
 	// distance min criteria 1
 	// 10 ticks max
@@ -163,7 +165,7 @@ const computeTicks = function(first, last, step, majLabelize, minor, mStep, minL
 
 	const tick = (position,p) => {
 		const tick = {
-			type: minor ? 'minor' : 'major',
+			type: `borders-${minor ? 'minor' : 'major'}`,
 			position,
 			offset: {
 				along: mgr.offset(minor ? minDist : majDist),
@@ -186,14 +188,14 @@ const computeTicks = function(first, last, step, majLabelize, minor, mStep, minL
 	if(out.length){
 		// can we see the first label
 		if(checkBorder(out[0], 
-			labelPos => mgr.lowerThan(labelPos, first) ? -2 * outer.min : mgr.getValue( mgr.distance( labelPos, first) ) * toPixel,
+			labelPos => mgr.lowerThan(labelPos, first) ? - upperBounds : mgr.getValue( mgr.distance( labelPos, first) ) * toPixel,
 			(dist,fl) => dist + outer.min < fl / 2 // we can go a little more that the origin
 		)){
 			out[0].label = '';
 		}
 		// can we see the last label
 		if(checkBorder(out[out.length - 1], 
-			labelPos => mgr.greaterThan(labelPos, last) ? -2 * outer.min : mgr.getValue( mgr.distance( labelPos, last) ) * toPixel,
+			labelPos => mgr.greaterThan(labelPos, last) ? -2 * upperBounds : mgr.getValue( mgr.distance( labelPos, last) ) * toPixel,
 			(dist,fl) => dist + outer.min < fl / 2
 		)){
 			out[out.length - 1].label = '';
@@ -202,7 +204,7 @@ const computeTicks = function(first, last, step, majLabelize, minor, mStep, minL
 		let position = mgr.subtract(start, minor ? minDist : majDist);
 		const preTick = tick(position,0);
 		if(checkBorder(preTick, 
-			labelPos => mgr.lowerThan(labelPos, first) ? -2 * outer.min : mgr.getValue( mgr.distance( labelPos, first) ) * toPixel,
+			labelPos => mgr.lowerThan(labelPos, first) ? - upperBounds : mgr.getValue( mgr.distance( labelPos, first) ) * toPixel,
 			(dist,fl) => dist + outer.min < fl / 2
 		)){
 			out.shift();
@@ -211,7 +213,7 @@ const computeTicks = function(first, last, step, majLabelize, minor, mStep, minL
 		position = mgr.add(start, minor ? minDist : majDist);
 		const posTick = tick(position,out.length);
 		if(checkBorder(posTick, 
-			labelPos => mgr.lowerThan(labelPos, first) ? -2 * outer.min : mgr.getValue( mgr.distance( labelPos, first) ) * toPixel,
+			labelPos => mgr.lowerThan(labelPos, first) ? - upperBounds : mgr.getValue( mgr.distance( labelPos, first) ) * toPixel,
 			(dist,fl) => dist + outer.min < fl / 2
 		)){
 			out.pop();

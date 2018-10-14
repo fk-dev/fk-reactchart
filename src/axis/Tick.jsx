@@ -94,7 +94,7 @@ export default class Tick extends React.Component {
 			return null;
 		}
 		const { type, placement } = this.props.state;
-		const labelName = `tick-label-${type} tick-label-${type}-${placement} ${this.props.className}Label`;
+		const labelName = `label-${type} label-${type}-${placement} ${this.props.className}Label`;
 		return <Label className={labelName} state={this.props.state.label}/>;
 	}
 

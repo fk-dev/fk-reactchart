@@ -40,7 +40,10 @@ export function init(rawProps, type, Obj){
 		// to have a cadratin for every places (labels)
 	rc.lengthes = () => measurer.cadratin(rc.unprocessedProps(),rc.graphKey());
 		// measurer
-	rc.measureText = (t,f,cn) =>  measurer.text(t,f, props.css ? cn : null );
+	rc.measureText = (t,f,cn) => {
+		const txt = typeof t === 'string' ? t : '' + t;
+		return measurer.text(t,f,cn);
+	};
 		// usable?
 	rc.canMeasure = () => measurer.active;
 		// reset

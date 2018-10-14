@@ -147,7 +147,6 @@ export function vm(css, measurer, ds, partner, bounds, dir, locProps, comFac, ax
 		const css = tick.minor ? minCss : majCss;
 		let ticksProps = {css};
 		let tmp = {
-			show: true,
 			color: true,
 			length: true,
 			out: true,
@@ -157,6 +156,7 @@ export function vm(css, measurer, ds, partner, bounds, dir, locProps, comFac, ax
 		for(let u in tmp){
 			ticksProps[u] = isNil(tick[u]) ? p[u] : tick[u];
 		}
+    ticksProps.show = !tick.type.startsWith('borders-');
 		ticksProps.position = {};
 		ticksProps.position[dir] = tick.position;
 		ticksProps.position[othdir] = partner.pos;
@@ -293,7 +293,6 @@ export function vm(css, measurer, ds, partner, bounds, dir, locProps, comFac, ax
 		let gridProps = {css};
 		const pg = tick.extra ? tick.grid : tick.minor ? minGrid : majGrid;
 		tmp = {
-			show: true,
 			color: true,
 			width: true
 		};
@@ -303,6 +302,7 @@ export function vm(css, measurer, ds, partner, bounds, dir, locProps, comFac, ax
 			gridProps[u] = isNil(cus[u]) ? pg[u] : cus[u];
 		}
 		gridProps.length = partner.length;
+    gridProps.show = !tick.type.startsWith('borders-');
 
 		const tickKey = axisKey + '.t.' + idx;
 		return {
@@ -311,7 +311,7 @@ export function vm(css, measurer, ds, partner, bounds, dir, locProps, comFac, ax
 			tick: ticksProps,
 			grid: gridProps,
 			label: labelProps,
-			type: tick.type
+			type: tick.type.startsWith('borders-') ? tick.type.substring(8) : tick.type
 		};
 
 	});

@@ -24,8 +24,10 @@ export default class Axe extends React.Component {
 		const axisName = `${className}Line`;
 		const tickName = `${className}Tick`;
 
-		return <g className={`axis axis-${placement}`}>
-			<g className='ticks'>
+		const { css } = state;
+
+		return <g className={css ? `axis axis-${placement}` : ''}>
+			<g className={ css ? 'ticks' : ''}>
 				{ map(state.ticks, (tick) => <Tick className={tickName} key={tick.key} state={tick}/> ) }
 			</g>
 			<AxisLine placement={placement} className={axisName} state={state.axisLine}/>

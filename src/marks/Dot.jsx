@@ -39,6 +39,6 @@ export default class DotMark extends React.Component {
 
 		const cProps = { r: r, fill: f, opacity: shade, stroke: color, strokeWidth: width };
 
-		return <circle className={css ? `mark mark-${gIdx}.${index}${open ? ' open': ''}` : ''} cx={x} cy={y} {...cProps}/>;
+		return <circle className={css ? `mark mark-${gIdx} mark-${gIdx}-${index}${open ? ' open': ''}` : ''} cx={x} cy={y} {...cProps}/>;
 	}
 }

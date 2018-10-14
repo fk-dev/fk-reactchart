@@ -20,8 +20,8 @@ export default class Measurer extends React.Component {
 
 		render(){
 
-			return <g style={{visibility: 'hidden'}}>
-				<text x={-10} y={-10} anchor='middle' id={`fkchartmeasurer-${this.props.id}`}/>
+			return <g style={{visibility: 'hidden'}}id={`fkchartmeasurer-${this.props.id}`}>
+				<text x={-10} y={-10} anchor='middle' id={`fkchartmeasurer-${this.props.id}-text`}/>
 				<text textAnchor='middle' className='title' id={`fkchartmeasurer-${this.props.id}-title`}/>
 				{this.oneAxis('x',['bottom','top'])}
 				{this.oneAxis('y',['left','right'])}

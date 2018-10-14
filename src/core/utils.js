@@ -143,15 +143,28 @@ export function measure(gid){
 
 	active = true;
 
-	const _measureText = (str, fontSize, clN) => {
+	const _measureText = (str, fontSize, clNs) => {
 		if(!str){
 			return { width: 0, height: 0};
 		}
 
-		const elt = `fkchartmeasurer-${gid}${clN ? `-${clN}` : ''}`;
-		const meas = typeof document === 'undefined' ? null : document.getElementById(elt);
+		const clN = Array.isArray(clNs) ? clNs[clNs.length - 1] : clNs;
+		const elt = `fkchartmeasurer-${gid}${clN ? `-${clN}` : '-text'}`;
+		let meas = typeof document === 'undefined' ? null : document.getElementById(elt);
 		if(!meas){
-			return {width:0, height: 0};
+			const cc = Array.isArray(clNs) ? clNs : [clNs];
+			let father = document.getElementById(`fkchartmeasurer-${gid}`);
+			for(let i = 0; i < cc.length; i++){
+				const c = `fkchartmeasurer-${gid}${clN ? `-${cc[i]}` : ''}`;
+				meas = document.getElementById(c);
+				if(!meas){
+					meas = document.createElement(i === cc.length - 1 ? 'text' : 'g');
+					meas.setAttribute('class',cc[i]);
+					meas.setAttribute('id',c);
+					father.appendChild(meas);
+				}
+				father = meas;
+			}
 		}
 		if(clN){
 			meas.style.fontSize = "";

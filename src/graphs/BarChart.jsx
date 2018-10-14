@@ -19,9 +19,7 @@ export default class BarChart extends React.Component {
 	render() {
 		const { state, gIdx } = this.props;
 		const opts = { gIdx };
-		const { marks, path } = state;
-
-		const { css } = path;
+		const { marks, css } = state;
 
 		if(marks.length === 0){
 			return null;

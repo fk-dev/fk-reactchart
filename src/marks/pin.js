@@ -21,8 +21,6 @@ const _angle = (deg) => {
 
 const nat = (d,p) => {
 
-	const other = d === 'x' ? 'y' : 'x';
-
 	const ang = {
 		x: {
 			s: 0,
@@ -35,9 +33,9 @@ const nat = (d,p) => {
 	};
 
 	return {
-		isVert: d === 'x',
-		rad: (p[other] > 0 ? ang[other].s : ang[other].i) * Math.PI / 180,
-		dir: p[other] > 0 ? 1 : -1
+		isVert: d === 'y',
+		rad: (p[d] > 0 ? ang[d].s : ang[d].i) * Math.PI / 180,
+		dir: p[d] > 0 ? 1 : -1
 	};
 
 };
@@ -53,7 +51,7 @@ const angle = (ang,dir,pos) => ang === 'nat' ? nat(dir,pos) : _angle(ang);
 //	 print: // how to print
 //	 theta: // angle from mark
 // }
-const pin = function(get, { pos, tag, ds, motherCss, dir }) {
+const pin = function(get, { pos, tag, ds, motherCss, dir, measurer, cn }) {
 	// angle
 	const ang = angle(tag.pinAngle,dir,pos);
 	// anchor
@@ -63,6 +61,9 @@ const pin = function(get, { pos, tag, ds, motherCss, dir }) {
 		left:  !ang.isVert && ang.dir > 0,
 		right: !ang.isVert && ang.dir < 0
 	};
+
+	const css = isNil(tag.css) ? motherCss : tag.css;
+	const { height } = measurer.measureText(tag.print(pos),tag.fontSize, css ? cn : null);
 
 		// mark
 	const mpos = {
@@ -90,12 +91,12 @@ const pin = function(get, { pos, tag, ds, motherCss, dir }) {
 
 	const lAnc = {
 		x: lpos.x + (anchor.left ? 3 : -3),
-		y: lpos.y + (anchor.top ? tag.fontSize : anchor.bottom ? -3 : 1)
+		y: lpos.y + (anchor.top ? height : anchor.bottom ? - 0.25 * height : 0)
 	};
 
 	const path = `M ${mpos.x},${mpos.y} L ${mpos.x + pl.x},${mpos.y - pl.y} L ${lpos.x},${lpos.y}`;
 	return {
-    css: isNil(tag.css) ? motherCss : tag.css,
+    css,
 		label: tag.print(pos),
 		labelAnc: anchor.top || anchor.bottom ? 'middle' : anchor.left ? 'start' : 'end',
 		labelFS: tag.fontSize,
@@ -112,5 +113,5 @@ const pin = function(get, { pos, tag, ds, motherCss, dir }) {
 
 
 export let vm = {
-	create: (get, { pos, tag, ds, motherCss }) => tag.show ? pin(get, { pos, tag, ds, motherCss }) : null
+	create: (get, { pos, tag, ds, motherCss, dir, measurer, cn }) => tag.show ? pin(get, { pos, tag, ds, motherCss, dir, measurer, cn }) : null
 };
