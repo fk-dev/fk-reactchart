@@ -307,7 +307,7 @@ const computeOuterMargin = (where, limits, axis, measure, title ) => {
 	}
 
 	const titleLength = titleMeasure();
-	return tickLength + cadMar + tickLabelLength + 0.5 * labelLength + ( titleLength ? cadratin.tickLabel[where] / 2 + titleLength : 0 );
+	return tickLength + cadMar + tickLabelLength + labelLength + ( titleLength ? cadratin.tickLabel[where] / 2 + titleLength : 0 );
 
 };
 

@@ -45,7 +45,7 @@ export default class Label extends React.Component {
 
 		const { state, className } = this.props;
 
-		const { transform, ds, position, offset, rotate, angle, dir, color, FSize, anchor, label, howToRotate, LLength, css } = state;
+		const { transform, ds, position, offset, rotate, angle, dir, color, FSize, anchor, label, howToRotate, LLength, LHeight, css } = state;
 
 		const xL = ( transform ? toC(ds.x,position.x) : position.x ) + offset.x;
 		const yL = ( transform ? toC(ds.y,position.y) : position.y ) + offset.y;
@@ -56,7 +56,7 @@ export default class Label extends React.Component {
 
 		const rotation = `rotate(${theta} ${xL} ${yL})`;
 
-		const ly = - dir.x * (1 - Math.cos(alpha)) * FSize;
+		const ly = - dir.x * (1 - Math.cos(alpha)) * LHeight;
 		const lx =  LLength ?  dir.x * (1 - Math.cos(alpha)) * LLength : 0;
 		const translation = lx && ly && ( Math.abs(lx) > 1 || Math.abs(ly) > 1 ) ? `translate(${lx},${2 *ly})` : ''; // projection
 

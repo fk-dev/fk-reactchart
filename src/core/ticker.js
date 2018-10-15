@@ -7,7 +7,7 @@ const nInterval = (length, height) => {
 };
 
 
-const checkMajDist = (labels,ref,D,start,cv, getLength,mgr) => {
+const checkMajDist = (labels,ref,D,first,cv, getLength, mgr) => {
 	const lls = labels.map(x => getLength(x.label)).filter(x => x);
 	const max = lls.reduce( (memo,v) => memo < v ?  v : memo, -1);
 	const d = D - (lls[0]/2 + lls[1]/2);
@@ -21,14 +21,15 @@ const checkMajDist = (labels,ref,D,start,cv, getLength,mgr) => {
 		cand = mgr.betterStep(ref,cand);
 		return {
 			majDist: cand,
-			curValue: start,
+			curValue: cand === ref ? ref : mgr.closestRoundUp(first, cand),
 			store: cand === ref ? labels : []
 		};
 	}else if(d < 0){
 		labels = [];
+		const majDist = mgr.roundUp(ref);
 		return {
-			majDist: mgr.roundUp(ref),
-			curValue: start,
+			majDist,
+			curValue: mgr.closestRoundUp(first, mgr.add(majDist, {days: 1})),
 			store: []
 		};
 	}else{
@@ -50,7 +51,7 @@ const computeTicks = function(first, last, step, majLabelize, minor, mStep, minL
 	let start = mgr.closestRoundUp(first,mgr.divide(mgr.distance(first,last),10));
 	let length = mgr.distance(start,last);
 	// in px
-	const upperBounds = mgr.getValue(mgr.distance(first,last));
+	const upperBounds = mgr.getValue(mgr.distance(first,last)) * toPixel;
 
 	// distance min criteria 1
 	// 10 ticks max
@@ -97,7 +98,7 @@ const computeTicks = function(first, last, step, majLabelize, minor, mStep, minL
 			out.forEach( (t,i) => {
 				t.label = majLabelize(out,i,mgr.label(t.position,majDist,fac));
 			});
-			const reset = checkMajDist(out,majDist, mgr.getValue(majDist) * toPixel, start, curValue, square, mgr);
+			const reset = checkMajDist(out,majDist, mgr.getValue(majDist) * toPixel, first, curValue, square, mgr);
 			if(mgr.greaterThan(reset.majDist,tries)){
 				tries = reset.majDist;
 			}else if(mgr.equal(reset.majDist,tries) && reset.store.length === 0){
@@ -157,7 +158,7 @@ const computeTicks = function(first, last, step, majLabelize, minor, mStep, minL
 
 	const checkBorder = (datum,dist, comp) => {
 		const { position, offset, label } = datum;
-		const fl = square(label, true);
+		const fl = square(label);
 		const labelPos = mgr.add(position,offset.along);
 		const d = dist(labelPos);
 		return comp(d,fl);
@@ -172,6 +173,7 @@ const computeTicks = function(first, last, step, majLabelize, minor, mStep, minL
 				perp: 0
 			},
 			show: false,
+			showLabel: true,
 			label: '',
 			minor
 		};
@@ -186,37 +188,48 @@ const computeTicks = function(first, last, step, majLabelize, minor, mStep, minL
 
 		// we do nothing if no ticks => there's a problem
 	if(out.length){
+
+		let checkMin  = true;
+		let checkLast = true;
+
 		// can we see the first label
 		if(checkBorder(out[0], 
-			labelPos => mgr.lowerThan(labelPos, first) ? - upperBounds : mgr.getValue( mgr.distance( labelPos, first) ) * toPixel,
-			(dist,fl) => dist + outer.min < fl / 2 // we can go a little more that the origin
+			labelPos => mgr.lowerThan(labelPos, first) ? - 2 * upperBounds : mgr.getValue( mgr.distance( labelPos, first) ) * toPixel,
+			(dist,fl) => dist + outer.min.marginsO < fl / 2 // we can go a little more that the origin
 		)){
-			out[0].label = '';
+			out[0].showLabel = false;
+			checkMin = false;
 		}
 		// can we see the last label
 		if(checkBorder(out[out.length - 1], 
 			labelPos => mgr.greaterThan(labelPos, last) ? -2 * upperBounds : mgr.getValue( mgr.distance( labelPos, last) ) * toPixel,
-			(dist,fl) => dist + outer.min < fl / 2
+			(dist,fl) => dist + outer.max.marginsO < fl / 2
 		)){
-			out[out.length - 1].label = '';
+			out[out.length - 1].showLabel = false;
+			checkLast = false;
 		}
 		// can we see the one before the first label
-		let position = mgr.subtract(start, minor ? minDist : majDist);
-		const preTick = tick(position,0);
-		if(checkBorder(preTick, 
-			labelPos => mgr.lowerThan(labelPos, first) ? - upperBounds : mgr.getValue( mgr.distance( labelPos, first) ) * toPixel,
-			(dist,fl) => dist + outer.min < fl / 2
-		)){
-			out.shift();
+		if(checkMin){
+			const position = mgr.subtract(start, minor ? minDist : majDist);
+			const preTick = tick(position,0);
+			if(checkBorder(preTick, 
+				labelPos => mgr.lowerThan(labelPos, first) ? - 2 * upperBounds : mgr.getValue( mgr.distance( labelPos, first) ) * toPixel,
+				(dist,fl) => dist + outer.min.marginsO < fl / 2
+			)){
+				out.shift();
+			}
 		}
+
 		// can we see the one after the last label
-		position = mgr.add(start, minor ? minDist : majDist);
-		const posTick = tick(position,out.length);
-		if(checkBorder(posTick, 
-			labelPos => mgr.lowerThan(labelPos, first) ? - upperBounds : mgr.getValue( mgr.distance( labelPos, first) ) * toPixel,
-			(dist,fl) => dist + outer.min < fl / 2
-		)){
-			out.pop();
+		if(checkLast){
+			const position = mgr.add(out[out.length - 1].position, minor ? minDist : majDist);
+			const posTick = tick(position,out.length);
+			if(checkBorder(posTick, 
+				labelPos => mgr.greaterThan(labelPos, last) ? - 2 * upperBounds : mgr.getValue( mgr.distance( last, labelPos) ) * toPixel,
+				(dist,fl) => dist + outer.max.marginsO < fl / 2
+			)){
+				out.pop();
+			}
 		}
 
 	}

@@ -43,10 +43,10 @@ export function vm(css, measurer, ds, partner, bounds, dir, locProps, comFac, ax
 	const { measureText, lengthes } = measurer;
 	const cadratin = lengthes();
 	const lengthOfText = (txt,fs) => measureText(txt,fs,css ? `ticksmajor${dir}${locProps.placement}` : '');
-  const outerMargins = {
-    min: dir === 'x' ? margins.left  : margins.bottom,
-    max: dir === 'x' ? margins.right : margins.top,
-  };
+	const outerMargins = {
+		min: dir === 'x' ? margins.left  : margins.bottom,
+		max: dir === 'x' ? margins.right : margins.top,
+	};
 
 	const othdir = dir === 'x' ? 'y' : 'x';
 
@@ -75,16 +75,41 @@ export function vm(css, measurer, ds, partner, bounds, dir, locProps, comFac, ax
 	// small hack for smarter guess at number of ticks
 	const height = dir === 'x' ? majProps.labelFSize : majProps.labelFSize * 2 / 3.5;
 
-	const labelSquare = (txt,border) => {
+	const labelSquare = (txt) => {
 		const { labelFSize, rotate } = majProps;
+
+		// taille de texte
 		if(txt){
+
 			const { width, height } = lengthOfText(txt,labelFSize);
 			const angle = rotate * Math.PI / 180;
 			const sq = computeSquare(angle,width,height);
-			const factor =  border && dir === 'y' ? 2/3.5 : 1;
-			return (dir === 'x' ? sq.width : sq.height ) * factor;
+
+			return dir === 'x' ? sq.width : sq.height ;
+
+		// distance entre labels
 		}else{
-			return cadratin.tickLabel[locProps.placement];
+			// 0	=> 1
+			// 45 => 0
+			// 90 => 2/3.5
+			// linear in between
+
+			// angle => 1 : -180 < alpha < 180
+			// angle => 2 : [ -180 ; -90 ] <=> [0 ; 90] // [90;180] <=> [-90;0]
+			// angle => 3 : [ -90 ; 0 ] <=> [0 ; 90]
+			let ang = rotate%360;
+			if(ang > 180){
+				ang -= 360;
+			}
+			if(Math.abs(ang) > 90){
+				ang += 180;
+			}
+			ang = Math.abs(ang);
+
+			// inverse for ordinate
+			ang = dir === 'x' ? ang : 90 - ang;
+			const factor = ang > 45 ? (90 - ang)/(90 - 45) * 2/3 : ang < 45 ? ang/45 : 0;
+			return cadratin.tickLabel[locProps.placement] * factor;
 		}
 	};
 
@@ -147,6 +172,7 @@ export function vm(css, measurer, ds, partner, bounds, dir, locProps, comFac, ax
 		const css = tick.minor ? minCss : majCss;
 		let ticksProps = {css};
 		let tmp = {
+			show: true,
 			color: true,
 			length: true,
 			out: true,
@@ -156,7 +182,7 @@ export function vm(css, measurer, ds, partner, bounds, dir, locProps, comFac, ax
 		for(let u in tmp){
 			ticksProps[u] = isNil(tick[u]) ? p[u] : tick[u];
 		}
-    ticksProps.show = !tick.type.startsWith('borders-');
+		ticksProps.show = tick.type.startsWith('borders-') ? false : ticksProps.show;
 		ticksProps.position = {};
 		ticksProps.position[dir] = tick.position;
 		ticksProps.position[othdir] = partner.pos;
@@ -196,15 +222,17 @@ export function vm(css, measurer, ds, partner, bounds, dir, locProps, comFac, ax
 			FSize:	p.labelFSize,
 			color:	p.labelColor,
 			rotate: false,
-			angle:  p.rotate,
+			angle:	p.rotate,
 			transform: true,
-			show: tick.showLabel || ticksProps.show,
+			show: isNil(tick.showLabel) ? ticksProps.show : tick.showLabel,
 			howToRotate: locProps.placement === 'top' ? -1 : locProps.placement === 'bottom' ? 1 : 0
 		};
+		const labelLenthes = lengthOfText(labelProps.label, labelProps.FSize);
 		labelProps.dir = {};
 		labelProps.dir[dir] = locProps.placement === 'top' || locProps.placement === 'right' ? -1 : 1;
 		labelProps.dir[othdir] = 0;
-		labelProps.LLength = lengthOfText(labelProps.label, labelProps.FSize).width;
+		labelProps.LLength = labelLenthes.width;
+		labelProps.LHeight = labelLenthes.height;
 
 		const addPerp =  tick.minor ? 3.75 : 0;
 		const perpOff = isNil(p.labelOffset.perp) ? tick.offset.perp : p.labelOffset.perp ;
@@ -221,8 +249,8 @@ export function vm(css, measurer, ds, partner, bounds, dir, locProps, comFac, ax
 
 		// adding a little margin
 		// & anchoring the text
-    
-		const { height } = lengthOfText(labelProps.label,labelProps.FSize);
+		
+		const height = labelLenthes.height;
 		const fd = 0.25 * height; // font depth, 25 %
 		const fh = 0.75 * height; // font height, 75 %
 			// see space mgr
@@ -237,7 +265,7 @@ export function vm(css, measurer, ds, partner, bounds, dir, locProps, comFac, ax
 						anchor: p.rotate > 0 ? 'end' : p.rotate < 0 ? 'start' : 'middle',
 						off: {
 							x: 0,
-							y: - fh - fd - mar - outTick
+							y: - mar - outTick
 						}
 					};
 				case 'bottom':
@@ -293,6 +321,7 @@ export function vm(css, measurer, ds, partner, bounds, dir, locProps, comFac, ax
 		let gridProps = {css};
 		const pg = tick.extra ? tick.grid : tick.minor ? minGrid : majGrid;
 		tmp = {
+			show: true,
 			color: true,
 			width: true
 		};
@@ -302,7 +331,7 @@ export function vm(css, measurer, ds, partner, bounds, dir, locProps, comFac, ax
 			gridProps[u] = isNil(cus[u]) ? pg[u] : cus[u];
 		}
 		gridProps.length = partner.length;
-    gridProps.show = !tick.type.startsWith('borders-');
+		gridProps.show = tick.type.startsWith('borders-') ? false : gridProps.show;
 
 		const tickKey = axisKey + '.t.' + idx;
 		return {

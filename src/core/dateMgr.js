@@ -59,7 +59,7 @@ let _makePeriod = function(msOrDur){
 		weeks:  dur.weeks(),
 		days:   dur.days() - 7 * dur.weeks(),
 		total:  dur.asDays(),
-		offset: dur.asMonths() > 3
+		offset: dur.asMonths() >= 3
 	};
 };
 
@@ -98,9 +98,9 @@ let fetchFormat = function(p){
 	}
 };
 
-let roundDownPeriod = function(p){
+const roundDownPeriod = function(p){
 
-	let make = (lab,val) => {
+	const make = (lab,val) => {
 		return {
 			label: lab,
 			val: val
@@ -108,8 +108,10 @@ let roundDownPeriod = function(p){
 	};
 
 	let out = {};
-	if(p.years > 2){
+	if(p.total > moment.duration({years: 2}).asDays()){
 		out = make('years',Math.max(floor(p.years)/10,1));
+	}else if(p.total > moment.duration({years: 1}).asDays()){
+		out = make('years',1);
 	}else if(p.total >= moment.duration({months: 6}).asDays()){
 		out = make('months', 6);
 	}else if(p.total >= moment.duration({months: 3}).asDays()){
@@ -127,9 +129,9 @@ let roundDownPeriod = function(p){
 	return out;
 };
 
-let roundUpPeriod = function(p){
+const roundUpPeriod = function(p){
 
-	let make = (lab,val) => {
+	const make = (lab,val) => {
 		return {
 			label: lab,
 			val: val
@@ -160,7 +162,7 @@ let roundUpPeriod = function(p){
 
 // round period of sale order of magnitude
 // down by default
-let roundPeriod = function(per,type){
+const roundPeriod = function(per,type){
 
 	// copy
 	let p = _makePeriod(per);
@@ -183,12 +185,12 @@ let roundPeriod = function(per,type){
 	// 6, 3 or 1 month(s)
 	// 2 or 1 week(s)
 	// 1 day
-	let round = ( type === 'up' ) ? roundUpPeriod(p) : roundDownPeriod(p);
+	let round = type === 'up' ? roundUpPeriod(p) : roundDownPeriod(p);
 	makeThis(round.label,round.val);
 
 	p.total = moment.duration(p).asDays();
 
-	return p;
+	return _makePeriod(p);
 };
 
 let closestUp = function(date,per){
@@ -204,11 +206,11 @@ let closestUp = function(date,per){
 let closestDown = function(date,per){
 	// day
 	if(per.days !== 0){
-		return moment(date).subtract(per.days,'days').startOf('day').toDate();
+		return moment.utc(date).subtract(per.days,'days').startOf('day').toDate();
 	}
 	// start of week: Sunday
 	if(per.weeks !== 0){
-		return moment(date).subtract(per.weeks,'weeks').startOf("week").toDate();
+		return moment.utc(date).subtract(per.weeks,'weeks').startOf("week").toDate();
 	}
 	// start of month
 	if(per.months !== 0){
@@ -381,21 +383,21 @@ export function label(date,period){
 	let out = '';
 	if(format.pref === 'S'){
 		out = (date.getUTCMonth() > 5)? '2/' : '1/';
-		out += moment(date).format('YY');
+		out += moment.utc(date).format('YY');
 	}else{
-		out = moment(date).format(format.string);
+		out = moment.utc(date).format(format.string);
 	}
 	return format.pref + out;
 }
 
-let addMonth = (d,m) => moment(d).add(1,'days').add(m, 'months').add(-1,'days').toDate();
+let addMonth = (d,m) => moment.utc(d).add(1,'days').add(m, 'months').add(-1,'days').toDate();
 
 // deal with periods >= months
 // to have last day of month stay last day of month
 let addDate = (d,p) => {
 	let { years, months } = p;
 
-	return moment(addMonth(d, 12 * years + months))
+	return moment.utc(addMonth(d, 12 * years + months))
 		.add(p.weeks,'weeks')
 		.add(p.days,'days').toDate();
 };

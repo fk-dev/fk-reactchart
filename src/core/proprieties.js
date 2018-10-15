@@ -83,7 +83,7 @@ graph.common = () => {
 			pinLength: 10, // 10 px as pin length
 			pinWidth: 1, // 1 px as pin width
 			pinAngle: 90, // direction of pin
-			pinHook: 3, // 3px for hook
+			pinHook: 0, // no hook
 			color: 'black' // color of the tag
 		}
 	};

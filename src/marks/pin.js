@@ -3,19 +3,21 @@ import { isNil } from '../core/utils.js';
 
 const _angle = (deg) => {
 
-	while(deg < -180){
-		deg += 360;
+	let ang = deg%360;
+	if(ang > 180){
+		ang -= 360;
 	}
-  while(deg > 180){
-		deg -= 360;
-  }
 
-	const v = Math.abs(deg) > 45 && Math.abs(deg) < 135;
+	const isVert = Math.abs(ang) > 45 && Math.abs(ang) < 135;
+
+	const dir = isVert ? ang < 0 ? -1 : 1 : ang > -45 && ang < 45 ? 1 : -1;
+	const hookDir = isVert ? Math.abs(ang) < 90 ? 1 : -1 : ang > 0 ? 1 : -1;
 
 	return {
-		rad: deg * Math.PI / 180,
-		isVert: v,
-		dir: v ? deg < 0 ? -1 : 1 : deg > -45 && deg < 45 ? 1 : -1
+		rad: ang * Math.PI / 180,
+		isVert,
+		dir,
+		hookDir
 	};
 };
 
@@ -32,10 +34,12 @@ const nat = (d,p) => {
 		}
 	};
 
+
 	return {
 		isVert: d === 'y',
 		rad: (p[d] > 0 ? ang[d].s : ang[d].i) * Math.PI / 180,
-		dir: p[d] > 0 ? 1 : -1
+		dir: p[d] > 0 ? 1 : -1,
+		hookDir: 1
 	};
 
 };
@@ -55,9 +59,9 @@ const pin = function(get, { pos, tag, ds, motherCss, dir, measurer, cn }) {
 	// angle
 	const ang = angle(tag.pinAngle,dir,pos);
 	// anchor
-	const anchor = {
-		top:		ang.isVert && ang.dir > 0,
-		bottom: ang.isVert && ang.dir < 0,
+	let anchor = {
+		top:		ang.isVert && ang.dir < 0,
+		bottom: ang.isVert && ang.dir > 0,
 		left:  !ang.isVert && ang.dir > 0,
 		right: !ang.isVert && ang.dir < 0
 	};
@@ -79,9 +83,29 @@ const pin = function(get, { pos, tag, ds, motherCss, dir, measurer, cn }) {
 
 		// pin hook
 	const ph = {
-		x: ang.isVert ? 0 : ang.dir * tag.pinHook,
-		y: ang.isVert ? ang.dir * tag.pinHook : 0
+		x: ang.isVert ? ang.hookDir * tag.pinHook : 0,
+		y: ang.isVert ? 0 : ang.hookDir * tag.pinHook
 	};
+
+	if(Math.abs(ph.x) > 1e-2){
+		anchor.top = false;
+		anchor.bottom = false;
+		if(ph.x > 0){
+			anchor.left = true;
+		}else{
+			anchor.right = true;
+		}
+	}
+
+	if(Math.abs(ph.y) > 1e-2){
+		anchor.left = false;
+		anchor.right = false;
+		if(ph.y > 0){
+			anchor.top = true;
+		}else{
+			anchor.bottom = true;
+		}
+	}
 
 	// position = mark + length + hook
 	const lpos = {
@@ -91,7 +115,7 @@ const pin = function(get, { pos, tag, ds, motherCss, dir, measurer, cn }) {
 
 	const lAnc = {
 		x: lpos.x + (anchor.left ? 3 : -3),
-		y: lpos.y + (anchor.top ? height : anchor.bottom ? - 0.25 * height : 0)
+		y: lpos.y + ( anchor.top ? 0.9 * height : anchor.bottom ? - 0.25 * height : 0.25 * height )
 	};
 
 	const path = `M ${mpos.x},${mpos.y} L ${mpos.x + pl.x},${mpos.y - pl.y} L ${lpos.x},${lpos.y}`;

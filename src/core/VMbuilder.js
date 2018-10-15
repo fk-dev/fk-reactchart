@@ -142,7 +142,7 @@ const curve = function(get, { spaces, serie, data, gprops, idx, css, measurer })
 			}) : [];
 
 			return {
-				css: css || gprops.css || mprops.reduce( (memo,mp) => memo || mp.mark.css || mp.pin.css, false),
+				css: css || gprops.css || mprops.reduce( (memo,mp) => memo || mp.mark.css || (mp.pin && mp.pin.css), false),
 				key: graphKey,
 				type: gtype,
 				path: gprops.onlyMarks && !isBar(gtype)? {show: false} : graphVM[gtype.toUpperCase()].create(() => get().path, { serie: positions, props: gprops, ds, motherCss: css }),
