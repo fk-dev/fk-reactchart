@@ -1,4 +1,4 @@
-import { isNil, mgr as typeMgr } from '../core/utils.js';
+import { isNil, mgr as typeMgr, computeSquare } from '../core/utils.js';
 import { ticks } from '../core/ticker.js';
 
 /*
@@ -37,11 +37,12 @@ import { ticks } from '../core/ticker.js';
 	}
 */
 
-export function vm(measurer, ds,partner, bounds, dir, locProps, comFac, axisKey){
+export function vm(measurer, ds, partner, bounds, dir, locProps, comFac, axisKey){
 
 	//// general defs
-	const { measureText } = measurer;
-	const lengthOfText = (txt,fs) => measureText(txt,fs,`${dir}AxisTickLabel`).width;
+	const { measureText, lengthes } = measurer;
+	const cadratin = lengthes();
+	const lengthOfText = (txt,fs) => measureText(txt,fs,`${dir}AxisTickLabel`);
 
 	const othdir = dir === 'x' ? 'y' : 'x';
 
@@ -65,8 +66,22 @@ export function vm(measurer, ds,partner, bounds, dir, locProps, comFac, axisKey)
 
 	// to have absolute lengthes
 	const toPixel = Math.abs(ds[dir].d2c);
-		// cheat to treat height as if it's length
+	// small hack for smarter guess at number of ticks
 	const height = dir === 'x' ? majProps.labelFSize : majProps.labelFSize * 2 / 3.5;
+
+	const labelSquare = (txt,border) => {
+		const { labelFSize, rotate } = majProps;
+		if(txt){
+			const { width, height } = lengthOfText(txt,labelFSize);
+			const angle = rotate * Math.PI / 180;
+			const sq = computeSquare(angle,width,height);
+			const factor =  border && dir === 'y' ? 2/3.5 : 1;
+			return (dir === 'x' ? sq.width : sq.height ) * factor;
+		}else{
+			return cadratin.tickLabel[locProps.placement];
+		}
+	};
+
 
 	// step
 	let majStep = majProps.step;
@@ -84,7 +99,7 @@ export function vm(measurer, ds,partner, bounds, dir, locProps, comFac, axisKey)
 		minStep.offset = locProps.interval;
 	}
 
-	const tickers = ticks(min, max, majStep, ticksLabel, minor, minStep, comFac, toPixel, height);
+	const tickers = ticks(min, max, majStep, ticksLabel, minor, minStep, comFac, toPixel, height, labelSquare);
 
 	const prevTick = (idx) => idx > 0 ? tickers[idx - 1].position : null;
 	const nextTick = (idx) => idx < tickers.length - 1 ? tickers[idx + 1].position : null;
@@ -165,7 +180,7 @@ export function vm(measurer, ds,partner, bounds, dir, locProps, comFac, axisKey)
 		labelProps.dir = {};
 		labelProps.dir[dir] = locProps.placement === 'top' || locProps.placement === 'right' ? -1 : 1;
 		labelProps.dir[othdir] = 0;
-		labelProps.LLength = lengthOfText(labelProps.label, labelProps.FSize);
+		labelProps.LLength = lengthOfText(labelProps.label, labelProps.FSize).width;
 
 		const addPerp =  tick.minor ? 3.75 : 0;
 		const perpOff = isNil(p.labelOffset.perp) ? tick.offset.perp : p.labelOffset.perp ;
