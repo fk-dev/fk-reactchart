@@ -2,3 +2,173 @@
 	opacity: 0.5;
 	filter: alpha(opacity=50);
 }
+
+.reactchart {
+  // cadre
+  .cadre {
+    stroke-width: 1;
+    stroke: black;
+  }
+  // background
+  .background {
+    fill: none;
+  }
+  // foreground
+  .foreground {
+  }
+  // title
+  .title {
+    font-size: 30pt;
+  }
+  // axis
+  .axis {
+    .ticks {
+      .tick-major {
+        stroke: black; 
+        stroke-width: 1;
+      }
+      .tick-minor {
+        stroke: gray; 
+        stroke-width: 1;
+      }
+      .label-major {
+        fill: black;
+        font-size: 10pt;
+      }
+      .label-minor {
+        fill: black;
+        font-size: 10pt;
+      }
+      .grid-major {
+        stroke: black; 
+        stroke-width: 1;
+      }
+      .grid-minor {
+        stroke: black; 
+        stroke-width: 0.3;
+      }
+    }
+
+    .axis-line {
+      stroke: black;
+      stroke-width: 1px;
+    }
+
+    .axis-label {
+      font-size: 20pt;
+      fill: black;
+    }
+
+    .axis-factor {
+      fill: black;
+      font-size: 10pt;
+    }
+  }
+
+  // by default, nothing here
+  .axis-left {
+    .ticks {
+      .tick-major-left {}
+      .tick-minor-left {}
+      .label-major-left {}
+      .label-minor-left {}
+      .grid-major-left {}
+      .grid-minor-left {}
+    }
+    .axis-line-left {}
+    .axis-label-left {}
+    .axis-factor-left {}
+  }
+  .axis-right {
+    .ticks {
+      .tick-major-right {}
+      .tick-minor-right {}
+      .label-major-right {}
+      .label-minor-right {}
+      .grid-major-right {}
+      .grid-minor-right {}
+    }
+    .axis-line-right {}
+    .axis-label-right {}
+    .axis-factor-right {}
+  }
+  .axis-top {
+    .ticks {
+      .tick-major-top {}
+      .tick-minor-top {}
+      .label-major-top {}
+      .label-minor-top {}
+      .grid-major-top {}
+      .grid-minor-top {}
+    }
+    .axis-line-top {}
+    .axis-label-top {}
+    .axis-factor-top {}
+  }
+  .axis-bottom {
+    .ticks {
+      .tick-major-bottom {}
+      .tick-minor-bottom {}
+      .label-major-bottom {}
+      .label-minor-bottom {}
+      .grid-major-bottom {}
+      .grid-minor-bottom {}
+    }
+    .axis-line-bottom {}
+    .axis-label-bottom {}
+    .axis-factor-bottom {}
+  }
+
+  // curves
+  .plain {
+    .curve {
+      stroke-width: 1;
+      stroke: black;
+      opacity: 1;
+      fill: none;
+    }
+
+    .pin {
+      stroke-width: 1;
+      stroke: black;
+      fill: none;
+    }
+    .tag {
+      font-size: 10pt;
+      fill: black;
+    }
+    .mark {
+    }
+   }
+  .stairs {
+    .curve {
+      stroke-width: 1;
+      stroke: black;
+      opacity: 1;
+      fill: none;
+     }
+  }
+  .bars {
+    .pin {
+      stroke-width: 1;
+      stroke: black;
+      fill: none;
+    }
+    .tag {
+      font-size: 10pt;
+      fill: black;
+    }
+  }
+  .pie {
+    .pin {
+      stroke-width: 1;
+      stroke: black;
+      fill: none;
+    }
+    .tag {
+      font-size: 10pt;
+      fill: black;
+    }
+  }
+
+}

@@ -10,13 +10,12 @@ export default class Title extends React.Component {
 
 	render(){
 
-    const { state, css } = this.props;
-    const { width, titleFSize, title } = state;
+    const { state } = this.props;
+    const { width, height, titleFSize, title, css } = state;
 
 		const xT = width / 2;
-		const yT = titleFSize + 5; // see defaults in space-mgr, its 10 px margin
-		const props = css ? {} : {fontSize: titleFSize};
-		const cN = css ? 'titleChart' : '';
-		return title && title.length !== 0 ? <text textAnchor='middle' className={cN} {...props} x={xT} y={yT}>{title}</text> : null;
+		const yT = height;
+		const props = {fontSize: titleFSize};
+		return title && title.length !== 0 ? <text textAnchor='middle' className={css ? 'title' : ''} {...props} x={xT} y={yT}>{title}</text> : null;
 	}
 }

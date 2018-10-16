@@ -29,16 +29,16 @@ export default class DotMark extends React.Component {
 	}
 
 	render(){
-		let { css, gIdx, state } = this.props;
-		let { ds, position, size, color, radius, fill, shade, width } = state;
+		const { css, gIdx, state, index } = this.props;
+		const { ds, position, size, color, radius, fill, shade, width } = state;
 
-		let x = toC(ds.x,position.x);
-		let y = toC(ds.y,position.y);
-		let r = radius || size;
-		let f = fill || color;
+		const x = toC(ds.x,position.x);
+		const y = toC(ds.y,position.y);
+		const r = radius || size;
+		const f = fill || color;
 
-		let cProps = css ? null : { r: r, fill: f, opacity: shade, stroke: color, strokeWidth: width };
+		const cProps = css ? null : { r: r, fill: f, opacity: shade, stroke: color, strokeWidth: width };
 
-		return <circle className={'mark mark-' + gIdx} cx={x} cy={y} {...cProps}/>;
+		return <circle className={`mark mark-${gIdx}.${index}`} cx={x} cy={y} {...cProps}/>;
 	}
 }
