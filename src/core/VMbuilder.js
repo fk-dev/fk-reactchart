@@ -131,7 +131,7 @@ const curve = function(get, { spaces, serie, data, gprops, idx, css }){
 			const isBar = (type) => type.search('Bars') >= 0 || type.search('bars') >= 0;
 
 			const graphKey = gtype + '.' + idx;
-			const mtype = isBar(gtype) ? 'bar' : gprops.markType === 'bar' ? 'square' : gprops.markType || 'dot';
+			const mtype = isBar(gtype) ? 'bar' : gprops.markType || 'dot';
 			const mprops = gprops.mark ? map(positions,(pos,idx) => {
 				const markKey = `${graphKey}.${mtype[0]}.${idx}`;
 				return {
