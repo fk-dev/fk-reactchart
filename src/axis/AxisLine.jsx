@@ -1,6 +1,6 @@
 import React from 'react';
 import Label from './Label.jsx';
-import { mgr as mgrUtil, direction, isNil } from '../core/utils.js';
+import { mgr as mgrUtil, direction, isNil, toNumber } from '../core/utils.js';
 import { isEqual } from '../core/im-utils.js';
 import { defMargins } from '../core/proprieties.js';
 
@@ -101,9 +101,9 @@ export default class AxisLine extends React.Component {
 			y: offset.y + line.end.y + off.y
 		};
 
-		return <text {...pos} fill={color} fontSize={Fsize}>
+		return <text {...pos} fill={color} fontSize={typeof Fsize === 'number' ? `${Fsize}pt` : Fsize}>
 			<tspan textAnchor='end'>&#183;10</tspan>
-			<tspan dy={-0.5 * Fsize} textAnchor='start'>{om}</tspan>
+			<tspan dy={-0.5 * toNumber(Fsize)} textAnchor='start'>{om}</tspan>
 		</text>;
 	}
 
