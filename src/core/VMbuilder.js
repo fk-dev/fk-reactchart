@@ -22,7 +22,7 @@ import { vm as barVM }     from '../marks/bar-vm.js';
 import { vm as pinVM } from '../marks/pin.js';
 
 // graph
-let graphVM = {
+const graphVM = {
 	PLAIN:   plainVM,
 	BARS:    barChartVM,
 	YBARS:   barChartVM,
@@ -31,7 +31,7 @@ let graphVM = {
 };
 
 // marks
-let marksVM = {
+const marksVM = {
 	OPENDOT:    odotVM,
 	DOT:        dotVM,
 	OPENSQUARE: osquareVM,
@@ -39,7 +39,7 @@ let marksVM = {
 	BAR:        barVM
 };
 
-const curve = function(get, { spaces, serie, data, gprops, idx }){
+const curve = function(get, { spaces, serie, data, gprops, idx, css }){
 
 			// 1 - find ds: {x: , y:}
 			// common to everyone
@@ -57,24 +57,24 @@ const curve = function(get, { spaces, serie, data, gprops, idx }){
 				!!data.ord.axis){
 				yplace = data.ord.axis;
 			}
-			let ds = {
+			const ds = {
 				x: spaces.x[xplace],
 				y: spaces.y[yplace]
 			};
 
 			// 2 - line of graph
-			let gtype = data.type || 'Plain';
+			const gtype = data.type || 'Plain';
 
 			// positions are offsetted here
-			let positions = map(serie, (point) => {
+			const positions = map(serie, (point) => {
 
-				let mgr = {
+				const mgr = {
 					x: typeMgr(point.x),
 					y: typeMgr(point.y)
 				};
 
-				let offx = isNil(point.offset.x) ? 0 : point.offset.x;
-				let offy = isNil(point.offset.y) ? 0 : point.offset.y;
+				const offx = isNil(point.offset.x) ? 0 : point.offset.x;
+				const offy = isNil(point.offset.y) ? 0 : point.offset.y;
 
 				let out = {
 					x: mgr.x.add(point.x,offx),
@@ -128,23 +128,23 @@ const curve = function(get, { spaces, serie, data, gprops, idx }){
 
 
 
-			let isBar = (type) => type.search('Bars') >= 0 || type.search('bars') >= 0;
+			const isBar = (type) => type.search('Bars') >= 0 || type.search('bars') >= 0;
 
-			let graphKey = gtype + '.' + idx;
-			let mtype = isBar(gtype) ? 'bar' : gprops.markType || 'dot';
-			let mprops = gprops.mark ? map(positions,(pos,idx) => {
-				let markKey = graphKey + '.' + mtype[0] + '.' + idx;
+			const graphKey = gtype + '.' + idx;
+			const mtype = isBar(gtype) ? 'bar' : gprops.markType === 'bar' ? 'square' : gprops.markType || 'dot';
+			const mprops = gprops.mark ? map(positions,(pos,idx) => {
+				const markKey = `${graphKey}.${mtype[0]}.${idx}`;
 				return {
 					key: markKey,
-					mark: marksVM[mtype.toUpperCase()].create(() => get().marks[idx], { position: pos, props: gprops, ds}), 
-					pin: pinVM.create(() => get().marks[idx], {pos, tag: gprops.tag,ds}) 
+					mark: marksVM[mtype.toUpperCase()].create(() => get().marks[idx], { position: pos, props: gprops, ds, motherCss: css}), 
+					pin: pinVM.create(() => get().marks[idx], {pos, tag: gprops.tag,ds, motherCss: css}) 
 				};
 			}) : [];
 
 			return {
 				key: graphKey,
 				type: gtype,
-				path: gprops.onlyMarks ? {show: false} : graphVM[gtype.toUpperCase()].create(() => get().path, { serie: positions, props: gprops, ds }),
+				path: gprops.onlyMarks && !isBar(gtype)? {show: false} : graphVM[gtype.toUpperCase()].create(() => get().path, { serie: positions, props: gprops, ds, motherCss: css }),
 				markType: mtype,
 				marks: mprops,
 				show: gprops.show
@@ -284,11 +284,12 @@ export let curvesVM = {
 
 	create: (get, { props, state }) => {
 
-		let { spaces } = state;
+		const { spaces } = state;
 		return map(state.series, (serie,idx) => {
-			let data   = props.data[idx];
-			let gprops = props.graphProps[idx];
-			return curve(() => get()[idx], { spaces, serie, data, gprops, idx});
+			const data   = props.data[idx];
+			const gprops = props.graphProps[idx];
+      const { css } = props;
+			return curve(() => get()[idx], { spaces, serie, data, gprops, idx, css });
 		});
 	}
 

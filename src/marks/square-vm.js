@@ -1,16 +1,21 @@
-export let vm = {
-	create: (get, { position, props, ds, key, open }) => {
+import { isNil } from '../core/utils.js';
 
-		let draw  = props.markProps.draw || position.draw         || false;
-		let color = position.color       || props.markProps.color || props.markColor || props.color || 'black';
-		let width = position.width       || props.markProps.width || draw ? 1 : 0;
-		let size  = position.size        || props.markProps.size  || props.markSize || 3;
-		let shade = position.shade       || props.markProps.shade || 1;
+export const vm = {
+	create: (get, { position, props, ds, key, open, motherCss }) => {
 
-		let fill  = open ? 'none' : position.fill || props.markProps.fill || color;
+		const draw  = props.markProps.draw || position.draw         || false;
+		const color = position.color       || props.markProps.color || props.markColor || props.color || 'black';
+		const width = draw || open ? position.width || props.markProps.width || 1 : 0;
+		const size  = position.size        || props.markProps.size  || props.markSize || 3;
+		const shade = position.shade       || props.markProps.shade || 1;
+		const css    = isNil(props.css) ? motherCss : props.css;
+
+		const fill  = open ? 'none' : position.fill || props.markProps.fill || color;
 	
 		return {
+			open,
 			key,
+			css,
 			draw,
 			ds,
 			position:{
@@ -27,9 +32,9 @@ export let vm = {
 };
 
 
-export let ovm = {
-	create: (get, { position, props, ds, key } ) => {
+export const ovm = {
+	create: (get, { position, props, ds, key, motherCss } ) => {
 		props.markProps.draw = true;
-		return vm.create(get, { position, props, ds, key, open: true });
+		return vm.create(get, { position, props, ds, key, open: true, motherCss });
 	}
 };

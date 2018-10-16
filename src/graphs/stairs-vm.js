@@ -2,18 +2,19 @@ import { isNil } from '../core/utils.js';
 import { each, map } from 'underscore';
 import { shader } from '../core/colorMgr.js';
 
-export let vm = {
-	create: (get, { serie, props, ds }) => {
+export const vm = {
+	create: (get, { serie, props, ds, motherCss }) => {
 
 		// easy stuff
-		let color = props.color || 'back';
-		let fill = props.fill || 'none';
-		let	width = isNil(props.width) ? 1 : props.width; // 0 is valid
-		let stairs = props.stairs || 'right';
-		let shade = props.shade || 1;
+		const color  = props.color || 'back';
+		const fill   = props.fill  || 'none';
+		const	width  = isNil(props.width) ? 1 : props.width; // 0 is valid
+		const stairs = props.stairs || 'right';
+		const shade  = props.shade || 1;
+		const css    = isNil(props.css) ? motherCss : css;
 	
-		let positions = map(serie, (point) => {return {x: point.x, y: point.y};});
-		let drops = map(serie, (point) => {return {x: point.drop.x, y: point.drop.y};});
+		const positions = map(serie, (point) => {return {x: point.x, y: point.y};});
+		const drops = map(serie, (point) => {return {x: point.drop.x, y: point.drop.y};});
 	
 		// color can be bin-defined
 		// 1 - a shader
@@ -28,10 +29,11 @@ export let vm = {
 			}
 		});
 	
-		let dlx = props.dropLine.x || false;
-		let dly = props.dropLine.y || false;
+		const dlx = props.dropLine.x || false;
+		const dly = props.dropLine.y || false;
 	
 		return {
+			css,
 			ds,
 			color,
 			fill,
