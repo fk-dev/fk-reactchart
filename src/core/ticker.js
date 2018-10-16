@@ -21,7 +21,7 @@ const checkMajDist = (labels,ref,D,first,cv, getLength, mgr) => {
 		cand = mgr.betterStep(ref,cand);
 		return {
 			majDist: cand,
-			curValue: cand === ref ? ref : mgr.closestRoundUp(first, cand),
+			curValue: cand === ref ? cv : mgr.closestRoundUp(first, mgr.type === 'date' ? mgr.add(cand, {days: 1}) : cand),
 			store: cand === ref ? labels : []
 		};
 	}else if(d < 0){
@@ -29,7 +29,7 @@ const checkMajDist = (labels,ref,D,first,cv, getLength, mgr) => {
 		const majDist = mgr.roundUp(ref);
 		return {
 			majDist,
-			curValue: mgr.closestRoundUp(first, mgr.add(majDist, {days: 1})),
+			curValue: mgr.closestRoundUp(first, mgr.type === 'date' ? mgr.add(majDist, {days: 1}) : majDist),
 			store: []
 		};
 	}else{
@@ -84,17 +84,73 @@ const computeTicks = function(first, last, step, majLabelize, minor, mStep, minL
 	length = mgr.distance(start,last);
 	//const llength = mgr.getValue(mgr.multiply(majDist,mgr.labelF)) * toPixel;
 
-	let out = [];
-	let curValue = start;
-	let along = mgr.offset(majDist);
 	let tries = majDist;
-// careful for infinite looping
-	if(isNil(curValue) || isNil(majDist)){
-		throw new Error("Ticker cannot compute with nil");
-	}
-	let cycle = false;
-	while(mgr.lowerThan(curValue,last)){
-		if(!cycle && out.length === 4 && !minor && square){
+	const tickerBuilder = (n) => {
+		let out = [];
+		let curValue = start;
+		let along = mgr.offset(majDist);
+	// careful for infinite looping
+		if(isNil(curValue) || isNil(majDist)){
+			throw new Error("Ticker cannot compute with nil");
+		}
+		let cycle = false;
+		while(mgr.lowerThan(curValue,last)){
+			if(!cycle && out.length === 4  && !minor && square){
+				out.forEach( (t,i) => {
+					t.label = majLabelize(out,i,mgr.label(t.position,majDist,fac));
+				});
+				const reset = checkMajDist(out,majDist, mgr.getValue(majDist) * toPixel, first, curValue, square, mgr);
+				if(mgr.greaterThan(reset.majDist,tries)){
+					tries = reset.majDist;
+				}else if(mgr.equal(reset.majDist,tries) && reset.store.length === 0){
+					cycle = true;
+				}
+				curValue = reset.curValue;
+				majDist = reset.majDist;
+				out = reset.store;
+				along = mgr.offset(majDist);
+			}
+			out.push({
+				type: 'major',
+				position: curValue,
+				offset: {
+					along,
+					perp: 0
+				},
+				extra: false,
+				label: null,
+				minor: false
+			});
+			// minor ticks
+			if(minor){
+				let curminValue = mgr.add(curValue,minDist);
+				const ceil = mgr.add(curValue,majDist);
+				while(mgr.lowerThan(curminValue,ceil) && mgr.lowerThan(curminValue,last)){
+					out.push({
+						type: 'minor',
+						position: curminValue,
+						offset: {
+							along: mgr.offset(minDist),
+							perp: 0
+						},
+						extra: false,
+						label: mgr.label(curminValue,minDist,fac),
+						minor: true
+					});
+					curminValue = mgr.add(curminValue,minDist);
+					if(mgr.isZero(minDist)){
+						break;
+					}
+				}
+			}
+	
+			curValue = mgr.add(curValue,majDist);
+			if(mgr.isZero(majDist)){
+				break;
+			}
+		}
+
+		if(out.length < 4 && out.length > 1 && !minor && square && n < 10){
 			out.forEach( (t,i) => {
 				t.label = majLabelize(out,i,mgr.label(t.position,majDist,fac));
 			});
@@ -108,46 +164,14 @@ const computeTicks = function(first, last, step, majLabelize, minor, mStep, minL
 			majDist = reset.majDist;
 			out = reset.store;
 			along = mgr.offset(majDist);
-		}
-		out.push({
-			type: 'major',
-			position: curValue,
-			offset: {
-				along,
-				perp: 0
-			},
-			extra: false,
-			label: null,
-			minor: false
-		});
-		// minor ticks
-		if(minor){
-			let curminValue = mgr.add(curValue,minDist);
-			const ceil = mgr.add(curValue,majDist);
-			while(mgr.lowerThan(curminValue,ceil) && mgr.lowerThan(curminValue,last)){
-				out.push({
-					type: 'minor',
-					position: curminValue,
-					offset: {
-						along: mgr.offset(minDist),
-						perp: 0
-					},
-					extra: false,
-					label: mgr.label(curminValue,minDist,fac),
-					minor: true
-				});
-				curminValue = mgr.add(curminValue,minDist);
-				if(mgr.isZero(minDist)){
-					break;
-				}
-			}
+			return tickerBuilder(n + 1);
+		}else{
+			return out;
 		}
 
-		curValue = mgr.add(curValue,majDist);
-		if(mgr.isZero(majDist)){
-			break;
-		}
-	}
+	};
+
+	let out = tickerBuilder(0);
 
 	// labelize
 	out.forEach( (tick,idx) => {
@@ -210,7 +234,7 @@ const computeTicks = function(first, last, step, majLabelize, minor, mStep, minL
 		}
 		// can we see the one before the first label
 		if(checkMin){
-			const position = mgr.subtract(start, minor ? minDist : majDist);
+			const position = mgr.subtract(out[0].position, minor ? minDist : majDist);
 			const preTick = tick(position,0);
 			if(checkBorder(preTick, 
 				labelPos => mgr.lowerThan(labelPos, first) ? - 2 * upperBounds : mgr.getValue( mgr.distance( labelPos, first) ) * toPixel,

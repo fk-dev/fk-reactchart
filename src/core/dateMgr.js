@@ -59,23 +59,24 @@ let _makePeriod = function(msOrDur){
 		weeks:  dur.weeks(),
 		days:   dur.days() - 7 * dur.weeks(),
 		total:  dur.asDays(),
-		offset: dur.asMonths() >= 3
+		offset: Math.abs(dur.asMonths()) >= 3
 	};
 };
 
 let fetchFormat = function(p){
 	p = processPeriod(p);
+	const { abs } = Math;
 	if(p.years !== 0){
 		return {
 			string: 'YYYY',
 			pref: ''
 		};
-	}else if(p.months >= 6){
+	}else if(abs(p.months) >= 6){
 		return {
 			string: 'S/YY', // ce format n'existe pas, il est géré par la fonction qui appelle
 			pref: 'S'
 		};
-	}else if(p.months >= 3){
+	}else if(abs(p.months) >= 3){
 		return {
 			string: 'Q/YY',
 			pref: 'T'

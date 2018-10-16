@@ -16,6 +16,25 @@ const suffixes = {
 	'-18': 'a' // atto
 };
 
+const lastDigitOrder = nbr => {
+	const str = '' + nbr;
+	let i = 0;
+	let nz = 0;
+	for(let l = 0; l < str.length; l++){
+		if(str[l] === '0'){
+			nz++;
+		}else{
+			nz = 0;
+			i = l;
+		}
+		if(nz === 3){
+			return i;
+		}
+	}
+
+	return i;
+};
+
 const firstDigit = function(r,n){
   n = n || 1;
 	let res = r * pow(10,-orderMag(r));
@@ -170,20 +189,28 @@ export function roundDown(r){
 // value methods
 export function closestRoundUp(ref,dist){
 
+	dist = Math.abs(dist);
+
 	if(ref < 0){
 		return - closestRoundDown(-ref,dist);
 	}
 
-	let refOm = orderMag(ref);
+	const refOm = orderMag(ref);
+	let upperBound = pow(10,refOm + 1);
+	if(upperBound / 5 > ref){
+		upperBound /= 5;
+	}else if(upperBound / 2 > ref){
+		upperBound /= 2;
+	}
 	let start = pow(10,refOm) * firstDigit(ref);
-	let or = orderMag(ref - start)  - orderMag(dist);
+	const or = orderMag(ref - start)  - orderMag(dist);
 	if(or > 2){
 		start = pow(10,refOm) * firstDigit(ref,or - 2);
 	}
 	while(start <= ref){
 		start += dist;
 	}
-	return start;
+	return Math.min(start,upperBound);
 }
 
 export function closestRoundDown(ref,dist){
@@ -243,7 +270,15 @@ export function label(value, dist, fac){
 
 // if equality, b is preffered
 export function betterStep(a,b){
-	// %10 > %5 > 2 || 1 > any other
+	// order mag, then %10 > %5 > 2 || 1 > any other
+
+	const omA = lastDigitOrder(a);
+	const omB = lastDigitOrder(b);
+	if(omA < omB){
+		return a;
+	}else if(omB < omA){
+		return b;
+	}
 
 		// %10
 	if(b%10 === 0){
@@ -253,16 +288,17 @@ export function betterStep(a,b){
 		return a;
 	}
 
-		// %5
-	if(b%5 === 0){
+		// %5 || 2 (case 5 vs 2)
+	if(b%5 === 0 || b === 2){
 		return b;
 	}
+
 	if(a%5 === 0){
 		return a;
 	}
 
-	// 2 || 1
-	if(b === 2 || b === 1){
+	// 2 || 1 
+	if(b === 1){
 		return b;
 	}
 	if(a === 2 || a === 1){
