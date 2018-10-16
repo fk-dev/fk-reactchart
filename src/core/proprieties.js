@@ -333,8 +333,8 @@ export const defMargins = {
 			mar: 10
 		},
 		tickLabels: {
-			left: 20,
-			right: 20,
+			left: 40,
+			right: 40,
 			bottom: 15,
 			top: 15
 		},
