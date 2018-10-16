@@ -168,7 +168,8 @@ export function vm(ds,partner, bounds, dir, locProps, comFac, axisKey){
 			rotate: false,
 			angle:  p.rotate,
 			transform: true,
-			show: tick.showLabel || ticksProps.show
+			show: tick.showLabel || ticksProps.show,
+			howToRotate: locProps.placement === 'top' ? -1 : locProps.placement === 'bottom' ? 1 : 0
 		};
 		labelProps.dir = {};
 		labelProps.dir[dir] = locProps.placement === 'top' || locProps.placement === 'right' ? -1 : 1;
@@ -196,6 +197,7 @@ export function vm(ds,partner, bounds, dir, locProps, comFac, axisKey){
 		let mar = p.labelFMargin;
 		let outTick = p.length * p.out;
 
+		// know where you are, label rotation anchor handling
 		let anchor = (() => {
 			switch(locProps.placement){
 				case 'top':

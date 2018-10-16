@@ -1,7 +1,7 @@
 /*
 	all the proprieties
 */
-import { extend, extendOwn, map } from 'underscore';
+import { extend, extendOwn } from 'underscore';
 
 // defaults for marks
 let marks = {};
@@ -227,8 +227,8 @@ const axe = {
 
 export function Axes(axis){
 	return {
-		abs: map(axis.abs, (p) => extend({placement: p}, axe)),
-		ord: map(axis.ord, (p) => extend({placement: p}, axe))
+		abs: axis.abs.map( p => extend({placement: p}, axe)),
+		ord: axis.ord.map( p => extend({placement: p}, axe))
 	};
 }
 
@@ -280,7 +280,18 @@ const type = (arr,dir) => {
 	return lab ? 'label' : v instanceof Date ? 'date' : 'number';
 };
 
-const data = (serie) => {
+const data = (serie,axis,axe) => {
+
+	axis.abs = axis.abs.length ? axis.abs : ["bottom"];
+	axis.ord = axis.ord.length ? axis.ord : ["left"];
+
+	const absDef = axis.abs.indexOf('bottom') !== -1 ? axis.abs.indexOf('bottom') : 0;
+	const ordDef = axis.ord.indexOf('left')   !== -1 ? axis.ord.indexOf('left')   : 0;
+
+	const index = {
+		abs: axe && axe.abs && axe.abs.axis ? axis.abs.indexOf(axe.abs.axis) : absDef,
+		ord: axe && axe.ord && axe.ord.axis ? axis.ord.indexOf(axe.ord.axis) : ordDef
+	}; 
 	return {
 		type: 'Plain', // Plain, Bars, yBars
 		series: [], // x, y
@@ -288,11 +299,11 @@ const data = (serie) => {
 		stacked: null, // x || y || null
 		coordSys: 'cart', // cart || polar
 		ord: {
-			axis: 'left', // 'left' || 'right'
+			axis: axis.ord[index.ord], // 'left' || 'right'
 			type: type(serie,'y') // 'number' || 'date' || 'label'
 		},
 		abs: {
-			axis: 'bottom', // 'bottom' || 'top'
+			axis: axis.abs[index.abs], // 'bottom' || 'top'
 			type: type(serie,'x') // 'number' || 'date' || 'label'
 		}
 	};
@@ -331,7 +342,7 @@ export const defMargins = {
 			right: 30,
 			top: 25
 		},
-		min: 3
+		min: 5
 	},
 	inner: {
 		left: 10, 
