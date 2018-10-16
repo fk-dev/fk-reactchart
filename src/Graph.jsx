@@ -10,6 +10,7 @@ export default class Graph extends React.Component {
 		super(props);
 		this.myKey = rndKey();
 		this.type = 'graph';
+		this.init();
 	}
 
 	componentDidMount(){

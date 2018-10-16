@@ -113,8 +113,11 @@ export function measure(gid){
 	if(!active){
 		return {
 			text: (txt,fs) => {
+				const _meas = x => x.length * toNumber(fs) * 2/3;
+				txt = Array.isArray(txt) ? txt : [txt];
+				const ls = txt.map(_meas);
 				return {
-					width:  txt.length * toNumber(fs) * 2/3, 
+					width: Math.max.apply(null,ls),
 					height: toNumber(fs)
 				};
 			},

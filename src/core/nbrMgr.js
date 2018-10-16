@@ -1,4 +1,4 @@
-let { pow, floor, log, abs, LN10 } = Math;
+const { pow, floor, log, abs, LN10 } = Math;
 
 const suffixes = {
 	18: 'E', // exa
@@ -63,15 +63,26 @@ const firstNonNull = function(v){
 };
 
 const roundMe = function(min,max){
-	let valOrder = orderMag(max);
-	let distOrd = orderMag(distance(max,min));
+	const valOrder = orderMag(max);
+	const distOrd = orderMag(distance(max,min));
 
-	let valid = (cand) => cand >= min && cand <= max;
+	const valid = (cand) => cand >= min && cand <= max;
 
-	let val = firstDigit(max) * pow(10,valOrder);
+	const ref = pow(10,valOrder + 1);
+	let val = ref; // 10
 	if(!valid(val)){
+		val = ref / 2; // 5
+	}
+	if(!valid(val)){
+		val = ref / 5; // 2
+	}
+	if(!valid(val)){
+		val = ref / 10; // 1
+	}
+
+	if(!valid(val)){ // last chance
 		if(distOrd < valOrder){
-			let step = pow(10,distOrd);
+			const step = pow(10,distOrd);
 			return floor(min / step) * step + step;
 		}else{ // distOrd === valOrder
 			return min;
@@ -196,7 +207,7 @@ export function closestRoundUp(ref,dist){
 	}
 
 	const refOm = orderMag(ref);
-	let upperBound = pow(10,refOm + 1);
+	let upperBound = pow(10,refOm + 1) * firstDigit(ref);
 	if(upperBound / 5 > ref){
 		upperBound /= 5;
 	}else if(upperBound / 2 > ref){
@@ -215,13 +226,20 @@ export function closestRoundUp(ref,dist){
 
 export function closestRoundDown(ref,dist){
 
-	let om = orderMag(dist);
-
 	if(ref < 0){
-		return - closestRoundUp(-ref,om);
+		return - closestRoundUp(-ref,dist);
 	}
 
-	let refOm = orderMag(ref);
+	const refOm = orderMag(ref);
+	const om = orderMag(dist);
+	let upperBound = pow(10,refOm) * (firstDigit(ref) - 1);
+	if(upperBound * 10 < ref){
+		upperBound *= 10;
+	}else if(upperBound * 5 < ref){
+		upperBound *= 5;
+	}else if(upperBound * 2 < ref){
+		upperBound *= 2;
+	}
 	let start = pow(10,refOm) * firstDigit(ref);
 	if(refOm !== om){
 		while(start < ref){
@@ -233,11 +251,13 @@ export function closestRoundDown(ref,dist){
 		start -= dist;
 	}
 
-	return start;
+	return Math.max(start,upperBound);
 }
 
 // value & distance methods
-export function closestRound(ref,om,type){ return (type === 'up') ? closestRoundUp(ref,om) : closestRoundDown(ref,om); }
+export function closestRound(ref,dist,type){
+	return (type === 'up') ? closestRoundUp(ref,dist) : closestRoundDown(ref,dist);
+}
 
 export function min(values){ 
 	if(values.length < 50001){

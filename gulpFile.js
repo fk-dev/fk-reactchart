@@ -18,35 +18,35 @@ var rootdirname = __dirname;
 gulp.task('page-js', function(){
   var headerTxt = '/* ' + new Date().getUTCFullYear() + '- generated at ' + new Date() + '\n*/';
   var browserifyOption = {
-	    entries: './pages/pages.js',
-	    extensions: ['.js'],
-	    //debug: true,
-	  };
-	
-	  var b = browserify(browserifyOption);
-	  var bundler = b
-	    .transform('partialify')
-	    .transform('babelify', {
-	      compact: "auto",
-	        ignore: [],
-	        presets: ['es2015', 'react']
-	      });
-	  
-	  var rebundle = function() {
-	    var rc = bundler.plugin(collapse)
-	      .bundle()
-	      .pipe(source('page.js'))
-	      .pipe(buffer())
-	  //    .pipe(uglify())
-	      .pipe(header(headerTxt))
-	      .pipe(gulp.dest(rootdirname));
-	
-	      return rc;
-	    };
-	  bundler = bundler.on('update', rebundle);
-	  return rebundle();
+      entries: './pages/pages.js',
+      extensions: ['.js'],
+      //debug: true,
+    };
+  
+    var b = browserify(browserifyOption);
+    var bundler = b
+      .transform('partialify')
+      .transform('babelify', {
+        compact: "auto",
+          ignore: [],
+          presets: ['es2015', 'react']
+        });
+    
+    var rebundle = function() {
+      var rc = bundler.plugin(collapse)
+        .bundle()
+        .pipe(source('page.js'))
+        .pipe(buffer())
+    //    .pipe(uglify())
+        .pipe(header(headerTxt))
+        .pipe(gulp.dest(rootdirname));
+  
+        return rc;
+      };
+    bundler = bundler.on('update', rebundle);
+    return rebundle();
 });
-	
+  
 gulp.task('page-css', function(){
   return 0;/*gulp.src("./pages/pages.less")
     .pipe(less())
@@ -64,7 +64,7 @@ gulp.task('full', function(){
     entries: './src/Graph.jsx',
     extensions: ['.js','.jsx']
   };
-	
+  
   var b = browserify(browserifyOption);
   var bundler = b
     .transform('partialify')
@@ -81,7 +81,7 @@ gulp.task('full', function(){
       .pipe(buffer())
       .pipe(header(headerTxt))
       .pipe(gulp.dest('./dist'));
-	
+  
       return rc;
     };
   bundler = bundler.on('update', rebundle);
@@ -96,7 +96,7 @@ gulp.task('min', function(){
     extensions: ['.js','.jsx']
     //debug: true,
   };
-	
+  
   var b = browserify(browserifyOption);
   var bundler = b
     .transform('partialify')
@@ -114,7 +114,7 @@ gulp.task('min', function(){
       .pipe(uglify())
       .pipe(header(headerTxt))
       .pipe(gulp.dest('./dist'));
-	
+  
       return rc;
     };
   bundler = bundler.on('update', rebundle);

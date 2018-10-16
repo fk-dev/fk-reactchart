@@ -120,11 +120,15 @@ graph.Pie = graph.pie = () => extend(graph.common(),{
 	pieRadius: null, // 2/3 of world
 	pieToreRadius: 0, // 0: no hole, 1 : no border!
 	tag: {
+		css: null,
 		show: false, // show the tag
 		print: (p) => p.tag,
+		fontSize: 10,
 		pin: false, // show the pin
 		pinColor: 'black', // color or the pin
 		pinLength: 0.35, // 10 px as pin length
+		pinWidth: 1, // 1 px as pin width
+		pinAngle: 90, // direction of pin
 		pinRadius: 0.75, // 3/4 of pie size
 		pinHook: 10, // absolute length
 		color: 'black' // color of the tag

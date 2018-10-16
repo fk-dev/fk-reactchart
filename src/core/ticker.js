@@ -7,7 +7,7 @@ const nInterval = (length, height) => {
 };
 
 
-const checkMajDist = (labels,ref,D,first,cv, getLength, mgr) => {
+const checkMajDist = (labels,ref,D,first,cv, getLength, mgr, starter) => {
 	const lls = labels.map(x => getLength(x.label)).filter(x => x);
 	const max = lls.reduce( (memo,v) => memo < v ?  v : memo, -1);
 	const d = D - (lls[0]/2 + lls[1]/2);
@@ -21,7 +21,7 @@ const checkMajDist = (labels,ref,D,first,cv, getLength, mgr) => {
 		cand = mgr.betterStep(ref,cand);
 		return {
 			majDist: cand,
-			curValue: cand === ref ? cv : mgr.closestRoundUp(first, mgr.type === 'date' ? mgr.add(cand, {days: 1}) : cand),
+			curValue: cand === ref ? cv : starter(cand),//mgr.closestRoundUp(first, mgr.type === 'date' ? mgr.add(cand, {days: 1}) : cand),
 			store: cand === ref ? labels : []
 		};
 	}else if(d < 0){
@@ -29,7 +29,7 @@ const checkMajDist = (labels,ref,D,first,cv, getLength, mgr) => {
 		const majDist = mgr.roundUp(ref);
 		return {
 			majDist,
-			curValue: mgr.closestRoundUp(first, mgr.type === 'date' ? mgr.add(majDist, {days: 1}) : majDist),
+			curValue: starter(majDist), //mgr.closestRoundUp(first, mgr.type === 'date' ? mgr.add(majDist, {days: 1}) : majDist),
 			store: []
 		};
 	}else{
@@ -46,9 +46,26 @@ const checkMajDist = (labels,ref,D,first,cv, getLength, mgr) => {
  * values (date), see {date,nbr}Mgr.js
 */
 const computeTicks = function(first, last, step, majLabelize, minor, mStep, minLabelize, fac, toPixel, height, square, outer){
+
+	// mgr
 	const mgr = typeMgr(first);
-	// smart guess
-	let start = mgr.closestRoundUp(first,mgr.divide(mgr.distance(first,last),10));
+
+	// const
+	const biggestRounded = mgr.orderMagValue(last,first);
+	const guess = mgr.divide(mgr.distance(first,last),10);
+	const mandatory = isNil(biggestRounded) ? mgr.closestRoundUp(first,guess) : biggestRounded;
+
+	// utils
+	const starter = (step) => {
+		let start = mandatory;
+		while(mgr.greaterThan(start,first) || mgr.equal(start,first)){
+			start = mgr.subtract(start,step);
+		}
+		return mgr.add(start,step);
+	};
+
+	// let's go
+	let start = starter(guess);
 	let length = mgr.distance(start,last);
 	// in px
 	const upperBounds = mgr.getValue(mgr.distance(first,last)) * toPixel;
@@ -74,17 +91,13 @@ const computeTicks = function(first, last, step, majLabelize, minor, mStep, minL
 		minDist.offset = mStep.offset;
 	}
 
-// redefine start to have the biggest rounded value
-	const biggestRounded = mgr.orderMagValue(last,first);
-	start = isNil(biggestRounded) ? start : biggestRounded;
-	while(mgr.greaterThan(start,first) || mgr.equal(start,first)){
-		start = mgr.subtract(start,majDist);
-	}
-	start = mgr.add(start,majDist);
+// redefine start to have the closest rounded value if needed
+	start = starter(majDist);
+
 	length = mgr.distance(start,last);
 	//const llength = mgr.getValue(mgr.multiply(majDist,mgr.labelF)) * toPixel;
 
-	let tries = majDist;
+	let tries = [majDist];
 	const tickerBuilder = (n) => {
 		let out = [];
 		let curValue = start;
@@ -99,10 +112,10 @@ const computeTicks = function(first, last, step, majLabelize, minor, mStep, minL
 				out.forEach( (t,i) => {
 					t.label = majLabelize(out,i,mgr.label(t.position,majDist,fac));
 				});
-				const reset = checkMajDist(out,majDist, mgr.getValue(majDist) * toPixel, first, curValue, square, mgr);
-				if(mgr.greaterThan(reset.majDist,tries)){
-					tries = reset.majDist;
-				}else if(mgr.equal(reset.majDist,tries) && reset.store.length === 0){
+				const reset = checkMajDist(out,majDist, mgr.getValue(majDist) * toPixel, first, curValue, square, mgr, starter);
+				if(tries.findIndex( t => mgr.equal(reset.majDist,t)) === -1){
+					tries.push(reset.majDist);
+				}else if(reset.store.length === 0){
 					cycle = true;
 				}
 				curValue = reset.curValue;
@@ -154,11 +167,14 @@ const computeTicks = function(first, last, step, majLabelize, minor, mStep, minL
 			out.forEach( (t,i) => {
 				t.label = majLabelize(out,i,mgr.label(t.position,majDist,fac));
 			});
-			const reset = checkMajDist(out,majDist, mgr.getValue(majDist) * toPixel, first, curValue, square, mgr);
-			if(mgr.greaterThan(reset.majDist,tries)){
-				tries = reset.majDist;
-			}else if(mgr.equal(reset.majDist,tries) && reset.store.length === 0){
+			const reset = checkMajDist(out,majDist, mgr.getValue(majDist) * toPixel, first, curValue, square, mgr, starter);
+			if(tries.findIndex( t => mgr.equal(reset.majDist,t)) === -1){
+				tries.push(reset.majDist);
+			}else if(reset.store.length === 0){
 				cycle = true;
+			}
+			if(reset.store.length){
+				return out;
 			}
 			curValue = reset.curValue;
 			majDist = reset.majDist;

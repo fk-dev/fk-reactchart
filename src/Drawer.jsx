@@ -48,7 +48,6 @@ export default class Drawer extends React.Component {
 	render(){
 
 		const state = this.props.state || {width: 200, height: 200};
-
 		return <svg width={state.width} height={state.height} id={this.props.id} className={this.props.className}>
 			{ state.cadre.show ? <Cadre state={state.cadre}/> : null }
 			{ state.background.show ? <Background state={state.background}/>  : null }
