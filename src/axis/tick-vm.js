@@ -128,12 +128,12 @@ export function vm(css, measurer, ds, partner, bounds, dir, locProps, comFac, ax
 		}
 	});
 
-	const majorLabelize = (ticks,idx, def) => {
+	const majLabelize = (ticks,idx, def) => {
 		const prev = idx > 0 ? ticks[idx - 1].position : null;
 		const next = idx < ticks.length - 1 ? ticks[idx + 1].position : null;
 		return majProps.labelize(ticks[idx].position, prev, next) === false ? def : majProps.labelize(ticks[idx].position, prev, next);
 	};
-	const minorLabelize = (ticks,idx, def) => {
+	const minLabelize = (ticks,idx, def) => {
 		const prev = idx > 0 ? ticks[idx - 1].position : null;
 		const next = idx < ticks.length - 1 ? ticks[idx + 1].position : null;
 		return minProps.labelize(ticks[idx].position, prev, next) === false ? def : minProps.labelize(ticks[idx].position, prev, next);
@@ -151,7 +151,7 @@ export function vm(css, measurer, ds, partner, bounds, dir, locProps, comFac, ax
 		minStep.offset = locProps.interval;
 	}
 
-	const tickers = ticks(min, max, majStep, ticksLabel, majorLabelize, minor, minStep, minorLabelize, comFac, toPixel, height, labelSquare, outerMargins);
+	const tickers = ticks(min, max, majStep, ticksLabel, {majAuto: majProps.autoOfset, majLabelize }, minor, minStep, { minAuto: minProps.autoOffset, minLabelize}, comFac, toPixel, height, labelSquare, outerMargins);
 
 	const prevTick = (idx) => idx > 0 ? tickers[idx - 1].position : null;
 	const nextTick = (idx) => idx < tickers.length - 1 ? tickers[idx + 1].position : null;

@@ -161,6 +161,7 @@ export const Tick = {
 	out: 0.25, // proportion that is outside
 	step: null,
 	color: 'black',
+	autoOffset: true,
 	labelOffset: {x:0, y:0 },
 	labelize: () => false, //utils.isNil(val) ? '' : val instanceof Date ? moment(val).format('YYYY') : val.toFixed(1);},
 	label: '',

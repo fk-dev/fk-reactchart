@@ -45,7 +45,7 @@ const checkMajDist = (labels,ref,D,first,cv, getLength, mgr, starter) => {
  * beware of distance (period) versus
  * values (date), see {date,nbr}Mgr.js
 */
-const computeTicks = function(first, last, step, majLabelize, minor, mStep, minLabelize, fac, toPixel, height, square, outer){
+const computeTicks = function(first, last, step, { majAuto, majLabelize}, minor, mStep, { minAuto, minLabelize }, fac, toPixel, height, square, outer){
 
 	// mgr
 	const mgr = typeMgr(first);
@@ -121,7 +121,7 @@ const computeTicks = function(first, last, step, majLabelize, minor, mStep, minL
 				curValue = reset.curValue;
 				majDist = reset.majDist;
 				out = reset.store;
-				along = mgr.offset(majDist);
+				along = majAuto ?  mgr.offset(majDist) : 0;
 			}
 			out.push({
 				type: 'major',
@@ -143,7 +143,7 @@ const computeTicks = function(first, last, step, majLabelize, minor, mStep, minL
 						type: 'minor',
 						position: curminValue,
 						offset: {
-							along: mgr.offset(minDist),
+							along: minAuto ? mgr.offset(minDist) : 0,
 							perp: 0
 						},
 						extra: false,
@@ -205,11 +205,14 @@ const computeTicks = function(first, last, step, majLabelize, minor, mStep, minL
 	};
 
 	const tick = (position,p) => {
+
+		const along = minor && minAuto ? mgr.offset(minDist) : !minor && majAuto ? mgr.offset(majDist) : 0;
+
 		const tick = {
 			type: `borders-${minor ? 'minor' : 'major'}`,
 			position,
 			offset: {
-				along: mgr.offset(minor ? minDist : majDist),
+				along,
 				perp: 0
 			},
 			show: false,
@@ -278,7 +281,7 @@ const computeTicks = function(first, last, step, majLabelize, minor, mStep, minL
 	return out;
 };
 
-export function ticks(start, length, majStep, labels, majLabelize, minor, minStep, minLabelize, fac, toPixel, height, square, outer){
+export function ticks(start, length, majStep, labels, majProps, minor, minStep, minProps, fac, toPixel, height, square, outer){
 	if(labels && labels.length > 0){
 		return map(labels, (lab) => {
 			return {
@@ -293,5 +296,5 @@ export function ticks(start, length, majStep, labels, majLabelize, minor, minSte
 		});
 	}
 
-	return computeTicks(start, length, majStep, majLabelize, minor, minStep, minLabelize, fac, toPixel, height, square, outer);
+	return computeTicks(start, length, majStep, majProps, minor, minStep, minProps, fac, toPixel, height, square, outer);
 }
