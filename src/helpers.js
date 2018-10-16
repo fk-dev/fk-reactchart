@@ -66,6 +66,7 @@ export function init(rawProps,type){
 			updatee[key] = obj;
 		}
 
+    updateDeps();
 		return key;
 	};
 
