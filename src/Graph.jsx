@@ -1,32 +1,41 @@
 import React from 'react';
 import Drawer from './Drawer.jsx';
 
-import { init } from './helpers.js';
-import { map } from 'underscore';
+import { init }   from './helpers.js';
+import { rndKey } from './core/utils.js';
+import { map }    from 'underscore';
 
 export default class Graph extends React.Component {
+
+	constructor(props){
+		super(props);
+		this.myKey = rndKey();
+	}
 
 	componentDidMount(){
 		this.init();
 	}
 
-	componentDidReceiveProps(pr){
-		this.init(pr);
+	componentDidUpdate(){
+		if(!this.sh){
+			this.init(this.props);
+		}
 	}
 
 	init(pr){
 		pr = pr || this.props;
-		if(pr.__preprocessed){
+		if(pr.__preprocessed){ // done outside graph
 			this.sh = pr;
-		}else{
-			this.sh = init(pr);
+			this.myKey = pr.graphKey;
+		}else{ // to be done here
+			this.sh = init(pr,'',this.myKey);
 		}
 		this.myKey = this.sh.updateGraph(this, this.myKey);
 	}
 
 	render(){
 		const state = this.sh ? this.sh.get() : null;
-		return state ? <Drawer state={state} /> : null;
+		return <Drawer id={this.myKey} state={state} />;
 	}
 }
 
