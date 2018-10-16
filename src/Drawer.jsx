@@ -37,17 +37,27 @@ export default class Drawer extends React.Component {
 			<Axes state={state.axes}/>
 			{state.curves.map( (curve, gIdx) => grapher(curve.type,curve, {css, gIdx}))}
 		</g>;
-					
+	}
+
+	empty(){
+		const { state } = this.props;
+		const emp = !state.cadre && !state.background  && !(state.title && state.title.title.length) && !state.axis && !(state.curves && state.curves.length) && !state.foreground;
+		return emp ? <Cadre width={state.width} height={state.height}/> : null;
 	}
 
 	render(){
+
 		const state = this.props.state || {width: 200, height: 200};
+		const { css } = state;
+
 		return <svg width={state.width} height={state.height} id={this.props.id}>
-			{ state.cadre ? <Cadre width={state.width} height={state.height}/> : null }
-			{ state.background ? <Background state={state.background}/> : null }
-			{ state.title ? <Title state={state.title} /> : null }
+			{ state.cadre ?      <Cadre width={state.width} height={state.height}/> : null }
+			{ state.background ? <Background state={state.background}/>  : null }
+			{ state.title && state.title.title.length ? <Title css={css} state={state.title} /> : null }
 			{ state.axis || state.curves ? this.orderAG() : null}
 			{ state.foreground ? <Foreground state={state.foreground} pWidth={state.width} pHeight={state.height}/> : null }
+			{ this.empty() }
+			<text x={-10} y={-10} anchor='middle' style={{visibility: 'hidden'}} id={`fkchartmeasurer-${this.props.id}`}/>
 		</svg>;
 	}
 }
