@@ -151,7 +151,7 @@ export function vm(css, measurer, ds, partner, bounds, dir, locProps, comFac, ax
 		minStep.offset = locProps.interval;
 	}
 
-	const tickers = ticks(min, max, majStep, ticksLabel, {majAuto: majProps.autoOfset, majLabelize }, minor, minStep, { minAuto: minProps.autoOffset, minLabelize}, comFac, toPixel, height, labelSquare, outerMargins);
+	const tickers = ticks(min, max, majStep, ticksLabel, {majAuto: majProps.autoOffset, majLabelize }, minor, minStep, { minAuto: minProps.autoOffset, minLabelize}, comFac, toPixel, height, labelSquare, outerMargins);
 
 	const prevTick = (idx) => idx > 0 ? tickers[idx - 1].position : null;
 	const nextTick = (idx) => idx < tickers.length - 1 ? tickers[idx + 1].position : null;
