@@ -4,7 +4,10 @@ import { deepCp, isNil, measure, rndKey } from './core/utils.js';
 import { toC } from './core/space-transf.js';
 import * as manip from './core/data-manip.js';
 
-export function init(rawProps,type,key){
+export function init(rawProps,type, Obj){
+
+	Obj = Obj || {};
+	const { key, obj } = Obj;
 
 	let props;
 	let freezer;
@@ -34,12 +37,17 @@ export function init(rawProps,type,key){
 	//
 	props = defaultTheProps(deepCp({},rawProps));
 	props.freeze = type;
+
+	rc.lengthes = measure(rc.graphKey).measureAll(props);
+
 	freezer = freeze(process(() => freezer.get(), props, () => rc));
-	freezer.on('update',updateDeps);
 
 	rc.graphKey = key || genKey();
+	if(obj){
+		updatee[rc.graphKey] = obj;
+	}
 
-	rc.lengthes = measure(rc.graphKey);
+	rc.__mgrId = `${rndKey()}${rndKey()}`;
 
 	rc.defaults = (p) => defaultTheProps(p || props);
 
@@ -106,6 +114,7 @@ export function init(rawProps,type,key){
 		}
 	};
 
+	freezer.on('update',updateDeps); // last
 	return rc;
 
 }
