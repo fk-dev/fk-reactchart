@@ -1,27 +1,20 @@
-import { process, defaultTheProps } from './core/process.js';
+import { process, defaultTheProps, processLegend } from './core/process.js';
 import { freeze } from './core/im-utils.js';
 import { deepCp, isNil, measure, rndKey } from './core/utils.js';
 import { toC } from './core/space-transf.js';
 import * as manip from './core/data-manip.js';
 
-export function init(rawProps,type, Obj){
+export function init(rawProps, type, Obj){
 
 	Obj = Obj || {};
 	const { key, obj } = Obj;
 
 	let props;
 	let freezer;
+	let graphKey = key;
+	const _process  = type === 'legend' ? processLegend : process;
 
 	let updatee = {};
-
-	// super quick, should not be needed to be strong
-	const genKey = () => {
-		let key = rndKey();
-		while(!isNil(updatee[key])){
-			key = rndKey();
-		}
-		return key;
-	};
 
 	const updateDeps = () => {
 		for(let i in updatee){
@@ -34,29 +27,50 @@ export function init(rawProps,type, Obj){
 	};
 
 	let rc = {};
-	//
+
+	let measurer = measure(graphKey);
+
+	// raw props
 	props = defaultTheProps(deepCp({},rawProps));
 	props.freeze = type;
 
-	rc.lengthes = measure(rc.graphKey).measureAll(props);
+	// lengthes
+		// to have a cadratin for every places (labels)
+	rc.lengthes = () => measurer.cadratin(rc.unprocessedProps(),rc.graphKey());
+		// measurer
+	rc.measureText = (t,f,cn) =>  measurer.text(t,f, props.css ? cn : null ,rc.graphKey());
+		// usable?
+	rc.canMeasure = () => measurer.active;
+		// reset
+	rc.setMeasurer = () => {
+		measurer = measure(rc.graphKey());
+	};
 
-	freezer = freeze(process(() => freezer.get(), props, () => rc));
+	// id
+		// getter
+	rc.graphKey = () => graphKey;
+		// setter
+	rc.setKey = key => {
+		graphKey = key;
+		rc.setMeasurer();
+	};
 
-	rc.graphKey = key || genKey();
+	// update Graph (obj)
 	if(obj){
-		updatee[rc.graphKey] = obj;
+		updatee[rc.graphKey()] = obj;
 	}
 
+	// self id, if ever same Graph changes helpers
 	rc.__mgrId = `${rndKey()}${rndKey()}`;
 
-	rc.defaults = (p) => defaultTheProps(p || props);
-
-	rc.props = rc.get = () => freezer.get();
+	// getters
+	rc.props   = rc.get = () => freezer.get();
 	rc.unprocessedProps = () => props;
+	rc.legend           = () => type === 'legend' ? freezer.get() : freezer.get().legend;
+	rc.mgr              = () => freezer;
 
-	rc.legend = () => freezer.get().legend;
-
-	rc.mgr = () => freezer;
+	// utils
+	rc.defaults = (p) => defaultTheProps(p || props);
 
 	rc.toC = (point) => {
 		return {
@@ -65,12 +79,13 @@ export function init(rawProps,type, Obj){
 		};
 	};
 
-  rc.__preprocessed = true;
-
   rc.updateGraph = (obj, key) => {
 		if(isNil(key)){
-			key = rc.graphKey;
+			return;
+		}else if(rc.graphKey() !== key){
+			rc.setKey(key);
 		}
+
 		if(!updatee[key]){
 			updatee[key] = obj;
 		}
@@ -80,14 +95,23 @@ export function init(rawProps,type, Obj){
 	};
 
 	rc.reinit = (newProps, type) => {
+		// check measurer
+		if(!rc.canMeasure()){
+			rc.setMeasurer();
+		}
 		newProps = newProps || props;
 		props   = defaultTheProps(deepCp({},newProps));
 		props.freeze = type;
-		freezer = freeze(process(() => freezer.get(), props, () => rc));
+		freezer = freeze(_process(() => freezer.get(), props, () => rc));
 		freezer.on('update', updateDeps);
 		updateDeps();
 	};
 
+	rc.kill = key => {
+		updatee[key] = undefined;
+	};
+
+	// dyn graph
 	rc.delCurve = (idx) => manip.remove(idx, { props, mgr: rc });
 	rc.addCurve = (data, graphp) => manip.add({data,graphp}, {props, mgr: rc});
 
@@ -114,7 +138,13 @@ export function init(rawProps,type, Obj){
 		}
 	};
 
+	// finalize
+  rc.__preprocessed = true;
+
+	// processed props
+	freezer = freeze(_process(() => freezer.get(), props, () => rc));
 	freezer.on('update',updateDeps); // last
+
 	return rc;
 
 }
