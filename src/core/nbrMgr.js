@@ -236,7 +236,10 @@ export function max(values){
 	}
 }
 
-export function label(value, useless, fac){ return (value / fac).toFixed(1);}
+export function label(value, dist, fac){ 
+	const o = Math.min(Math.max(-orderMag(dist),0),20);
+	return (value / fac).toFixed(o);
+}
 
 export function multiply(d,f){ return d * f;}
 

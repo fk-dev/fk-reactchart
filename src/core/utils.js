@@ -110,7 +110,9 @@ export function measure(gid){
 
 	let mother =  document.getElementById(`fkchartmeasurer-${gid}`);
 
-	if(typeof document === 'undefined' || !mother){
+	let active = false;
+
+	if(typeof document === 'undefined' || isNil(mother)){
 		return {
 			text: () => {
 				return {
@@ -125,9 +127,11 @@ export function measure(gid){
 					tickLabel: {left: 0, right: 0, top: 0, bottom: 0},
 				};
 			},
-			active: false
+			active
 		};
 	}
+
+	active = true;
 
 	const _measureText = (str, fontSize, clN) => {
 		if(!str){
@@ -144,6 +148,11 @@ export function measure(gid){
 		mother.innerHTML = str;
 		const rect = mother.getBoundingClientRect();
 		const { width, height }  = rect;
+
+		if(fontSize && width === 0 && height === 0){
+			active = false;
+		}
+
 		return { width, height };
 	};
 
@@ -196,7 +205,7 @@ export function measure(gid){
 	return {
 		text: measureText,
 		cadratin,
-		active: true,
+		active,
 		kill
 	};
 
