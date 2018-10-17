@@ -5,21 +5,21 @@ import { iconer } from '../icons/iconer.jsx';
 import { shader } from './colorMgr.js';
 import * as evMgr from './events-mgr.js';
 
-export let vm = {
+export const vm = {
 	create: function(get, { props }){
 
-	let events = evMgr.create(props.legend.events);
+	const events = evMgr.create(props.legend.events);
 
 	// for icon, just to help reading
-	let icw  = props.legend.iconWidth  - 2 * props.legend.iconHMargin;
-	let ich  = props.legend.iconHeight - 2 * props.legend.iconVMargin;
-	let ichm = props.legend.iconHMargin;
-	let icvm = props.legend.iconVMargin;
+	const icw  = props.legend.iconWidth  - 2 * props.legend.iconHMargin;
+	const ich  = props.legend.iconHeight - 2 * props.legend.iconVMargin;
+	const ichm = props.legend.iconHMargin;
+	const icvm = props.legend.iconVMargin;
 
-	let getALegend = (data,gprops,idx) => {
+	const getALegend = (data,gprops,idx) => {
 		let icc = gprops.color;
-		let sha = gprops.shader;
-		if(!!sha && !!sha.options){
+		const sha = extend({},gprops.shader);
+		if(sha && sha.options){
 			sha.computation = sha.computation === 'by function' ? sha.computation : 'explicit';
 			sha.type = 'color';
 			sha.factor = [0.5];
@@ -27,8 +27,8 @@ export let vm = {
 			shader(sha,[col]);
 			icc = col.color;
 		}
-		let ics = gprops.width < 2 ? gprops.width * 1.5 : gprops.width; // slightly more bold, if needed
-		let iconProps = {
+		const ics = gprops.width < 2 ? gprops.width * 1.5 : gprops.width; // slightly more bold, if needed
+		const iconProps = {
 			color: icc,
 			width: icw,
 			height: ich,
