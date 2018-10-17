@@ -1,7 +1,7 @@
 import { reduce, extend } from 'underscore';
 import { isNil, isArray } from './utils.js';
 
-let palette = [ "#3A83F1", "#DC3FF1", "#F2693F", "#8AF23F", "#758d99",
+const palette = [ "#3A83F1", "#DC3FF1", "#F2693F", "#8AF23F", "#758d99",
 	"#F1DC41", "#AC310C", "#40C8F2", "#980DAB", "#F6799B", "#9679F6", "#EE2038",
 	"#00994D", "#758D99", "#F141AD", "#0C86AC", "#C729C7", "#D26F13", "#092508",
 	"#FFBACD", "#7CB603", "#4088EC", "#46002C", "#FF5478", "#43859E", "#72680F",
@@ -14,7 +14,7 @@ let palette = [ "#3A83F1", "#DC3FF1", "#F2693F", "#8AF23F", "#758d99",
 
 const color = function(options,f){
 
-	let { colors } = options;
+	const { colors } = options;
 
 	const toRGB = function(str,w){
 		return {
@@ -32,10 +32,10 @@ const color = function(options,f){
 		};
 	};
 
-	const toString = (rgb) => '#' + (rgb.R.toString(16) + rgb.G.toString(16) + rgb.B.toString(16)).toUpperCase();
+	const toString = (rgb) => `#${rgb.R.toString(16)}${rgb.G.toString(16)}${rgb.B.toString(16)}`.toUpperCase();
 
 	const coord = (isArray(f)) ? f : [f, 1 - f];
-	return toString(reduce(colors, (memo, col, idx) => addRGB(memo,toRGB(col,coord[idx])), {R:0, G:0, B:0}));
+	return toString(colors.reduce( (memo, col, idx) => addRGB(memo,toRGB(col,coord[idx])), {R:0, G:0, B:0}));
 	
 };
 
@@ -50,11 +50,11 @@ const shade = function(options,f){
 const white = '#FFFFFF';
 const black = '#000000';
 
-let shadeMgr = { color, shade };
+const shadeMgr = { color, shade };
 
-let compute = function(mgr){
+const compute = function(mgr){
 
-	let { computation, type, options, index, N, factor, shadeFunction, point } = mgr;
+	const { computation, type, options, index, N, factor, shadeFunction, point } = mgr;
 
 	switch(computation){
 		case 'by index':
