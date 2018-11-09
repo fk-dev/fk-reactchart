@@ -4,7 +4,7 @@ import { deepCp, isNil, measure, rndKey } from './core/utils.js';
 import { toC } from './core/space-transf.js';
 import * as manip from './core/data-manip.js';
 
-export function init(rawProps, type, Obj){
+export function init(rawProps, type, Obj, debug){
 
 	Obj = Obj || {};
 	let { key, obj, namespace } = Obj;
@@ -30,7 +30,7 @@ export function init(rawProps, type, Obj){
 
 	let rc = {};
 
-	let measurer = measure(graphKey);
+	let measurer = measure(graphKey, debug);
 
 	// raw props
 	props = defaultTheProps(deepCp({},rawProps));

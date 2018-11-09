@@ -32,7 +32,7 @@ export default class Graph extends React.Component {
 	shouldComponentUpdate(pr){
 
 		if(!pr.__preprocessed){ // not sh, we update anyway
-			this.sh = init(pr,this.type,{ key: this.myKey, obj: this, namespace: this.props.namespace});
+			this.sh = init(pr,this.type,{ key: this.myKey, obj: this, namespace: this.props.namespace}, this.props.debug);
 			return true;
 		}
 
@@ -70,7 +70,7 @@ export default class Graph extends React.Component {
 			this.sh = pr;
 			this.sh.setKey(this.myKey);
 		}else{ // to be done here
-			this.sh = init(pr,this.type,{ key: this.myKey, obj: this, namespace: this.props.namespace});
+			this.sh = init(pr,this.type,{ key: this.myKey, obj: this, namespace: this.props.namespace}, this.props.debug);
 		}
 	}
 
@@ -105,7 +105,7 @@ class Legend extends React.Component {
 			this.sh = pr;
 			this.sh.setKey(this.myKey);
 		}else{ // to be done here
-			this.sh = init(pr,this.type,{ key: this.myKey, obj: this });
+			this.sh = init(pr,this.type,{ key: this.myKey, obj: this }, this.props.debug);
 		}
 	}
 

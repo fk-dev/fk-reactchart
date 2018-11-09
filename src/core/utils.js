@@ -106,20 +106,25 @@ export function computeSquare(angle,width,height){
 
 }
 
-export function measure(gid){
+export function measure(gid, debug){
+
+	debug = debug || { log: () => null };
 
 	let active = typeof document !== 'undefined' && document.getElementById(`fkchartmeasurer-${gid}`) ? true : false;
 
 	if(!active){
+		if(debug){
+			debug.log("No document object found, using old style measurements.");
+		}
 		return {
 			text: (txt,fs) => {
 				const _meas = x => x.length * toNumber(fs) * 2/3;
 				txt = Array.isArray(txt) ? txt : [txt];
 				const ls = txt.map(_meas);
-				return {
-					width: Math.max.apply(null,ls),
-					height: toNumber(fs)
-				};
+				const width = Math.max.apply(null,ls);
+				const height = toNumber(fs);
+				debug.log(`Old Style Measurements: will return (width, heigh) = (${width},${height}) for text = ${txt} at font size ${fs}`);
+				return { width, height };
 			},
 			cadratin: (props) => {
 				const { titleFSize } = props;
@@ -134,17 +139,22 @@ export function measure(gid){
 					axisLabel[u] = ( props.axisProps[places[u]].find(x => x.placement === u) || {labelFSize: 0}).labelFSize;
 					tickLabel[u] = ( props.axisProps[places[u]].find(x => x.placement === u) || {ticks: { major: {labelFSize: 0} } }).ticks.major.labelFSize;
 				}
-				return {
+				const cad = {
 					title: titleFSize,
 					axisLabel,
 					tickLabel
 				};
+				debug.log(`Old Style Measurements: cadratin measurements: ${JSON.stringify(cad)}`);
+				return cad;
 			},
 			active
 		};
 	}
 
 	active = true;
+	if(debug){
+		debug.log("Document object found, will measure.");
+	}
 
 	const _measureText = (str, fontSize, clNs) => {
 		if(!str){
@@ -182,6 +192,7 @@ export function measure(gid){
 			active = false;
 		}
 
+		debug.log(`Actual Measurements: will return (width, heigh) = (${width},${height}) for text = ${str} at font size ${fontSize}`);
 		return { width, height };
 	};
 
@@ -220,11 +231,14 @@ export function measure(gid){
 			tickLabel[u] = getCadratin( ( props.axisProps[places[u]].find(x => x.placement === u) || {ticks: { major: {labelFSize: 0} } }).ticks.major.labelFSize, `ticksmajor${axe[u]}${u}`);
 		}
 
-		return {
+		const cad = {
 			title: getCadratin(titleFSize),
 			axisLabel,
 			tickLabel
 		};
+		debug.log(`Actual Measurements: cadratin measurements: ${JSON.stringify(cad)}`);
+
+		return cad;
 	};
 
 	return {
