@@ -153,7 +153,15 @@ export function measure(gid, debug){
 
 	active = true;
 	if(debug){
-		debug.log("Document object found, will measure.");
+		debug.log(`Document object found, will measure. Zoom is ${JSON.stringify(document.body.style.zoom)}`);
+		for(let i = 10;i < 250; i+= 10){
+			const _tmp = document.getElementById(`measureMe.${i}`);
+			if(!_tmp){
+				break;
+			}
+			const { width, height } = _tmp.getBoundingClientRect();
+			debug.log(`(${i}px, ${i}pt) measure got (${width}, ${height})`);
+		}
 	}
 
 	const _measureText = (str, fontSize, clNs) => {
@@ -194,6 +202,7 @@ export function measure(gid, debug){
 
 		debug.log(`Actual Measurements: will return (width, heigh) = (${width},${height}) for text = ${str} at font size ${fontSize}`);
 		return { width, height };
+		//return { width: width/0.6, height: height/0.6 };
 	};
 
 	const measureText = (texts,fontSize,cn) => {
