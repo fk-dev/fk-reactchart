@@ -77,7 +77,19 @@ export default class Graph extends React.Component {
 	render(){
 		const state = this.sh ? this.sh.get() : {cadre: {}, background: {}};
 		const cn = this.props.namespace || ( this.sh ? this.sh.getNamespace() : 'reactchart' );
-		return <Drawer id={this.myKey} state={state} className={cn}/>;
+
+		const loop = () => {
+			let out = [];
+			for(let i = 10;i < 250; i+= 10){
+				out.push(<div style={{width: `${i}px`, height: `${i}pt`}} key={`meas.${i}`} id={`measureMe.${i}`}/>);
+			}
+			return out;
+		};
+
+		return <div>
+			{loop()}
+			<Drawer id={this.myKey} state={state} className={cn}/>;
+		</div>;
 	}
 }
 
