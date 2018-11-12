@@ -45,7 +45,7 @@ export function init(rawProps, type, Obj, debug){
 	rc.canMeasure = () => measurer.active;
 		// reset
 	rc.setMeasurer = () => {
-		measurer = measure(rc.graphKey());
+		measurer = measure(rc.graphKey(), debug);
 	};
 
 	// id
