@@ -1,4 +1,4 @@
-/* global document */
+/* global document, window */
 import * as date from './dateMgr.js';
 import * as nbr from './nbrMgr.js';
 
@@ -112,6 +112,11 @@ export function measure(gid, debug){
 
 	let active = typeof document !== 'undefined' && document.getElementById(`fkchartmeasurer-${gid}`) ? true : false;
 
+	const factor = window && window.nightmare && window.nightmare.corFactor ? window.nightmare.corFactor : 1;
+
+	debug.log(`window is ${window}, window.nightmare is ${window ? window.nightmare : 'naa'}, factor is ${window && window.nightmare ? window.nightmare.corFactor : 'naaa'}`);
+	debug.log(`factor is ${factor}`);
+
 	if(!active){
 		if(debug){
 			debug.log("No document object found, using old style measurements.");
@@ -189,12 +194,16 @@ export function measure(gid, debug){
 		const rect = meas.getBoundingClientRect();
 		const { width, height }  = rect;
 
+		/// this 0.6 factor we can't (yet) explain...
+		const cwidth  = factor * width;
+		const cheight = factor * height;
+
 		if(fontSize && width === 0 && height === 0){
 			active = false;
 		}
 
-		debug.log(`Actual Measurements: will return (width, heigh) = (${width},${height}) for text = ${str} at font size ${fontSize}`);
-		return { width, height };
+		debug.log(`Actual Measurements: will return (width, height) = (${cwidth},${cheight}) for text = ${str} at font size ${fontSize}`);
+		return { width: cwidth, height: cheight };
 	};
 
 	const measureText = (texts,fontSize,cn) => {
