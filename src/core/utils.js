@@ -147,6 +147,7 @@ export function measure(gid, debug){
 				debug.log(`Old Style Measurements: cadratin measurements: ${JSON.stringify(cad)}`);
 				return cad;
 			},
+			setDebug: x => {debug = x;},
 			active
 		};
 	}
@@ -244,7 +245,8 @@ export function measure(gid, debug){
 	return {
 		text: measureText,
 		cadratin,
-		active
+		active,
+		setDebug: x => {debug = x;}
 	};
 
 }

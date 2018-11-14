@@ -9,6 +9,7 @@ export function init(rawProps, type, Obj, debug){
 	Obj = Obj || {};
 	let { key, obj, namespace } = Obj;
 
+	let hasDebug = debug;
 	let props;
 	let freezer = {get: () => null};
 	let graphKey = key;
@@ -47,6 +48,8 @@ export function init(rawProps, type, Obj, debug){
 	rc.setMeasurer = () => {
 		measurer = measure(rc.graphKey(), debug);
 	};
+	rc.hasDebug = () => hasDebug;
+	rc.setDebug = dbg => measurer.setDebug(dbg);
 
 	// id
 		// getter

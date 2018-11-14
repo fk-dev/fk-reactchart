@@ -69,6 +69,9 @@ export default class Graph extends React.Component {
 		if(pr.__preprocessed){ // done outside graph
 			this.sh = pr;
 			this.sh.setKey(this.myKey);
+			if(this.props.debug && !this.sh.hasDebug()){
+				this.sh.setDebug(this.props.debug);
+			}
 		}else{ // to be done here
 			this.sh = init(pr,this.type,{ key: this.myKey, obj: this, namespace: this.props.namespace}, this.props.debug);
 		}
