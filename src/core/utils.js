@@ -112,7 +112,7 @@ export function measure(gid, debug){
 
 	let active = typeof document !== 'undefined' && document.getElementById(`fkchartmeasurer-${gid}`) ? true : false;
 
-	const factor = window && window.nightmare && window.nightmare.corFactor ? window.nightmare.corFactor : 1;
+	const factor = typeof window !== 'undefined' && window.nightmare && window.nightmare.corFactor ? window.nightmare.corFactor : 1;
 
 	debug.log(`window is ${window}, window.nightmare is ${window ? window.nightmare : 'naa'}, factor is ${window && window.nightmare ? window.nightmare.corFactor : 'naaa'}`);
 	debug.log(`factor is ${factor}`);
