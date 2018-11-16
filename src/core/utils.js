@@ -114,7 +114,7 @@ export function measure(gid, debug){
 
 	const factor = typeof window !== 'undefined' && window.nightmare && window.nightmare.corFactor ? window.nightmare.corFactor : 1;
 
-	debug.log(`window is ${window}, window.nightmare is ${typeof window !== 'undefined' ? window.nightmare : 'naa'}, factor is ${typeof window !== 'undefined' && window.nightmare ? window.nightmare.corFactor : 'naaa'}`);
+	//debug.log(`window is ${window}, window.nightmare is ${typeof window !== 'undefined' ? window.nightmare : 'naa'}, factor is ${typeof window !== 'undefined' && window.nightmare ? window.nightmare.corFactor : 'naaa'}`);
 	debug.log(`factor is ${factor}`);
 
 	if(!active){
