@@ -240,10 +240,10 @@ const validate = function(series,discard){
 			series[se] = [];
 		}
 		for(let p = 0; p < series[se].length; p++){
-			const px = utils.isValidNumber(series[se][p].x);
-			const py = utils.isValidNumber(series[se][p].y);
-			const pv = utils.isValidNumber(series[se][p].value);
-			if(!pv && ( !utils.isValidParam(px) || !utils.isValidParam(py) ) ){
+			const px = utils.isValidParam(series[se][p].x);
+			const py = utils.isValidParam(series[se][p].y);
+			const pv = utils.isValidParam(series[se][p].value);
+			if(!pv && ( !px || !py ) ){
 				if(!discard){
 					return false;
 				}
