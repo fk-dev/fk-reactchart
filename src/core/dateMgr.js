@@ -522,4 +522,11 @@ export const labelF = 0.75;
 
 export function isZero(dOp){ return dOp instanceof Date ? dOp.getTime() === 0 : dOp.total === 0;}
 
+export function emptyBounds(){
+  return { 
+    min: moment.utc('1983-09-04').toDate(),
+    max: moment.utc('1987-09-04').toDate()
+  };
+}
+
 export const type = 'date';

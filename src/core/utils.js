@@ -51,7 +51,13 @@ export function deepCp(tgt,thing){
 	return tgt;
 }
 
-export function mgr(ex){ return isDate(ex) ? date : nbr;}
+export function mgr(ex){ 
+
+	const _fromEx     = _ex => isDate(_ex) ? date : nbr;
+	const _fromString = _ex => _ex === 'date' ? date : nbr;
+
+  return typeof ex === 'string' ? _fromString(ex) : _fromEx(ex);
+}
 
 export function homothe(src,tgt,fac,val){
 	let t = isDate(tgt) ? date.getValue(tgt) : tgt;

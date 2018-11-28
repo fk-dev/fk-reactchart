@@ -368,8 +368,6 @@ export function defaultSpan(){ return 10;}
 
 export const labelF = 0.75;
 
-export const type = 'number';
-
 export function isZero(v){ return v < 1e-15;}
 
 export function autoFactor(ma,mi){
@@ -380,3 +378,12 @@ export function autoFactor(ma,mi){
   
   return b - a < 3 ? pow(10,a) : pow(10,b);
 }
+
+export function emptyBounds(){
+  return { 
+    min: 0,
+    max: 4
+  };
+}
+
+export const type = 'number';
