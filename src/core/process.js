@@ -627,7 +627,7 @@ export function process(getNode, rawProps, getMgr){
 	imVM.axes = axesVM.create(() => getNode().axes, { props, state, measurer: getMgr(), motherCss: props.css});
 
 	// 6 - Curves
-	imVM.curves = curvesVM.create(() => getNode().curves, { props, state, measurer: getMgr() } );
+	imVM.curves = curvesVM.create(() => getNode().curves, { props, state } );
 
 	// 7 - legend
 	imVM.legend = legendVM.create(() => getNode().legend, { props } );

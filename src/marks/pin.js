@@ -55,7 +55,7 @@ const angle = (ang,dir,pos) => ang === 'nat' ? nat(dir,pos) : _angle(ang);
 //	 print: // how to print
 //	 theta: // angle from mark
 // }
-const pin = function(get, { pos, tag, ds, motherCss, dir, measurer, cn }) {
+const pin = function(get, { pos, tag, ds, motherCss, dir }) {
 	// angle
 	const ang = angle(tag.pinAngle,dir,pos);
 	// anchor
@@ -67,7 +67,6 @@ const pin = function(get, { pos, tag, ds, motherCss, dir, measurer, cn }) {
 	};
 
 	const css = isNil(tag.css) ? motherCss : tag.css;
-	const { height } = measurer.measureText(tag.print(pos),tag.fontSize, css ? cn : null);
 
 		// mark
 	const mpos = {
@@ -107,21 +106,25 @@ const pin = function(get, { pos, tag, ds, motherCss, dir, measurer, cn }) {
 		}
 	}
 
+	const baseline = anchor.top ? 'hanging' : anchor.bottom ? 'text-after-edge' : 'middle';
+
 	// position = mark + length + hook
 	const lpos = {
 		x: mpos.x + pl.x + ph.x,
 		y: mpos.y - pl.y + ph.y 
 	};
 
+		//y: lpos.y + ( anchor.top ? 0.9 * height : anchor.bottom ? - 0.25 * height : 0.25 * height )
 	const lAnc = {
-		x: lpos.x + (anchor.left ? 3 : -3),
-		y: lpos.y + ( anchor.top ? 0.9 * height : anchor.bottom ? - 0.25 * height : 0.25 * height )
+		x: lpos.x + ( anchor.left ? 3 : -3 ),
+		y: lpos.y + ( anchor.top ? 3 : anchor.bottom ? -3 : 0 )
 	};
 
 	const path = `M ${mpos.x},${mpos.y} L ${mpos.x + pl.x},${mpos.y - pl.y} L ${lpos.x},${lpos.y}`;
 	return {
     css,
 		label: tag.print(pos),
+		baseline,
 		labelAnc: anchor.top || anchor.bottom ? 'middle' : anchor.left ? 'start' : 'end',
 		labelFS: tag.fontSize,
 		x: lpos.x,

@@ -39,7 +39,7 @@ const marksVM = {
 	BAR:        barVM
 };
 
-const curve = function(get, { spaces, serie, data, gprops, idx, css, measurer }){
+const curve = function(get, { spaces, serie, data, gprops, idx, css }){
 
 			// 1 - find ds: {x: , y:}
 			// common to everyone
@@ -133,11 +133,10 @@ const curve = function(get, { spaces, serie, data, gprops, idx, css, measurer })
 			const mtype = isBar(gtype) ? 'bar' : gprops.markType || 'dot';
 			const mprops = gprops.mark ? map(positions,(pos,midx) => {
 				const markKey = `${graphKey}.${mtype[0]}.${midx}`;
-				const cn = [isBar(gtype) ? 'barchart' : gtype, `tag tag-${idx} tag-${idx}-${midx}`];
 				return {
 					key: markKey,
 					mark: marksVM[mtype.toUpperCase()].create(() => get().marks[midx], { position: pos, props: gprops, ds, motherCss: css}), 
-					pin: pinVM.create(() => get().marks[midx], {pos, tag: gprops.tag, ds, motherCss: css, dir: gtype.startsWith('y') ? 'y' : 'x', measurer, cn}) 
+					pin: pinVM.create(() => get().marks[midx], {pos, tag: gprops.tag, ds, motherCss: css, dir: gtype.startsWith('y') ? 'y' : 'x' }) 
 				};
 			}) : [];
 
@@ -288,14 +287,14 @@ export let axesVM = {
 
 export let curvesVM = {
 
-	create: (get, { props, state, measurer }) => {
+	create: (get, { props, state }) => {
 
 		const { spaces } = state;
 		return map(state.series, (serie,idx) => {
 			const data   = props.data[idx];
 			const gprops = props.graphProps[idx];
       const { css } = props;
-			return curve(() => get()[idx], { spaces, serie, data, gprops, idx, css, measurer });
+			return curve(() => get()[idx], { spaces, serie, data, gprops, idx, css });
 		});
 	}
 
