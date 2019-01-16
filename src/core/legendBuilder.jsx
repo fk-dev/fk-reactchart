@@ -1,9 +1,11 @@
 import React from 'react';
 import { flatten, extend } from 'underscore';
 
-import { iconer } from '../icons/iconer.jsx';
-import { shader } from './colorMgr.js';
-import * as evMgr from './events-mgr.js';
+import { iconer }      from '../icons/iconer.jsx';
+import { shader }      from './colorMgr.js';
+import * as evMgr      from './events-mgr.js';
+import * as gradienter from './gradient-mgr.js';
+import Gradienter      from '../Gradienter.jsx';
 
 export const vm = {
 	create: function(get, { props }){
@@ -16,18 +18,17 @@ export const vm = {
 	const ichm = props.legend.iconHMargin;
 	const icvm = props.legend.iconVMargin;
 
-	const getALegend = (data,gprops,idx) => {
+	const getALegend = (data,gprops,idx,grad) => {
 		let icc = gprops.color;
 		const sha = extend({},gprops.shader);
+			// will use css inline style
 		if(sha && sha.options){
-			sha.computation = sha.computation === 'by function' ? sha.computation : 'explicit';
-			sha.type = 'color';
-			sha.factor = [0.5];
-			//let col = {};
-			//shader(sha,[col]);
-			//icc = col.color;
+			// type is shade or color
+			const colors = sha.type === 'shade' ? [icc, 'white'] : sha.options.colors;
+			grad.id = gradienter.newGradient(colors);
 		}
 		const ics = gprops.width < 2 ? gprops.width * 1.5 : gprops.width; // slightly more bold, if needed
+		const gradVM = gradienter.getAGradientVM(grad.id);
 		const iconProps = {
 			color: icc,
 			width: icw,
@@ -47,7 +48,8 @@ export const vm = {
 					perPoint.push({
 						icon: {
 							icon: (pr) => <svg width={pr.width} height={pr.height}>
-														{iconer(pr, typeMark)}
+														{ gradVM ? <defs><Gradienter state={gradVM} /></defs> : null }
+														{iconer(pr, typeMark, grad.id)}
 													</svg>,
 							props: extend({},iconProps),
 							
@@ -63,8 +65,9 @@ export const vm = {
 			{
 				icon: {
 					icon: (p) => <svg width={p.width} height={p.height}>
+											{ gradVM ? <defs><Gradienter state={gradVM} /></defs> : null }
 											{gprops.onlyMarks ? null : iconer(p, 'line')}
-											{gprops.mark ? iconer(p, gprops.markType) : null}
+											{gprops.mark ? iconer(p, gprops.markType, grad.id) : null}
 										</svg>,
 					props: iconProps
 				},
@@ -75,7 +78,11 @@ export const vm = {
 
 	let leg = [];
 	for(let i = 0; i < props.data.length; i++){
-		leg.push(getALegend(props.data[i],props.graphProps[i],i));
+		let grad = {};
+		leg.push(getALegend(props.data[i],props.graphProps[i],i,grad));
+		if(grad.id){
+			gradienter.remove(grad.id);
+		}
 	}
 
 	return flatten(leg);
