@@ -43,11 +43,11 @@ export const remove = id => {
 export const getGradientsPrinter = () => {
 	let gr = [];
 	for(let id in storage){
-		gr.push({id, colors: storage[id].vm});
+		gr.push({id, vm: storage[id].vm});
 	}
 	if(gr.length){
 		return {
-			print: (fct) => gr.map(({id, colors}) => fct(colors,id))
+			print: (fct) => gr.map(({id, vm}) => fct(vm,id))
 		};
 	}
 };
