@@ -23,9 +23,9 @@ export const vm = {
 			sha.computation = sha.computation === 'by function' ? sha.computation : 'explicit';
 			sha.type = 'color';
 			sha.factor = [0.5];
-			let col = {};
-			shader(sha,[col]);
-			icc = col.color;
+			//let col = {};
+			//shader(sha,[col]);
+			//icc = col.color;
 		}
 		const ics = gprops.width < 2 ? gprops.width * 1.5 : gprops.width; // slightly more bold, if needed
 		const iconProps = {
