@@ -32,7 +32,7 @@ const color = function(options,f){
 		};
 	};
 
-	const toString = (rgb) => `#${rgb.R.toString(16)}${rgb.G.toString(16)}${rgb.B.toString(16)}`.toUpperCase();
+	const toString = (rgb) => `#${Math.min(rgb.R, 255).toString(16)}${Math.min(rgb.G, 255).toString(16)}${Math.min(rgb.B, 255).toString(16)}`.toUpperCase();
 
 	const coord = (isArray(f)) ? f : [f, 1 - f];
 	return toString(colors.reduce( (memo, col, idx) => addRGB(memo,toRGB(col,coord[idx])), {R:0, G:0, B:0}));
