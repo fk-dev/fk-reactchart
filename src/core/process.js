@@ -4,6 +4,7 @@ import * as utils from './utils.js';
 import * as gProps from './proprieties.js';
 import { cadreVM, backgroundVM, foregroundVM, titleVM, axesVM, curvesVM } from './VMbuilder.js';
 import { vm as legendVM } from './legendBuilder.jsx';
+import * as gradientMgr from './gradient-mgr.js';
 
 const preprocessAxis = function(props){
 
@@ -631,6 +632,9 @@ export function process(getNode, rawProps, getMgr){
 
 	// 7 - legend
 	imVM.legend = legendVM.create(() => getNode().legend, { props } );
+
+	// 8 - gradients
+	imVM.gradient = gradientMgr.getGradientsPrinter();
 
 	return imVM;
 
