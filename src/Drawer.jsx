@@ -6,6 +6,7 @@ import Background from './Background.jsx';
 import Foreground from './Foreground.jsx';
 import Title from './Title.jsx';
 import Measurer from './Measurer.jsx';
+import Gradienter from './Gradienter.jsx';
 
 import { isEqual } from './core/im-utils.js';
 
@@ -49,6 +50,7 @@ export default class Drawer extends React.Component {
 
 		const state = this.props.state || {width: 200, height: 200};
 		return <svg width={state.width} height={state.height} id={this.props.id} className={this.props.className}>
+			{ state.gradient ? <defs>{state.gradient.print( (x,id) => <Gradienter key={`grad.${id}`} state={x}/>)}</defs> : null}
 			{ state.cadre.show ? <Cadre state={state.cadre}/> : null }
 			{ state.background.show ? <Background state={state.background}/>  : null }
 			{ state.title && state.title.title.length ? <Title state={state.title} /> : null }
