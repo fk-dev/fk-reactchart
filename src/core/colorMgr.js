@@ -1,5 +1,5 @@
 import { reduce, extend } from 'underscore';
-import { isNil, isArray } from './utils.js';
+import { isNil } from './utils.js';
 
 const palette = [ "#3A83F1", "#DC3FF1", "#F2693F", "#8AF23F", "#758d99",
 	"#F1DC41", "#AC310C", "#40C8F2", "#980DAB", "#F6799B", "#9679F6", "#EE2038",
@@ -14,7 +14,49 @@ const palette = [ "#3A83F1", "#DC3FF1", "#F2693F", "#8AF23F", "#758d99",
 
 const color = function(options,f){
 
-	const { colors } = options;
+	const { colors, offsets } = options;
+
+	const inBetween = () => {
+
+		const regularOffsets = n => {
+			const _generate = () => {
+				let out = [];
+				for(let i = 1; i < n - 1; i++){
+					out.push(i/(n-1));
+				}
+				return out;
+			};
+			return [0].concat(_generate()).concat(1);
+		};
+
+		const _computeCus = (off) => {
+			for(let i = 1; i < off.length; i++){
+				if(f <= off[i]){
+					const end = (f - off[i - 1])/(off[i] - off[i - 1]);
+					const start = (off[i] - f)/(off[i] - off[i - 1]);
+					return {
+						coord: [start,end],
+						cols: colors.slice(i - 1, i + 1)
+					};
+				}
+			}
+			return {
+				coord: [1 - f, f],
+				cols: colors
+			};
+		};
+
+		if(!offsets && colors.length === 2){
+			return {
+				coord: [1 - f, f],
+				cols: colors
+			};
+		}else if(!offsets && colors.length > 2){
+			return _computeCus(regularOffsets(colors.length));
+		}else{
+			return _computeCus(offsets);
+		}
+	};
 
 	const toRGB = function(str,w){
 		return {
@@ -32,10 +74,14 @@ const color = function(options,f){
 		};
 	};
 
-	const toString = (rgb) => `#${Math.min(rgb.R, 255).toString(16)}${Math.min(rgb.G, 255).toString(16)}${Math.min(rgb.B, 255).toString(16)}`.toUpperCase();
+	const _toString = n => {
+		const tmp = Math.min(n, 255).toString(16);
+		return tmp.length === 1 ? `0${tmp}` : tmp;
+	};
+	const toString = (rgb) => `#${_toString(rgb.R)}${_toString(rgb.G)}${_toString(rgb.B)}`.toUpperCase();
 
-	const coord = (isArray(f)) ? f : [f, 1 - f];
-	return toString(colors.reduce( (memo, col, idx) => addRGB(memo,toRGB(col,coord[idx])), {R:0, G:0, B:0}));
+	const { coord, cols } = inBetween();
+	return toString(cols.reduce( (memo, col, idx) => addRGB(memo,toRGB(col,coord[idx])), {R:0, G:0, B:0}));
 	
 };
 
