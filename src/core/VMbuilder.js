@@ -1,6 +1,7 @@
 import { map, each, findWhere, reject, extend } from 'underscore';
 import { isNil, mgr as typeMgr } from './utils.js';
 import { shader } from './colorMgr.js';
+import { newGradient } from './gradient-mgr.js';
 
 // axis
 import { vm as axisLineVM } from '../axis/axis-line-vm.js';
@@ -39,7 +40,7 @@ const marksVM = {
 	BAR:        barVM
 };
 
-const curve = function(get, { spaces, serie, data, gprops, idx, css }){
+const curve = function(get, { spaces, serie, data, gprops, idx, css, mgrId  }){
 
 			// 1 - find ds: {x: , y:}
 			// common to everyone
@@ -57,6 +58,11 @@ const curve = function(get, { spaces, serie, data, gprops, idx, css }){
 				!!data.ord.axis){
 				yplace = data.ord.axis;
 			}
+
+			if(gprops.fill && gprops.fill.colors){
+				gprops.fill = `url(#${newGradient(gprops.fill, mgrId )})`;
+			}
+
 			const ds = {
 				x: spaces.x[xplace],
 				y: spaces.y[yplace]
@@ -287,14 +293,14 @@ export let axesVM = {
 
 export let curvesVM = {
 
-	create: (get, { props, state }) => {
+	create: (get, { props, state, mgrId } ) => {
 
 		const { spaces } = state;
 		return map(state.series, (serie,idx) => {
 			const data   = props.data[idx];
 			const gprops = props.graphProps[idx];
       const { css } = props;
-			return curve(() => get()[idx], { spaces, serie, data, gprops, idx, css });
+			return curve(() => get()[idx], { spaces, serie, data, gprops, idx, css, mgrId });
 		});
 	}
 
