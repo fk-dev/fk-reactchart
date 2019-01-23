@@ -129,6 +129,30 @@ const postprocessAxis = function(props){
 
 	}
 
+	// if css, all css to null becomes true
+	if(props.css){
+
+		const _walker = (obj,fct) => {
+			if(obj && typeof obj === 'object'){
+				fct(obj);
+				for(let u in obj){
+					_walker(obj[u],fct);
+				}
+			}
+			if(Array.isArray(obj)){
+				obj.forEach( sobj => _walker(sobj,fct));
+			}
+		};
+
+		const toTrueIfNull = o => {
+			if(o.css === null){
+				o.css = true;
+			}
+		};
+
+		_walker(props, toTrueIfNull);
+	}
+
 };
 
 const retroComp = p => {
@@ -435,7 +459,7 @@ const offStairs = function(serie,gprops){
 	}
 };
 
-export function process(getNode, rawProps, getMgr){
+const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 
 	const props = rawProps && rawProps.__defaulted ? rawProps : defaultTheProps(utils.deepCp({},rawProps));
 
@@ -564,7 +588,7 @@ export function process(getNode, rawProps, getMgr){
 	}
 
 	// space = {dsx, dsy}
-	state.spaces = spaces({width: props.width, height: props.height}, data, {abs, ord}, borders, props.titleProps, getMgr());
+	state.spaces = spaces({width: props.width, height: props.height}, data, {abs, ord}, borders, props.titleProps, getMeasurer());
 
 	// defaut drops for those that don't have them
 	state.series = map(state.series, (serie,idx) => {
@@ -620,27 +644,31 @@ export function process(getNode, rawProps, getMgr){
 		css: props.titleProps.css,
 		motherCss: props.css,
 		width: props.width,
-		height: getMgr().measureText(props.titleProps.title, props.titleProps.titleFSize, props.titleProps.css ? 'title' : null).height + getMgr().lengthes().title, // height + cadratin
+		height: getMeasurer().measureText(props.titleProps.title, props.titleProps.titleFSize, props.titleProps.css ? 'title' : null).height + getMeasurer().lengthes().title, // height + cadratin
 		placement: 'top'
 	});
 
 	// 5 - Axes
-	imVM.axes = axesVM.create(() => getNode().axes, { props, state, measurer: getMgr(), motherCss: props.css});
+	imVM.axes = axesVM.create(() => getNode().axes, { props, state, measurer: getMeasurer(), motherCss: props.css});
 
 	// 6 - Curves
-	imVM.curves = curvesVM.create(() => getNode().curves, { props, state } );
+	imVM.curves = curvesVM.create(() => getNode().curves, { props, state, mgrId } );
 
 	// 7 - legend
-	imVM.legend = legendVM.create(() => getNode().legend, { props } );
+	imVM.legend = legendVM.create(() => getNode().legend, { props, mgrId } );
 
 	// 8 - gradients
-	imVM.gradient = gradientMgr.getGradientsPrinter();
+	imVM.gradient = gradientMgr.getGradientsPrinter(mgrId);
 
 	return imVM;
 
+};
+
+export function process(getNode, rawProps, mgrId, getMeasurer, cb){
+	setImmediate(() => cb(null,processSync(getNode, rawProps, mgrId, getMeasurer)));
 }
 
-export function processLegend(getNode,rawProps){
+const _processLegend = (getNode,rawProps, mgrId) => {
 	let props = defaultTheProps(utils.deepCp({},rawProps));
 	// data depening on serie, geographical data only
 	props.data = map(props.data, (dat,idx) =>  {
@@ -650,5 +678,11 @@ export function processLegend(getNode,rawProps){
 		};
 	});
 
-	return legendVM.create(getNode, { props });
+	return legendVM.create(getNode, { props, mgrId });
+};
+
+export function processLegend(getNode,rawProps, mgrId, cb){
+
+	return cb(null, _processLegend(getNode,rawProps, mgrId));
+
 }
