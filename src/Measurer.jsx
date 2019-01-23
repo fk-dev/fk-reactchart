@@ -7,12 +7,15 @@ export default class Measurer extends React.Component {
 			return <g className={`${type}Axis`}>
 				{dirs.map( dir => <g key={`${type}.${dir}`} className={`axis axis-${dir}`}>
 						<g className='ticks'>
-							<text className={`label-major-${type} label-major-${type}-${dir} ${type}AxisTickLabel`} x={-10} y={-10} anchor='middle' id={`fkchartmeasurer-${this.props.id}-ticksmajor${type}${dir}`}/>
-							<text className={`label-minor-${type} label-minor-${type}-${dir} ${type}AxisTickLabel`} x={-10} y={-10} anchor='middle' id={`fkchartmeasurer-${this.props.id}-ticksminor${type}${dir}`}/>
+							<text className={`label-major label-major-${dir} ${type}AxisTickLabel`} x={-10} y={-10} anchor='middle' id={`fkchartmeasurer-${this.props.id}-label-major-${dir}`}/>
+							<text className={`label-major label-major-${dir} ${type}AxisTickLabel`} x={-10} y={-10} anchor='middle' id={`fkchartmeasurer-${this.props.id}-label-major`}/>
+							<text className={`label-minor label-minor-${dir} ${type}AxisTickLabel`} x={-10} y={-10} anchor='middle' id={`fkchartmeasurer-${this.props.id}-label-minor-${dir}`}/>
+							<text className={`label-minor label-minor-${dir} ${type}AxisTickLabel`} x={-10} y={-10} anchor='middle' id={`fkchartmeasurer-${this.props.id}-label-minor`}/>
 						</g>
-						<g className={`axis-line axis-line-${dir} ${type}AxisLine`}>
-							<text className={`axis-label axis-label-${dir} ${type}AxisLineLabel`} x={-10} y={-10} anchor='middle' id={`fkchartmeasurer-${this.props.id}-axis${type}${dir}`}/>
-						</g>
+						<text className={`axis-label axis-label-${dir} ${type}AxisLineLabel`} x={-10} y={-10} anchor='middle' id={`fkchartmeasurer-${this.props.id}-axis-label-${dir}`}/>
+						<text className={`axis-label axis-label-${dir} ${type}AxisLineLabel`} x={-10} y={-10} anchor='middle' id={`fkchartmeasurer-${this.props.id}-axis-label`}/>
+						<text className={`axis-factor axis-factor-${dir} ${type}AxisLineLabel`} x={-10} y={-10} anchor='middle' id={`fkchartmeasurer-${this.props.id}-axis-factor-${dir}`}/>
+						<text className={`axis-factor axis-factor-${dir} ${type}AxisLineLabel`} x={-10} y={-10} anchor='middle' id={`fkchartmeasurer-${this.props.id}-axis-factor`}/>
 					</g>
 				)}
 				</g>;
