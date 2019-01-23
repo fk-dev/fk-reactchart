@@ -2,85 +2,88 @@ import React from 'react';
 import Drawer from './Drawer.jsx';
 
 import { init }   from './helpers.js';
-import { rndKey } from './core/utils.js';
+import { rndKey, emptyState } from './core/utils.js';
 
 export default class Graph extends React.Component {
 
 	constructor(props){
 		super(props);
 		this.myKey = rndKey();
+		if(props.onGenerateKey){
+			props.onGenerateKey(this.myKey);
+		}
 		this.type = 'graph';
 		this.init();
-	}
-
-	componentDidMount(){
-		if(!this.sh){
-			this.init();
-			this.sh.updateGraph(this, this.myKey);
-		}else{
-			this.sh.setKey(this.myKey,this);
-			this.sh.reinit();
-		}
-	}
-
-	componentWillUnmount(){
-		if(this.sh){
-			this.sh.kill(this.myKey);
-		}
-	}
-
-	shouldComponentUpdate(pr){
-
-		if(!pr.__preprocessed){ // not sh, we update anyway
-			this.sh = init(pr,this.type,{ key: this.myKey, obj: this, namespace: this.props.namespace}, this.props.debug);
-			return true;
-		}
-
-		// sh managing updates
-		if(pr.__mgrId !== this.sh.__mgrId){
-			this.sh = pr;
-			this.sh.setKey(this.myKey);
-			this.sh.reinit();
-			this.sh.updateGraph(this,this.myKey);
-		}else if(!this.sh.canMeasure()){
-			this.sh.reinit();
-		}
-
-		return false;
-	}
-
-	componentDidUpdate(){
-		if(!this.sh){
-			this.init();
-			this.sh.updateGraph(this, this.myKey);
-		}else if(this.props.__preprocessed && this.props.__mgrId !== this.sh.__mgrId){
-			this.sh = this.props;
-			this.sh.setKey(this.myKey, this);
-			this.sh.reinit();
-		}else if(!this.sh.canMeasure() || this.myKey !== this.sh.graphKey()){
-			this.sh.setKey(this.myKey);
-			this.sh.reinit();
-			this.sh.updateGraph(this, this.myKey);
-		}
 	}
 
 	init(){
 		const pr = this.props;
 		if(pr.__preprocessed){ // done outside graph
 			this.sh = pr;
-			this.sh.setKey(this.myKey);
+			// only the key, can't forceUpdate before didMount
+			this.sh.addKey(this.myKey);
+			if(this.props.namespace){
+				this.sh.setNamespace(this.props.namespace,this.myKey);
+			}
 			if(this.props.debug && !this.sh.hasDebug()){
 				this.sh.setDebug(this.props.debug);
 			}
 		}else{ // to be done here
+			this.sh = init(pr,this.type,{ key: this.myKey, namespace: this.props.namespace}, this.props.debug);
+		}
+	}
+
+	// we can call forceUpdate now
+	componentDidMount(){
+		if(!this.sh){
+			throw new Error('A Chart object is initialized without a manager!');
+		}
+
+		this.sh.addKey(this.myKey,this);
+	}
+
+	shouldComponentUpdate(pr){
+		// we changed the props
+			// 1 - human friendly
+		if(!pr.__preprocessed){ // not sh, we update anyway
+			if(this.sh && this.sh.__preprocessed){
+				this.sh.kill(this.myKey); // no more in previous helper
+			}
 			this.sh = init(pr,this.type,{ key: this.myKey, obj: this, namespace: this.props.namespace}, this.props.debug);
+			return true;
+			// 2 - helpers
+		}else if(pr.__mgrId !== this.sh.__mgrId){
+			this.sh.kill(this.myKey); // no more in previous helper
+			this.sh = pr;
+			this.sh.addKey(this.myKey, this);
+			if(this.props.debug && !this.sh.hasDebug()){
+				this.sh.setDebug(this.props.debug);
+			}
+		}
+		return false;
+	}
+
+		// obj will go away
+	componentWillUnmount(){
+		if(this.sh && this.sh.__preprocessed){
+			this.sh.kill(this.myKey);
+		}
+	}
+
+	showIds(){
+		if(this.props.whoAmI){
+			return {
+				mgr: this.sh.__mgrId,
+				graph: this.myKey
+			};
 		}
 	}
 
 	render(){
-		const state = this.sh ? this.sh.get() : {cadre: {}, background: {}};
+		const state = this.sh && this.sh.ready() ? this.sh.get(this.myKey) : emptyState;
 		const cn = this.props.namespace || ( this.sh ? this.sh.getNamespace() : 'reactchart' );
-		return <Drawer id={this.myKey} state={state} className={cn}/>;
+		const mgrId = this.sh ? this.sh.__mgrId : 'noMgr';
+		return <Drawer id={this.myKey} mgrId={mgrId} state={state} className={cn} overflow={this.props.overflow} debug={this.showIds()}/>;
 	}
 }
 
@@ -91,6 +94,15 @@ class Legend extends React.Component {
 		this.myKey = rndKey();
 		this.type = 'legend';
 		this.init();
+	}
+
+	// we can call forceUpdate now
+	componentDidMount(){
+		if(!this.sh){
+			throw new Error('A Legend object is initialized without a manager!');
+		}
+
+		this.sh.addKey(this.myKey,this);
 	}
 
 	shouldComponentUpdate(pr){
@@ -106,9 +118,9 @@ class Legend extends React.Component {
 		const pr = this.props;
 		if(pr.__preprocessed){ // done outside graph
 			this.sh = pr;
-			this.sh.setKey(this.myKey);
+			this.sh.addKey(this.myKey);
 		}else{ // to be done here
-			this.sh = init(pr,this.type,{ key: this.myKey, obj: this }, this.props.debug);
+			this.sh = init(pr,this.type,{ key: this.myKey}, this.props.debug);
 		}
 	}
 

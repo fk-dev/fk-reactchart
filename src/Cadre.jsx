@@ -8,8 +8,8 @@ export default class Cadre extends React.Component {
 	}
 
 	render(){
-		const { state } = this.props;
-		const { css, width, height } = state;
+		const { state, width, height } = this.props;
+		const { css }  = state;
 		const props = {
 			strokeWidth: 1,
 			stroke: 'black' 
