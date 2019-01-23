@@ -3,14 +3,14 @@ const setShowValue = (idx, val, { props, mgr }) => {
 	// raw
 	props.graphProps[idx].show = val;
 	// freezer
-	mgr.get().curves[idx].set('show',val);
+	mgr.manipAllVMs( vm => vm.curves[idx].set('show',val) );
 };
 
 const setShowMarkValue = (cidx, midx, val, { props, mgr } ) => {
 	//raw
 	props.data[cidx].series[midx].show = val;
 	// mgr
-	mgr.get().curves[cidx].marks[midx].mark.set('show',val);
+	mgr.manipAllVMs( vm => vm.curves[cidx].marks[midx].mark.set('show',val));
 };
 
 export function toggle(idx, { props, mgr }){
@@ -62,7 +62,7 @@ export function removeMark(cidx, midx, {props, mgr }){
 	//raw
 	props.data[cidx].series.splice(midx,1);
 	// freezer
-	mgr.get().curves[cidx].mark.splice(midx,1);
+	mgr.manipAllVMs(vm => vm.curves[cidx].mark.splice(midx,1));
 }
 
 export function addMark(cidx, midx, position, {props, mgr }){
@@ -71,5 +71,5 @@ export function addMark(cidx, midx, position, {props, mgr }){
 	//raw
 	props.data[cidx].series.splice(midx,1);
 	// freezer
-	mgr.get().curves[cidx].mark.splice(midx,1);
+	mgr.manipAllVMs(vm => vm.curves[cidx].mark.splice(midx,1));
 }
