@@ -42,7 +42,7 @@ export function vm(css, measurer, ds, partner, bounds, dir, locProps, comFac, ax
 	//// general defs
 	const { measureText, lengthes } = measurer;
 	const cadratin = lengthes();
-	const lengthOfText = (txt,fs) => measureText(txt,fs,css ? `ticksmajor${dir}${locProps.placement}` : '');
+	const lengthOfText = (txt,fs) => measureText(txt,fs,css ? `label-major-${locProps.placement} ticksmajor${dir}${locProps.placement}` : '');
 	const outerMargins = {
 		min: dir === 'x' ? margins.left  : margins.bottom,
 		max: dir === 'x' ? margins.right : margins.top,

@@ -38,7 +38,7 @@ export function vm(ds,props,partnerDs,dir, motherCss, measurer){
 
 	//// general defs
 	const { measureText } = measurer;
-	const lengthOfText = (txt,fs) => measureText(txt,fs,css ? `axis${dir}${props.placement}` : '');
+	const lengthOfText = (txt,fs) => measureText(txt,fs,css ? `axis-label-${props.placement} axis${dir}${props.placement}` : '');
 
 	const { show } = props;
 

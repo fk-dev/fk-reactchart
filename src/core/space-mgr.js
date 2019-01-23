@@ -220,8 +220,8 @@ const computeOuterMargin = (where, limits, axis, measure, title ) => {
     let titleLength = 0;
     if(title && title.title.length){
       const cN = 'title';
-      const {width, height} = measureText(title.title, title.fontSize, cN);
-      const angle = title.angle * Math.PI / 180;
+      const {width, height} = measureText(title.title, title.titleFSize, cN);
+      const angle = title.titleRotate * Math.PI / 180;
       titleLength = Math.cos(angle) * height + Math.sin(angle) * width + cadratin.title;
     }
     return titleLength;
@@ -275,7 +275,7 @@ const computeOuterMargin = (where, limits, axis, measure, title ) => {
     const labels = tickLabels && tickLabels.length ? tickLabels.map(x => x.label) : computeLabels();
 
     if(labels.length){
-      const cn = css ? `ticksmajor${dir}${where}` : null;
+      const cn = css ? `label-major-${where}` : null;
       const { width, height } = measureText(labels,labelFSize, cn );
       const angle = axis.ticks.major.rotate * Math.PI/180;
       const square = computeSquare(angle,  width, height);
@@ -299,7 +299,7 @@ const computeOuterMargin = (where, limits, axis, measure, title ) => {
 
   let labelLength = 0;
   if(axis.label.length){
-    const cN = axis.css ? `axis${dir}${where}` : '';
+    const cN = axis.css ? `axis-label-${where}` : '';
     const { label, labelFSize, labelRotate } = axis;
     const {width, height} = measureText(label, labelFSize, cN);
     const angle = labelRotate * Math.PI / 180;

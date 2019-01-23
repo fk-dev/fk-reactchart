@@ -26,8 +26,8 @@ export function isValidParam(p){ return isDate(p) || isString(p) || isValidNumbe
 
 export function deepCp(tgt,thing){
 
-	if(isNil(thing)){
-		return tgt;
+	if(isNil(thing)){ // null has a meaning
+		return isNil(tgt) && thing === null ? null : tgt;
 	}
 
 	if(typeof thing === 'object'){
@@ -116,7 +116,7 @@ export function measure(gid, debug){
 
 	debug = debug || { log: () => null };
 
-	let active = typeof document !== 'undefined' && document.getElementById(`fkchartmeasurer-${gid}`) ? true : false;
+	let active = typeof document !== 'undefined' && gid && document.getElementById(`fkchartmeasurer-${gid}`) ? true : false;
 
 	const factor = typeof window !== 'undefined' && window.nightmare && window.nightmare.corFactor ? window.nightmare.corFactor : 1;
 
@@ -172,6 +172,7 @@ export function measure(gid, debug){
 		if(!str){
 			return { width: 0, height: 0};
 		}
+		clNs = clNs ? Array.isArray(clNs) ? clNs.map(x => x.split(' ')[0]) : clNs.split(' ')[0] : null;
 
 		const clN = Array.isArray(clNs) ? clNs[clNs.length - 1] : clNs;
 		const elt = `fkchartmeasurer-${gid}${clN ? `-${clN}` : '-text'}`;
@@ -208,7 +209,7 @@ export function measure(gid, debug){
 			active = false;
 		}
 
-		debug.log(`Actual Measurements: will return (width, height) = (${cwidth},${cheight}) for text = ${str} at font size ${fontSize}`);
+		debug.log(`Actual Measurements: will return (width, height) = (${cwidth},${cheight}) for text = ${str} ${clN ? `for class name ${clN}` : `at font size ${fontSize}`}`);
 		return { width: cwidth, height: cheight };
 	};
 
@@ -236,15 +237,14 @@ export function measure(gid, debug){
 		const getCadratin = (fs,cn) => _measureText('&mdash;', fs, css ? cn : null).width;
 
 		const places = {left: 'ord', right: 'ord', bottom: 'abs', top: 'abs'};
-		const axe    = {left: 'y',   right: 'y',   bottom: 'x',   top: 'x'};
 
 		// axis label
 		// ticks label
 		let axisLabel = {};
 		let tickLabel = {};
 		for(let u in places){
-			axisLabel[u] = getCadratin( ( props.axisProps[places[u]].find(x => x.placement === u) || {labelFSize: 0}).labelFSize, `axis${axe[u]}${u}`);
-			tickLabel[u] = getCadratin( ( props.axisProps[places[u]].find(x => x.placement === u) || {ticks: { major: {labelFSize: 0} } }).ticks.major.labelFSize, `ticksmajor${axe[u]}${u}`);
+			axisLabel[u] = getCadratin( ( props.axisProps[places[u]].find(x => x.placement === u) || {labelFSize: 0}).labelFSize, `axis-label-${u}`);
+			tickLabel[u] = getCadratin( ( props.axisProps[places[u]].find(x => x.placement === u) || {ticks: { major: {labelFSize: 0} } }).ticks.major.labelFSize, `label-major-${u}`);
 		}
 
 		const cad = {
@@ -257,11 +257,42 @@ export function measure(gid, debug){
 		return cad;
 	};
 
+	const calibrate = (props) => {
+		// css
+		const { css } = props; 
+		// title
+		const { titleFSize } = props.titleProps;
+		const title = _measureText('Chart title',titleFSize,css ? 'title' : '');
+		// axis label
+		// axis ticks
+		let axis  = {};
+		let ticks = {};
+		["abs","ord"].forEach(a => props.axisProps[a].forEach( ax => {
+			const { placement, factorFSize, labelFSize } = ax;
+			axis[placement] = {
+				factor: _measureText(`${placement} factor`,factorFSize,css ? 'axis-factor' : ''),
+				label: _measureText(`${placement} label`,labelFSize,css ? 'axis-factor' : ''),
+			};
+			const { major, minor } = ax.ticks;
+			ticks[placement] = {
+				major: _measureText(`${placement} major ticks`,major.labelFSize, css ? 'label-major' : ''),
+				minor: _measureText(`${placement} minor ticks`,minor.labelFSize, css ? 'label-minor' : '')
+			};
+		}));
+
+		return {
+			title,
+			axis,
+			ticks
+		};
+	};
+
 	return {
 		text: measureText,
 		cadratin,
 		active,
-		setDebug: x => {debug = x;}
+		setDebug: x => {debug = x;},
+		calibrate
 	};
 
 }
@@ -285,3 +316,5 @@ export function toNumber(fs){
 
 	return isNaN(num) ? 0 : num;
 }
+
+export const emptyState = {cadre: { width: 480, height: 270 }, background: {}, empty: true, width: 300, height: 200};
