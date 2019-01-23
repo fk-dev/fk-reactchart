@@ -2,48 +2,63 @@ import { rndKey } from './utils.js';
 
 let storage = {};
 
-const gradientVM = (colors,id) => {
+const gradientVM = (colors,type,offs,id) => {
 	const n = colors.length - 1;
+	offs = offs || [];
 	const offsets = colors.map( (c,i) => {
 		return {
 			color: c,
-			off: `${100 * i/n}%`
+			off: offs[i] || `${100 * i/n}%`,
 		};
 	});
 
-	return { offsets, id };
+	return { offsets, id, type };
 };
 
-const notStored = cand => {
-	for(let id in storage){
-		const { colors } = storage[id];
-		if(colors.length === cand.length && colors.reduce( (memo,v,i) => memo && v === cand[i], true)){
+const notStored = (mid,cand) => {
+	for(let id in storage[mid]){
+		const { colors, type, offsets } = storage[mid][id];
+		const _arrCheck = (_ref,__cand) => {
+			const ref = _ref || [];
+			const _cand = __cand || [];
+			return ref.length === _cand.length && ref.reduce( (memo,v,i) => memo && v === _cand[i], true);
+		};
+
+		if(_arrCheck(colors,cand.colors) && _arrCheck(offsets,cand.offsets) && type === cand.type){
 			return id;
 		}
 	}
 };
 
-export const newGradient = (colors) => {
-	const check = notStored(colors);
+export const newGradient = (opts, mid) => {
+	const { colors, type, offsets } = opts;
+
+	if(!storage[mid]){
+		storage[mid] = {};
+	}
+	const check = notStored(mid,colors);
 	if(check){
 		return check;
 	}
-	const id = rndKey();
-	storage[id] = {
+	const id = rndKey().replace(/\(/g,'a').replace(/\)/g,'b');
+	storage[mid][id] = {
 		colors,
-		vm: gradientVM(colors,id)
+		type, offsets,
+		vm: gradientVM(colors,type,offsets,id)
 	};
 	return id;
 };
 
-export const remove = id => {
-	delete storage[id];
+export const remove = (mid,id) => {
+	if(storage[mid] && storage[mid][id]){
+		delete storage[mid][id];
+	}
 };
 
-export const getGradientsPrinter = () => {
+export const getGradientsPrinter = (mid) => {
 	let gr = [];
-	for(let id in storage){
-		gr.push({id, vm: storage[id].vm});
+	for(let id in storage[mid]){
+		gr.push({id, vm: storage[mid][id].vm});
 	}
 	if(gr.length){
 		return {
@@ -52,9 +67,20 @@ export const getGradientsPrinter = () => {
 	}
 };
 
-export const getAGradientVM = id => {
-	const s = storage[id];
+export const getAGradientVM = (mid,id) => {
+	const s = storage[mid] ? storage[mid][id] : null;
 	if(s){
 		return s.vm;
+	}
+};
+
+export const clear = (mid,only) => {
+
+	if(storage[mid]){
+		if(only){
+			only.forEach(k => delete storage[mid][k]);
+		}else{
+			delete storage[mid];
+		}
 	}
 };
