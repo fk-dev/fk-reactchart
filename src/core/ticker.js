@@ -10,7 +10,7 @@ const nInterval = (length, height) => {
 const checkMajDist = (labels,ref,D,first,cv, getLength, mgr, starter) => {
 	const lls = labels.map(x => getLength(x.label)).filter(x => x);
 	const max = lls.reduce( (memo,v) => memo < v ?  v : memo, -1);
-	const d = D - (lls[0]/2 + lls[1]/2);
+	const d = D - max;
 
 	if(d > max + 2 * getLength()){
 		const incr = Math.floor((max * 1.2)/d) + 1;
@@ -277,8 +277,7 @@ const computeTicks = function(first, last, step, { majAuto, majLabelize}, minor,
 
 	}
 
-	out = out.concat(mgr.extraTicks(majDist,first,last, out));
-	return out;
+	return out.concat(mgr.extraTicks(majDist,first,last, out));
 };
 
 export function ticks(start, length, majStep, labels, majProps, minor, minStep, minProps, fac, toPixel, height, square, outer){
