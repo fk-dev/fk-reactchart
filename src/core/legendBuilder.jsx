@@ -4,11 +4,11 @@ import { flatten, extend } from 'underscore';
 import { iconer }      from '../icons/iconer.jsx';
 import { shader }      from './colorMgr.js';
 import * as evMgr      from './events-mgr.js';
-import * as gradienter from './gradient-mgr.js';
+import { newGradient, getAGradientVM, remove } from './gradient-mgr.js';
 import Gradienter      from '../Gradienter.jsx';
 
 export const vm = {
-	create: function(get, { props }){
+	create: function(get, { props, mgrId  }){
 
 	const events = evMgr.create(props.legend.events);
 
@@ -25,10 +25,11 @@ export const vm = {
 		if(sha && sha.options){
 			// type is shade or color
 			const colors = sha.type === 'shade' ? [icc, 'white'] : sha.options.colors;
-			grad.id = gradienter.newGradient(colors);
+			const offsets = sha.type === 'shade' ? null : sha.options.offsets;
+			grad.id = newGradient({ colors, offsets }, mgrId );
 		}
 		const ics = gprops.width < 2 ? gprops.width * 1.5 : gprops.width; // slightly more bold, if needed
-		const gradVM = gradienter.getAGradientVM(grad.id);
+		const gradVM = getAGradientVM(mgrId,grad.id);
 		const iconProps = {
 			color: icc,
 			width: icw,
@@ -81,7 +82,7 @@ export const vm = {
 		let grad = {};
 		leg.push(getALegend(props.data[i],props.graphProps[i],i,grad));
 		if(grad.id){
-			gradienter.remove(grad.id);
+			remove(mgrId,grad.id);
 		}
 	}
 
