@@ -244,12 +244,12 @@ export function Graph(axis){
 		////// cadre
     cadre: {
 			show: false,
-			css: false
+			css: null
 		},
 
 		////// legend
 		legend: {
-			css: false,
+			css: null,
 			iconWidth: 30,
 			iconHeight: 20,
 			iconHMargin: 0, // offset from center
