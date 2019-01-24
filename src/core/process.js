@@ -665,7 +665,11 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 };
 
 export function process(getNode, rawProps, mgrId, getMeasurer, cb){
-	setImmediate(() => cb(null,processSync(getNode, rawProps, mgrId, getMeasurer)));
+	if(utils.async()){
+		setImmediate(() => cb(null,processSync(getNode, rawProps, mgrId, getMeasurer)));
+	}else{
+		cb(null,processSync(getNode, rawProps, mgrId, getMeasurer));
+	}
 }
 
 const _processLegend = (getNode,rawProps, mgrId) => {

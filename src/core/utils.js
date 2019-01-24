@@ -210,6 +210,7 @@ export function measure(gid, debug){
 		}
 
 		debug.log(`Actual Measurements: will return (width, height) = (${cwidth},${cheight}) for text = ${str} ${clN ? `for class name ${clN}` : `at font size ${fontSize}`}`);
+
 		return { width: cwidth, height: cheight };
 	};
 
@@ -318,3 +319,5 @@ export function toNumber(fs){
 }
 
 export const emptyState = {cadre: { width: 480, height: 270 }, background: {}, empty: true, width: 300, height: 200};
+
+export const async = () => typeof window !== 'undefined' && !window.nightmare;

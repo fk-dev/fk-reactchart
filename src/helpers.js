@@ -423,6 +423,7 @@ export function init(rawProps, type, Obj, debug){
 		}
 	};
 		// freezer
+	let _ready = false;
 	_process(() => freezer._def.get(), props, rc.__mgrId, () => rc.getLengthes('_def'), (err,imVM) => {
 		freezer._def = freeze(imVM);
 		_ready = true;
@@ -434,7 +435,6 @@ export function init(rawProps, type, Obj, debug){
 		rc.addKey(key, obj);
 	}
 
-	let _ready = false;
 	rc.ready = () => _ready;
 	// finalize
   rc.__preprocessed = true;
