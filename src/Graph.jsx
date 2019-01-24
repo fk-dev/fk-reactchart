@@ -29,6 +29,9 @@ export default class Graph extends React.Component {
 				this.sh.setDebug(this.props.debug);
 			}
 		}else{ // to be done here
+			if(pr.onGenerateKey){
+				pr.onGenerateKey(this.myKey);
+			}
 			this.sh = init(pr,this.type,{ key: this.myKey, namespace: this.props.namespace}, this.props.debug);
 		}
 	}
@@ -43,6 +46,10 @@ export default class Graph extends React.Component {
 	}
 
 	shouldComponentUpdate(pr){
+		return this.changeOfMgrByRawProps(pr);
+	}
+
+	changeOfMgrByRawProps(pr){
 		// we changed the props
 			// 1 - human friendly
 		if(!pr.__preprocessed){ // not sh, we update anyway
@@ -50,7 +57,6 @@ export default class Graph extends React.Component {
 				this.sh.kill(this.myKey); // no more in previous helper
 			}
 			this.sh = init(pr,this.type,{ key: this.myKey, obj: this, namespace: this.props.namespace}, this.props.debug);
-			return true;
 			// 2 - helpers
 		}else if(pr.__mgrId !== this.sh.__mgrId){
 			this.sh.kill(this.myKey); // no more in previous helper
@@ -61,6 +67,13 @@ export default class Graph extends React.Component {
 			}
 		}
 		return false;
+	}
+
+	// case when updating props without going to shouldComponentUpdate
+	componentDidUpdate(){
+		if(this.props.__preprocessed){
+			this.changeOfMgrByRawProps(this.props);
+		}
 	}
 
 		// obj will go away
