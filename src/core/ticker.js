@@ -9,7 +9,7 @@ const nInterval = (length, height) => {
 
 const checkMajDist = (labels,ref,D,first,cv, getLength, mgr, starter) => {
 	const lls = labels.map(x => getLength(x.label)).filter(x => x);
-	const max = lls.reduce( (memo,v) => memo < v ?  v : memo, -1);
+	const max = lls.reduce( (memo,v) => memo < v ?  v : memo, 0);
 	const d = D - max;
 
 	if(d > max + 2 * getLength()){
