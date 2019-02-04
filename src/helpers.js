@@ -243,7 +243,17 @@ export function init(rawProps, type, Obj, debug){
 		// reset
 	rc.setMeasurer = (key) => key ? addAMeasurer(key) : initMeasurers();
 	rc.hasDebug = () => hasDebug;
-	rc.setDebug = dbg => measurer.setDebug(dbg);
+	rc.setDebug = (dbg,id) => {
+		if(id && measurer[id]){
+			measurer[id].mgr.setDebug(dbg);
+		}else{
+			for(let u in measurer){
+				if(measurer[u].mgr){
+					measurer[u].mgr.setDebug(dbg);
+				}
+			}
+		}
+	};
 
 	// id
 		// getter

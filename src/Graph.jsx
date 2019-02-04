@@ -26,7 +26,7 @@ export default class Graph extends React.Component {
 				this.sh.setNamespace(this.props.namespace,this.myKey);
 			}
 			if(this.props.debug && !this.sh.hasDebug()){
-				this.sh.setDebug(this.props.debug);
+				this.sh.setDebug(this.props.debug, this.myKey);
 			}
 		}else{ // to be done here
 			if(pr.onGenerateKey){
@@ -63,7 +63,7 @@ export default class Graph extends React.Component {
 			this.sh = pr;
 			this.sh.addKey(this.myKey, this);
 			if(this.props.debug && !this.sh.hasDebug()){
-				this.sh.setDebug(this.props.debug);
+				this.sh.setDebug(this.props.debug, this.myKey);
 			}
 		}
 		return false;
