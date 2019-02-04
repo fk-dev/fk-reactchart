@@ -244,9 +244,9 @@ export function init(rawProps, type, Obj, debug){
 	rc.setMeasurer = (key) => key ? addAMeasurer(key) : initMeasurers();
 	rc.hasDebug = () => hasDebug;
 	rc.setDebug = (dbg,id) => {
-		if(id && measurer[id]){
+		if(id && measurer[id] && measurer[id].mgr){
 			measurer[id].mgr.setDebug(dbg);
-		}else{
+		}else if(!id){
 			for(let u in measurer){
 				if(measurer[u].mgr){
 					measurer[u].mgr.setDebug(dbg);
@@ -280,6 +280,8 @@ export function init(rawProps, type, Obj, debug){
 					rc.updateGraph(obj, key);
 				}
 			});
+		}else if(obj){
+			rc.updateGraph(obj, key);
 		}
 
 	};
@@ -329,15 +331,16 @@ export function init(rawProps, type, Obj, debug){
 		if(isNil(key)){
 			return;
 		}else if(keys.indexOf(key) === -1){
-			rc.addKey(key);
+			return;
 		}
 
     obj.forceUpdate();
 
 		if(!updatee[key]){
 			updatee[key] = obj;
-			updated[key] = true;
 		}
+
+		updated[key] = true;
 
 		return key;
 	};
@@ -437,7 +440,6 @@ export function init(rawProps, type, Obj, debug){
 	_process(() => freezer._def.get(), props, rc.__mgrId, () => rc.getLengthes('_def'), (err,imVM) => {
 		freezer._def = freeze(imVM);
 		_ready = true;
-		updateDeps();
 	});
 
 	// init if needed
