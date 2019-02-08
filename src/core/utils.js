@@ -179,7 +179,7 @@ export function measure(gid, debug){
 		let meas = typeof document === 'undefined' ? null : document.getElementById(elt);
 		if(!meas){
 			const cc = Array.isArray(clNs) ? clNs : [clNs];
-			let father = document.getElementById(`fkchartmeasurer-${gid}`);
+			let father = document.getElementById(`fkchartmeasurer-${gid}`) || document.body;
 			for(let i = 0; i < cc.length; i++){
 				const c = `fkchartmeasurer-${gid}${clN ? `-${cc[i]}` : ''}`;
 				meas = document.getElementById(c);
