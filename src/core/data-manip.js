@@ -17,6 +17,7 @@ export function toggle(idx, { props, mgr }){
 	// raw
 	let val = !props.graphProps[idx].show;
 	setShowValue(idx, val, { props, mgr });
+	return val;
 }
 
 export function hide(idx, { props, mgr }){
@@ -30,6 +31,7 @@ export function show(idx, { props, mgr }){
 export function toggleMark(cidx, midx, { props, mgr } ){
 	let val = !props.data[cidx].series[midx].show;
 	setShowMarkValue(cidx, midx, val, { props, mgr });
+	return val;
 }
 
 export function hideMark(cidx, midx, { props, mgr } ){

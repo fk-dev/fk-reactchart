@@ -76,6 +76,10 @@ export function init(rawProps, type, Obj, debug){
 				if(updatee[k] && updatee[k].forceUpdate){
 					updatee[k].forceUpdate();
 					updated[k] = true;
+					// legend ?
+					if(updatee[`l.${k}`] && updatee[`l.${k}`].forceUpdate){
+						updatee[`l.${k}`].forceUpdate();
+					}
 				}else if(updatee[k]){
 					deleteKey(k,invkey);
 				}
@@ -261,7 +265,7 @@ export function init(rawProps, type, Obj, debug){
 		// setter
 	rc.addKey = (key,obj) => {
 		// beware if already there
-		if(keys.indexOf(key) === -1){
+		if(keys.indexOf(key) === -1 && ( !key.startsWith('l.') || keys.indexOf(key.substring(2)) === -1 ) ){
 			keys.push(key);
 		}
 
@@ -272,7 +276,7 @@ export function init(rawProps, type, Obj, debug){
 			updatee[key] = obj;
 			updated[key] = false;
 		}
-		if(!freezer[k] && k !== '_def'){
+		if(!freezer[k] && k !== '_def' && keys.indexOf(key) !== -1){
 			_process(() => freezer[k].get(), props, rc.__mgrId, () => rc.getLengthes(k), (err, imVM) => {
 				freezer[k] = freeze(imVM);
 				freezer[k].on('update',() => updateDeps(k)); // last
@@ -300,11 +304,19 @@ export function init(rawProps, type, Obj, debug){
 		return freezer._def;
 	};
 
+	const fetchPropsFromLegend = key => {
+		if(key.startsWith('l.') && hasAKey(key.substring(2)) !== '_def'){
+			return rc.props(key.substring(2));
+		}else{
+			return rc.props(key);
+		}
+	};
 	// getters
-	rc.mgr              = (key) => key && freezer[pointsTo[key]] ? freezer[pointsTo[key]] : checkFreezer();
+	const hasAKey       = (key) => key && pointsTo[key] && pointsTo[key] !== '_def' && freezer[pointsTo[key]];
+	rc.mgr              = (key) => hasAKey(key) ? freezer[pointsTo[key]] : checkFreezer();
 	rc.props   = rc.get = (key) => rc.mgr(key).get();
 	rc.unprocessedProps = () => props;
-	rc.legend           = (key) => type === 'legend' ? rc.props(key) : (rc.props(key) || {}).legend;
+	rc.legend           = (key) => type === 'legend' ? rc.props(key) : fetchPropsFromLegend(key).legend;
 	// vm manipulation
 	rc.manipAVM         = (todo,key) => key ? freezer[key] ? todo(freezer[key].get,key) : null : todo(checkFreezer().get);
 	rc.manipAllVMs      = (todo) => {
@@ -341,6 +353,11 @@ export function init(rawProps, type, Obj, debug){
 		}
 
 		updated[key] = true;
+
+		// if has a legend
+		if(updatee[`l.${key}`] && updatee[`l.${key}`].forceUpdate){
+			updatee[`l.${key}`].forceUpdate();
+		}
 
 		return key;
 	};

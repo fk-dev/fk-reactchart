@@ -2,10 +2,10 @@ let clickers = {
 	fade: (mgr,idx) => {
 		let faded = mgr.props().curves[idx].show;
 		// curve
-		mgr.dynamic.hide.curve(idx);
+		mgr.dynamic.toggle.curve(idx);
 
 		// legend
-		mgr.get().legend[idx].icon.props.set('faded', faded);
+		mgr.get().legend[idx].icon.props.set('faded', !faded);
 	},
 
 	del: (mgr,idx) => {

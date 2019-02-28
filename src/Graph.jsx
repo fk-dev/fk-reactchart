@@ -8,7 +8,7 @@ export default class Graph extends React.Component {
 
 	constructor(props){
 		super(props);
-		this.myKey = rndKey();
+		this.myKey = props.graphId || rndKey();
 		if(props.onGenerateKey){
 			props.onGenerateKey(this.myKey);
 		}
@@ -104,7 +104,7 @@ class Legend extends React.Component {
 
 	constructor(props){
 		super(props);
-		this.myKey = rndKey();
+		this.myKey = `l.${props.legendId}` || rndKey();
 		this.type = 'legend';
 		this.init();
 	}
@@ -152,8 +152,9 @@ class Legend extends React.Component {
 			const cs = (cell) => cell.icon.props.faded ? 'fade-chart' : '';
       const clicker = (cell) => this.props.noMarkClick ? null : () => cell.click(this.sh);
 
-			const icon  = (cell) => <td key={`i.${cell.label}`} className={cs(cell)} style={iconP(cell)} onClick={clicker(cell)}>{cell.icon.icon(cell.icon.props)}</td>;
-			const label = (cell) => <td key={cell.label} className={cs(cell)} onClick={clicker(cell)}>{cell.label}</td>;
+			const o = (cell) => cell.icon.props.faded ? 0.2 : 1;
+			const icon  = (cell) => <td key={`i.${cell.label}`} className={cs(cell)} opacity={o(cell)} style={iconP(cell)} onClick={clicker(cell)}>{cell.icon.icon(cell.icon.props)}</td>;
+			const label = (cell) => <td key={cell.label} className={cs(cell)} opacity={o(cell)} onClick={clicker(cell)}>{cell.label}</td>;
 
 			const fill = () => {
 				const out = [];
@@ -168,6 +169,7 @@ class Legend extends React.Component {
 		};
 
 		const gmap = (tab, oneLine) => {
+			tab = tab || [];
 			let out = [];
 			let line = [];
 			let j = 0;
@@ -188,7 +190,7 @@ class Legend extends React.Component {
 		};
 
 		return <table {...this.props}>
-			<tbody>{gmap(this.sh.legend(), (line,idx) => tabline(line,idx))}</tbody>
+			<tbody>{gmap(this.sh.legend(this.myKey), (line,idx) => tabline(line,idx))}</tbody>
 		</table>;
 	}
 
