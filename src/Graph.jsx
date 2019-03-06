@@ -145,16 +145,26 @@ class Legend extends React.Component {
 
 			const iconP = (cell) => {
 				return {
-					width: cell.icon.props.width
+					width: cell.icon.props.width,
+					opacity: o(cell),
+					cursor: c(cell)
+				};
+			};
+
+			const iconL = (cell) => {
+				return {
+					opacity: o(cell),
+					cursor: c(cell)
 				};
 			};
 
 			const cs = (cell) => cell.icon.props.faded ? 'fade-chart' : '';
-      const clicker = (cell) => this.props.noMarkClick ? null : () => cell.click(this.sh);
+      const clicker = (cell) => this.props.noMarkClick ? null : () => cell.click(this.sh, this.myKey);
 
-			const o = (cell) => cell.icon.props.faded ? 0.2 : 1;
-			const icon  = (cell) => <td key={`i.${cell.label}`} className={cs(cell)} opacity={o(cell)} style={iconP(cell)} onClick={clicker(cell)}>{cell.icon.icon(cell.icon.props)}</td>;
-			const label = (cell) => <td key={cell.label} className={cs(cell)} opacity={o(cell)} onClick={clicker(cell)}>{cell.label}</td>;
+			const o = cell => cell.icon.props.faded ? 0.2 : 1;
+			const c = cell => cell.icon.props.clickable ? "pointer" : null;
+			const icon  = (cell) => <td key={`i.${cell.label}`} className={cs(cell)} style={iconP(cell)} onClick={clicker(cell)}>{cell.icon.icon(cell.icon.props)}</td>;
+			const label = (cell) => <td key={`l.${cell.label}`} className={cs(cell)} style={iconL(cell)} onClick={clicker(cell)}>{cell.label}</td>;
 
 			const fill = () => {
 				const out = [];

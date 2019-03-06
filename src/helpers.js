@@ -8,13 +8,14 @@ import { clear as clearGradient } from './core/gradient-mgr.js';
 export function init(rawProps, type, Obj, debug){
 
 	Obj = Obj || {};
-	let { key, obj, namespace } = Obj;
+	let { key, obj, namespace, onGraphDone } = Obj;
 
 	if(obj && !key){
 		key = rndKey();
 	}
 
 	let hasDebug = debug;
+	let _atDone = {};
 	let props;
 	let freezer = {
 		_def: {
@@ -63,6 +64,8 @@ export function init(rawProps, type, Obj, debug){
 			keys.forEach(key => _del(invPointsTo[key]));
 		}
 	};
+
+	const isALegend = key => key.startsWith('l.') && keys.indexOf(key.substring(2)) !== -1;
 
 	const updateDeps = (key) => {
 		if(key === '_def'){ // nothing to forceUpdate for _def
@@ -214,9 +217,10 @@ export function init(rawProps, type, Obj, debug){
 				mgr: meas
 			};
 		}else{
-			vmPointsTo(_key,'_def');
+			const pointed = isALegend(_key) ? _key.substring(2) : '_def';
+			vmPointsTo(_key,pointed);
 			return {
-				pointTo: '_def'
+				pointTo: pointed
 			};
 		}
 	};
@@ -283,6 +287,10 @@ export function init(rawProps, type, Obj, debug){
 				if(obj){
 					rc.updateGraph(obj, key);
 				}
+				if(_atDone[k]){
+					_atDone[k]();
+					delete _atDone[k];
+				}
 			});
 		}else if(obj){
 			rc.updateGraph(obj, key);
@@ -304,19 +312,12 @@ export function init(rawProps, type, Obj, debug){
 		return freezer._def;
 	};
 
-	const fetchPropsFromLegend = key => {
-		if(key.startsWith('l.') && hasAKey(key.substring(2)) !== '_def'){
-			return rc.props(key.substring(2));
-		}else{
-			return rc.props(key);
-		}
-	};
 	// getters
 	const hasAKey       = (key) => key && pointsTo[key] && pointsTo[key] !== '_def' && freezer[pointsTo[key]];
 	rc.mgr              = (key) => hasAKey(key) ? freezer[pointsTo[key]] : checkFreezer();
 	rc.props   = rc.get = (key) => rc.mgr(key).get();
 	rc.unprocessedProps = () => props;
-	rc.legend           = (key) => type === 'legend' ? rc.props(key) : fetchPropsFromLegend(key).legend;
+	rc.legend           = (key) => rc.props(key).legend;
 	// vm manipulation
 	rc.manipAVM         = (todo,key) => key ? freezer[key] ? todo(freezer[key].get,key) : null : todo(checkFreezer().get);
 	rc.manipAllVMs      = (todo) => {
@@ -327,6 +328,8 @@ export function init(rawProps, type, Obj, debug){
 			todo(freezer[u].get,u);
 		}
 	};
+
+	rc.onGraphDone = (key,fct) => {_atDone[key] = fct;};
 
 	// utils
 	rc.defaults = (p) => defaultTheProps(p || props);
@@ -461,6 +464,9 @@ export function init(rawProps, type, Obj, debug){
 
 	// init if needed
 	if(key){
+		if(onGraphDone){
+			rc.onGraphDone(key,onGraphDone);
+		}
 		rc.addKey(key, obj);
 	}
 

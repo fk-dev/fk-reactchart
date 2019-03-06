@@ -1,29 +1,31 @@
-let clickers = {
-	fade: (mgr,idx) => {
-		let faded = mgr.props().curves[idx].show;
+const clickers = {
+	fade: (mgr,lId, idx) => {
+		const faded = !mgr.props(lId).curves[idx].show;
 		// curve
 		mgr.dynamic.toggle.curve(idx);
 
 		// legend
-		mgr.get().legend[idx].icon.props.set('faded', !faded);
+		mgr.legend(lId)[idx].icon.props.set('faded', !faded);
 	},
 
-	del: (mgr,idx) => {
+	del: (mgr, lId, idx) => {
 		// redefine
-		mgr.unprocessedProps().graphProps[idx].show = !mgr.props().curves[idx].show;
+		mgr.unprocessedProps(lId).graphProps[idx].show = !mgr.props(lId).curves[idx].show;
 
 		// recompute
-		mgr.reinit(mgr.unprocessedProps());
+		mgr.reinit(mgr.unprocessedProps(lId));
 	}
 };
 
 export function create(types){
 
-	let { onClick } = types;
+	const { onClick } = types;
 
 	let rc = {};
 
-	rc.onClick = (idx) => onClick ? (mgr) => clickers[onClick](mgr,idx) : () => null;
+	rc.onClick = (idx) => onClick ? (mgr,lId) => clickers[onClick](mgr,lId,idx) : () => null;
+
+	rc.hasClick = onClick;
 
 	return rc;
 

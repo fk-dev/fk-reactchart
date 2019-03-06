@@ -37,7 +37,8 @@ export const vm = {
 			hMargin: ichm,
 			vMargin: icvm,
 			strokeWidth: ics,
-			faded: !props.graphProps[idx].show
+			faded: !props.graphProps[idx].show,
+			clickable: events.hasClick
 		};
 		let perPoint = [];
 		if (data.series) {
