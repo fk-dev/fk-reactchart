@@ -398,9 +398,17 @@ let addMonth = (d,m) => moment.utc(d).add(1,'days').add(m, 'months').add(-1,'day
 let addDate = (d,p) => {
 	let { years, months } = p;
 
+	// more precision than necessary
+	const e = p.days - Math.trunc(p.days);
+	const h = e * 24;
+	p.hours = Math.trunc(h);
+	p.minutes = (p.hours - Math.trunc(p.hours)) * 60;
+
 	return moment.utc(addMonth(d, 12 * years + months))
 		.add(p.weeks,'weeks')
-		.add(p.days,'days').toDate();
+		.add(p.days,'days')
+		.add(p.hours,'hours')
+		.add(p.minutes,'minutes').toDate();
 };
 
 // date & period methods
