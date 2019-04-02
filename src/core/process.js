@@ -632,7 +632,7 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 	imVM.cadre = cadreVM.create(() => getNode().cadre, { show: props.cadre.show, css: props.cadre.css, width: props.width, height: props.height});
 
 	// 2 - background
-	imVM.background = backgroundVM.create(() => getNode().background, { color: props.background.color, css: props.background.css, spaces: state.spaces, motherCss: props.css });
+	imVM.background = backgroundVM.create(() => getNode().background, { color: props.background.color, show: props.background.show, css: props.background.css, spaces: state.spaces, motherCss: props.css });
 
 	// 3 - foreground
 	imVM.foreground = foregroundVM.create(() => getNode().foreground, { foreground: props.foreground, spaces: state.spaces });

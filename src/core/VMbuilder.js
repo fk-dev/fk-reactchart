@@ -222,10 +222,11 @@ export let cadreVM = {
 };
 
 export let backgroundVM = {
-	create: (get, { color, spaces, css, motherCss }) => {
+	create: (get, { color, show, spaces, css, motherCss }) => {
 		css = isNil(css) ? motherCss : css;
 		
 		return {
+			show,
 			color,
 			css,
 			spaceX:{
