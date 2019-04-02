@@ -7,6 +7,7 @@ import Foreground from './Foreground.jsx';
 import Title from './Title.jsx';
 import Measurer from './Measurer.jsx';
 import Gradienter from './Gradienter.jsx';
+import Waiting from './Waiting.jsx';
 
 import { isEqual } from './core/im-utils.js';
 
@@ -41,7 +42,7 @@ export default class Drawer extends React.Component {
 	}
 
 	empty(state){
-		return state.empty ? <Cadre state={state.cadre}/> : null;
+		return state.empty ? <Waiting x={state.width/2} y={state.height/2}/> : null;
 	}
 
 	showMe(){
