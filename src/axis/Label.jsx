@@ -72,6 +72,22 @@ export default class Label extends React.Component {
 			fontSize: typeof FSize === 'number' ? `${FSize}pt` : FSize
 		};
 
-		return typeof label === 'string' ? <text {...props}>{label}</text> : this.power(label,props);
+		const write = () => typeof label === 'string' ? <text {...props}>{label}</text> : this.power(label,props);
+		const rectMe = () => {
+			const bck = s => `${s.split(' ').join('-background ')}-background`;
+			const hoff = LHeight * 0.2; // descent
+			const mar  = 3;
+			//
+			const xr = xL - (props.textAnchor === 'start' ? 0 : props.textAnchor === 'end' ? LLength : LLength/2) - mar;
+			const yr = yL - LHeight + hoff - mar;
+			const wr = LLength + 2*mar;
+			const hr = LHeight + 2*mar;
+			return <g>
+				<rect x={xr} y={yr} width={wr} height={hr} fill='none' transform={`${translation} ${rotation}`} className={bck(className)}/>
+				{write()}
+			</g>;
+		};
+
+		return css ? rectMe() : write();
 	}
 }
