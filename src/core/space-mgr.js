@@ -261,6 +261,7 @@ const computeOuterMargin = (where, limits, axis, measure, title ) => {
       }
 
       let { labelize } = axis.ticks.major;
+
       if(typeof labelize === 'string'){
         const maxDist = max - min;
         labelize = mgr.labelize(labelize, maxDist);
@@ -272,7 +273,7 @@ const computeOuterMargin = (where, limits, axis, measure, title ) => {
       return tickers.map( (tick,idx) => labelize(tick, prevTick(idx), nextTick(idx)) === false ? mgr.label(tick,step,1) : labelize(tick, prevTick(idx), nextTick(idx)));
     };
 
-    const labels = tickLabels && tickLabels.length ? tickLabels.map(x => x.label) : computeLabels();
+    const labels = axis.empty ? [] : tickLabels && tickLabels.length ? tickLabels.map(x => x.label) : computeLabels();
 
     if(labels.length){
       const cn = css ? `label-major-${where}` : null;
@@ -298,7 +299,7 @@ const computeOuterMargin = (where, limits, axis, measure, title ) => {
 // axis label
 
   let labelLength = 0;
-  if(axis.label.length){
+  if(!axis.empty && axis.label.length){
     const cN = axis.css ? `axis-label-${where}` : '';
     const { label, labelFSize, labelRotate } = axis;
     const {width, height} = measureText(label, labelFSize, cN);

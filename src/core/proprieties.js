@@ -206,6 +206,7 @@ const axe = {
 	empty:      false,
 	CS:         'cart',
 	partner: 0,
+	marginOff: 0,
 	// for ticklabel formatting
 	factor: 1,
 	factorColor: 'black',

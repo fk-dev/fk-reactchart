@@ -54,10 +54,23 @@ const preprocessAxis = function(props){
 
 	// axis depends on data,
 	// where are they?
-	const axis = {
+	// by data
+	let axis = {
 		abs: props.data ? uniq(props.data.map( e => !utils.isNil(e.abs) && e.abs.axis ? e.abs.axis : def.abs)) : [def.abs],
 		ord: props.data ? uniq(props.data.map( e => !utils.isNil(e.ord) && e.ord.axis ? e.ord.axis : def.ord)) : [def.ord],
 	};
+
+	// by axis props
+	if(props.axisProps){
+		['abs','ord'].forEach( ax => {
+			const axisP = props.axisProps[ax];
+			if(!axisP){
+				return;
+			}
+			const fromP = (Array.isArray(axisP) ? axisP.map(x => x.placement) : [axisP.placement]).filter(x => x).filter(x => axis[ax].indexOf(x) === -1);
+			axis[ax] = axis[ax].concat(fromP);
+		});
+	}
 
 	// default
 	if(axis.abs.length === 0){
