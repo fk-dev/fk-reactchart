@@ -70,7 +70,7 @@ export default class Tick extends React.Component {
 	tick(){
 
 		const { type, placement, tick } = this.props.state;
-		const { show, css, dir, length, out, position, ds, color, width } = tick;
+		const { show, css, dir, length, out, position, ds, color, width, custom } = tick;
 
 		if(show === false){
 			return null;
@@ -86,7 +86,8 @@ export default class Tick extends React.Component {
 			strokeWidth: width
 		};
 
-		return <line className={css ? `tick-${type} tick-${type}-${placement} ${this.props.className}` : ''} x1={x1} x2={x2} y1={y1} y2={y2} {...linePar}/>;
+		return custom ? <g transform={`translate(${x2} ${y1})`}>{custom()}</g> 
+			: <line className={css ? `tick-${type} tick-${type}-${placement} ${this.props.className}` : ''} x1={x1} x2={x2} y1={y1} y2={y2} {...linePar}/>;
 	}
 
 	label(){

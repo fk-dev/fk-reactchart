@@ -176,7 +176,8 @@ export function vm(css, measurer, ds, partner, bounds, dir, locProps, comFac, ax
 			color: true,
 			length: true,
 			out: true,
-			width: true
+			width: true,
+			custom: locProps.custom
 		};
 
 		for(let u in tmp){
