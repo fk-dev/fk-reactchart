@@ -39,8 +39,8 @@ const nat = (d,p) => {
 
 	return {
 		isVert: d === 'x',
-		rad: (p[oDir] > 0 ? ang[d].o : ang[d].i) * Math.PI / 180,
-		dir: p[oDir] > 0 ? 1 : -1,
+		rad: (p[oDir] < 0 ? ang[d].i : ang[d].o) * Math.PI / 180,
+		dir: p[oDir] < 0 ? -1 : 1,
 		hookDir: 1
 	};
 
