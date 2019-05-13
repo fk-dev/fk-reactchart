@@ -23,22 +23,24 @@ const _angle = (deg) => {
 
 const nat = (d,p) => {
 
+	const oDir = d === 'x' ? 'y' : 'x';
+
 	const ang = {
 		x: {
-			s: 0,
+			o: 0,
 			i: 180
 		},
 		y: {
-			s: 90,
+			o: 90,
 			i: -90
 		}
 	};
 
 
 	return {
-		isVert: d === 'y',
-		rad: (p[d] > 0 ? ang[d].s : ang[d].i) * Math.PI / 180,
-		dir: p[d] > 0 ? 1 : -1,
+		isVert: d === 'x',
+		rad: (p[oDir] > 0 ? ang[d].o : ang[d].i) * Math.PI / 180,
+		dir: p[oDir] > 0 ? 1 : -1,
 		hookDir: 1
 	};
 
