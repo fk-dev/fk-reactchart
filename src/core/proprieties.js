@@ -159,6 +159,7 @@ export const Tick = {
 	width: 1,
 	length: 15,
 	out: 0.25, // proportion that is outside
+	spacingFactor: 0.05, // minimum space between labels
 	step: null,
 	color: 'black',
 	autoOffset: true,

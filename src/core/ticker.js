@@ -7,12 +7,12 @@ const nInterval = (length, height) => {
 };
 
 
-const checkMajDist = (labels,ref,D,first,cv, getLength, mgr, starter) => {
+const checkMajDist = (labels,ref,D,first,cv, getLength, mgr, starter, spaceFac) => {
 	const lls = labels.map(x => getLength(x.label)).filter(x => x);
 	const max = lls.reduce( (memo,v) => memo < v ?  v : memo, 0);
 	const d = D - max;
 
-	if(d > max + 2 * getLength()){
+	if(d > max * ( 1 + spaceFac ) + 2 * getLength() ){
 		const incr = Math.floor((max * 1.2)/d) + 1;
 		let cand;
 		for(let i = 0; i < incr; i++){
@@ -24,7 +24,7 @@ const checkMajDist = (labels,ref,D,first,cv, getLength, mgr, starter) => {
 			curValue: cand === ref ? cv : starter(cand),//mgr.closestRoundUp(first, mgr.type === 'date' ? mgr.add(cand, {days: 1}) : cand),
 			store: cand === ref ? labels : []
 		};
-	}else if(d < 0){
+	}else if(d < max * spaceFac ){
 		labels = [];
 		const majDist = mgr.roundUp(ref);
 		return {
@@ -45,7 +45,7 @@ const checkMajDist = (labels,ref,D,first,cv, getLength, mgr, starter) => {
  * beware of distance (period) versus
  * values (date), see {date,nbr}Mgr.js
 */
-const computeTicks = function(first, last, step, { majAuto, majLabelize}, minor, mStep, { minAuto, minLabelize }, fac, toPixel, height, square, outer){
+const computeTicks = function(first, last, step, { majAuto, majLabelize, spaceFac}, minor, mStep, { minAuto, minLabelize }, fac, toPixel, height, square, outer){
 
 	// mgr
 	const mgr = typeMgr(first);
@@ -112,7 +112,7 @@ const computeTicks = function(first, last, step, { majAuto, majLabelize}, minor,
 				out.forEach( (t,i) => {
 					t.label = majLabelize(out,i,mgr.label(t.position,majDist,fac));
 				});
-				const reset = checkMajDist(out,majDist, mgr.getValue(majDist) * toPixel, first, curValue, square, mgr, starter);
+				const reset = checkMajDist(out,majDist, mgr.getValue(majDist) * toPixel, first, curValue, square, mgr, starter, spaceFac);
 				if(tries.findIndex( t => mgr.equal(reset.majDist,t)) === -1){
 					tries.push(reset.majDist);
 				}else if(reset.store.length === 0){
@@ -167,7 +167,7 @@ const computeTicks = function(first, last, step, { majAuto, majLabelize}, minor,
 			out.forEach( (t,i) => {
 				t.label = majLabelize(out,i,mgr.label(t.position,majDist,fac));
 			});
-			const reset = checkMajDist(out,majDist, mgr.getValue(majDist) * toPixel, first, curValue, square, mgr, starter);
+			const reset = checkMajDist(out,majDist, mgr.getValue(majDist) * toPixel, first, curValue, square, mgr, starter, spaceFac);
 			if(tries.findIndex( t => mgr.equal(reset.majDist,t)) === -1){
 				tries.push(reset.majDist);
 			}else if(reset.store.length === 0){
