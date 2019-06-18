@@ -127,6 +127,13 @@ class Legend extends React.Component {
 		return false;
 	}
 
+	// obj will go away
+	componentWillUnmount(){
+		if(this.sh && this.sh.__preprocessed){
+			this.sh.kill(this.myKey);
+		}
+	}
+
 	init(){
 		const pr = this.props;
 		if(pr.__preprocessed){ // done outside graph

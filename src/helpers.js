@@ -159,7 +159,7 @@ export function init(rawProps, type, Obj, debug){
 		if(k === p){
 			invPointsTo[k] = [k];
 		}else if(p !== '_def'){
-			invPointsTo[p].push(k);
+			invPointsTo[p] = (invPointsTo[p] || []).concat(k);
 		}
 	};
 
@@ -269,8 +269,10 @@ export function init(rawProps, type, Obj, debug){
 		// setter
 	rc.addKey = (key,obj) => {
 		// beware if already there
-		if(keys.indexOf(key) === -1 && ( !key.startsWith('l.') || keys.indexOf(key.substring(2)) === -1 ) ){
+		if(keys.indexOf(key) === -1 && !isALegend(key)){
 			keys.push(key);
+		}else if(keys.indexOf(key) !== -1 && isALegend(key)){
+			keys.splice(keys.indexOf(key),1);
 		}
 
 		rc.setMeasurer(key);
