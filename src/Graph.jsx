@@ -223,7 +223,7 @@ class Legend extends React.Component {
 			</span>;
 		};
 
-		return <div {...this.props}>{this.sh.legend().map( (l, idx) => print(l,idx) )}</div>;
+		return <div {...this.props}>{(this.sh.legend(this.myKey) || []).map( (l, idx) => print(l,idx) )}</div>;
 	}
 
 	render(){
