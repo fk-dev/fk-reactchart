@@ -190,6 +190,7 @@ const axe = {
 		})
 	},
 	show: true,
+	drawing: 'default', // reverse to get reversed ticks order
 	css: null, //
 	// to force locally definition
 	min: null,
@@ -309,6 +310,7 @@ const data = (serie,axis,axe) => {
 	}; 
 	return {
 		type: 'Plain', // Plain, Bars, yBars
+		drawing: 'default', // reverse to get reversed data point
 		series: [], // x, y
 		phantomSeries:[], // added points to play on the world's limit
 		stacked: null, // x || y || null

@@ -48,14 +48,14 @@ const curve = function(get, { spaces, serie, data, gprops, idx, css, mgrId  }){
 			// we add the world
 			// we find the proper x & y axis
 			let xplace = 'bottom';
-			if(!!data.abs && 
-				!!data.abs.axis){
+			if(data.abs && 
+				data.abs.axis){
 				xplace = data.abs.axis;
 			}
 
 			let yplace = 'left';
-			if(!!data.ord && 
-				!!data.ord.axis){
+			if(data.ord && 
+				data.ord.axis){
 				yplace = data.ord.axis;
 			}
 
@@ -137,7 +137,7 @@ const curve = function(get, { spaces, serie, data, gprops, idx, css, mgrId  }){
 
 			const graphKey = gtype + '.' + idx;
 			const mtype = isBar(gtype) ? 'bar' : gprops.markType || 'dot';
-			const mprops = gprops.mark ? map(positions,(pos,midx) => {
+			const mprops = gprops.mark ? (data.drawing === 'reverse' ? positions.reverse() : positions).map( (pos,midx) => {
 				const markKey = `${graphKey}.${mtype[0]}.${midx}`;
 				return {
 					key: markKey,
@@ -183,6 +183,7 @@ const axis = function(props,state,measurer,axe,dir, motherCss){
 
 		const axisProps = findWhere(props.axisProps[axe], {placement: key});
 		const css = isNil(axisProps.css) ? motherCss : axisProps.css;
+		const rev = axisProps.drawing === 'reverse';
 
 		const partnerAxis = props.axisProps[partnerAxe][axisProps.partner];
 		const partnerDs   = state.spaces[othdir][partnerAxis.placement];
@@ -199,7 +200,8 @@ const axis = function(props,state,measurer,axe,dir, motherCss){
 
 		const { margins } = state.spaces;
 
-		const ticks = ticksVM(css: { major: axisProps.ticks.major.css, minor: axisProps.ticks.minor.css }, measurer, DS, partner, bounds, dir, axisProps, axisProps.factor, axisKey, motherCss: css, axisProps.placement, margins);
+		const ticks = rev ? ticksVM(css: { major: axisProps.ticks.major.css, minor: axisProps.ticks.minor.css }, measurer, DS, partner, bounds, dir, axisProps, axisProps.factor, axisKey, motherCss: css, axisProps.placement, margins).reverse() : 
+			ticksVM(css: { major: axisProps.ticks.major.css, minor: axisProps.ticks.minor.css }, measurer, DS, partner, bounds, dir, axisProps, axisProps.factor, axisKey, motherCss: css, axisProps.placement, margins);
 
 		return {
 			css: motherCss || axisProps.css || ticks.reduce( (memo,tp) => memo || tp.css, false),

@@ -1,6 +1,5 @@
 import React from 'react';
 import Mark from '../marks/Mark.jsx';
-import { map } from 'underscore';
 import { isEqual } from '../core/im-utils.js';
 
 /*
@@ -26,7 +25,7 @@ export default class BarChart extends React.Component {
 		}
 
 		return <g className={ css ? 'barchart' : null }>
-			{map(marks, (bar,i) => <Mark {...opts} index={i} key={bar.key} state={bar} type='bar'/>)}
+			{marks.map( (bar,i) => <Mark {...opts} index={i} key={bar.key} state={bar} type='bar'/>)}
 		</g>;
 	}
 }
