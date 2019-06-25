@@ -635,6 +635,7 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 
 	//now to immutable VM
 	let imVM = {
+		relative: props.relative,
 		width: props.width,
 		height: props.height,
 		axisOnTop: props.axisOnTop,

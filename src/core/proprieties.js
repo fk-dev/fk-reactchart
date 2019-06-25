@@ -230,6 +230,7 @@ export function Graph(axis){
 		////// general
 		css: false,
 		name: 'G',
+		relative: false, // viewbox + width/height in % ( {width: n, height: w} / true, true <=> {width: 100, height: 100}
 		height: 400,	// defines the universe's height
 		width:	600,	// defines the universe's width
 		axisOnTop: false,

@@ -60,7 +60,14 @@ export default class Drawer extends React.Component {
 
 		const { state } = this.props; 
 		const style = this.props.overflow ? {overflow: 'visible'} : null;
-		return <svg width={state.width} height={state.height} id={this.props.id}  data={this.props.mgrId} className={this.props.className} style={style}>
+		const { relative, width, height } = state;
+
+		const viewBox=`0 0 ${width} ${height}`;
+		const size = relative ? relative.width || relative.height ? {width: relative.width || relative.height, height: relative.height || relative.width, viewBox} : 
+			{width: '100%', height: '100%', viewBox} : 
+				{width: width, height: height};
+
+		return <svg {...size} id={this.props.id}  data={this.props.mgrId} className={this.props.className} style={style}>
 			{ state.gradient ? <defs>{state.gradient.print( (x,id) => <Gradienter key={`grad.${id}`} state={x}/>)}</defs> : null}
 			{ state.cadre.show ? <Cadre state={state.cadre} width={state.width} height={state.height}/> : null }
 			{ state.background.show ? <Background state={state.background}/>  : null }
