@@ -68,11 +68,22 @@ export function init(rawProps, type, Obj, debug){
 	const isALegend = key => key.startsWith('l.') && keys.indexOf(key.substring(2)) !== -1;
 
 	const updateDeps = (key) => {
-		if(key === '_def'){ // nothing to forceUpdate for _def
-			return;
-		}
+
+
+		const updateDef = () => {// look for 'em
+			for(let u in pointsTo){
+				if(pointsTo[u] === '_def'){
+					updatee[u].forceUpdate();
+					updated[u] = true;
+				}
+			}
+		};
 
 		const _updateOne = (_key) => {
+
+			if(_key === '_def'){
+				return updateDef();
+			}
 
 			const invkey = pointsTo[_key];
 			(invPointsTo[invkey] || []).forEach( k => {
@@ -92,7 +103,8 @@ export function init(rawProps, type, Obj, debug){
 		if(key){
 			_updateOne(key);
 		}else{
-			keys.forEach( k => k === '_def' ? null : _updateOne(k));
+			updateDef();
+			keys.forEach( k => _updateOne(k));
 		}
 
 	};
@@ -462,6 +474,7 @@ export function init(rawProps, type, Obj, debug){
 	_process(() => freezer._def.get(), props, rc.__mgrId, () => rc.getLengthes('_def'), (err,imVM) => {
 		freezer._def = freeze(imVM);
 		_ready = true;
+		updateDeps();
 	});
 
 	// init if needed
