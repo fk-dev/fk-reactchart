@@ -73,8 +73,10 @@ export function init(rawProps, type, Obj, debug){
 		const updateDef = () => {// look for 'em
 			for(let u in pointsTo){
 				if(pointsTo[u] === '_def'){
-					updatee[u].forceUpdate();
-					updated[u] = true;
+					if(updatee[u] && updatee[u].forceUpdate){
+						updatee[u].forceUpdate();
+						updated[u] = true;
+					}
 				}
 			}
 		};
