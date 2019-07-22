@@ -397,7 +397,7 @@ const _filter = (datas,dir, user) => {
           if(isArray(val)){
             val = map(val, (v) => v + loff);
           }else{
-            val += loff;
+            val = mm.add(val,loff);
           }
         }
   
