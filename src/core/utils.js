@@ -138,7 +138,7 @@ export function measure(gid, debug){
 				return { width, height };
 			},
 			cadratin: (props) => {
-				const { titleFSize } = props;
+				const { titleFSize } = props.titleProps;
 
 				const places = {left: 'ord', right: 'ord', bottom: 'abs', top: 'abs'};
 
