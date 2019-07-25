@@ -32,13 +32,15 @@ let processPeriod = function(per, fac){
 		period = _makePeriod(moment.duration(per));
 	}
 
-	for(let t in _period){
-		if(per[t] === null || per[t] === undefined){
-			period[t] = 0;
-		}else{
-			period[t] = per[t] * fac;
+  if(typeof per === 'object'){
+		for(let t in _period){
+			if(per[t] === null || per[t] === undefined){
+				period[t] = 0;
+			}else{
+				period[t] = per[t] * fac;
+			}
 		}
-	}
+  }
 
 	period.total = per.total === null || per.total === undefined ? moment.duration(period).asDays() : per.total * fac ;
 
