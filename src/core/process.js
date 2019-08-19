@@ -242,7 +242,7 @@ const addDefaultDrop = function(serie, dir, ds, after){
 
 const copySerie = function(serie){
 
-	return map(serie, (point,idx) => {
+	return serie.map( (point,idx) => {
 		const xstr = utils.isString(point.x);
 		const ystr = utils.isString(point.y);
 		let raw = {
@@ -371,7 +371,7 @@ const addOffset = function(series,stacked){
 	}
 };
 
-const makeSpan = function(series,data){
+const makeSpan = function(series,data,rev){
 
 	const spanSer = (barType) => {
 
@@ -423,7 +423,7 @@ const makeSpan = function(series,data){
 			}
 		});
 
-		each(out, (serie,idx) => serie ? spanDiv(serie,n,idx,oidx[idx]) : null );
+		each(out, (serie,idx) => serie ? spanDiv(serie,n,idx,rev ? n - oidx[idx] : oidx[idx]) : null );
 	};
 
 	spanSer('Bars');
@@ -502,7 +502,7 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 			// offset from stacked
 		addOffset(state.series, props.data.map( ser => ser.stacked ));
 			// span and offset from Bars || yBars
-		makeSpan(state.series, props.data.map( (ser,idx) => {return {type: ser.type, span: props.graphProps[idx].span};}));
+		makeSpan(state.series, props.data.map( (ser,idx) => {return {type: ser.type, span: props.graphProps[idx].span};}), props.drawing === 'reverse');
 			// offset from Stairs
 		lOffset = props.data.map( (p,idx) => p.type === 'Stairs' ? offStairs(state.series[idx],props.graphProps[idx]) : null);
 
@@ -639,7 +639,8 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 		width: props.width,
 		height: props.height,
 		axisOnTop: props.axisOnTop,
-		css: props.css
+		css: props.css,
+		order: props.drawing
 	};
 
 	// 1 - cadre

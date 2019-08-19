@@ -244,6 +244,8 @@ export function Graph(axis){
 		outerMargin: {left: null, bottom: null, right: null, top: null}, // left, bottom, right, top
 		// data process, what to do with failed points
 		discard: true,
+		// curves order
+		drawing: 'default', // "default", "reverse" to reverse curves order
 
 		////// cadre
     cadre: {

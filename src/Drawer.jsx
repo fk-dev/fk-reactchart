@@ -32,12 +32,15 @@ export default class Drawer extends React.Component {
 
 	orderAG(){
 		const { state } = this.props;
+		const { order } = state;
+		const idx = order === 'default' ? i => i : (i,n) => n - 1 - i;
+		const curves = order === 'default' ? state.curves : state.curves.concat().reverse();
 		return state.axisOnTop === true ? <g>
-			{state.curves.map( (curve, gIdx) => grapher(curve.type,curve, { gIdx }))}
+			{curves.map( (curve, i) => grapher(curve.type,curve, { gIdx: idx(i,curves.length) }))}
 			<Axes state={state.axes}/>
 		</g> : <g>
 			<Axes state={state.axes}/>
-			{state.curves.map( (curve, gIdx) => grapher(curve.type,curve, { gIdx }))}
+			{curves.map( (curve, i) => grapher(curve.type,curve, { gIdx: idx(i,curves.length) }))}
 		</g>;
 	}
 
