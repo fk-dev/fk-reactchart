@@ -72,7 +72,7 @@ const curve = function(get, { spaces, serie, data, gprops, idx, css, mgrId  }){
 			const gtype = data.type || 'Plain';
 
 			// positions are offsetted here
-			const positions = map(serie, (point) => {
+			const positions = serie.map( point => {
 
 				const mgr = {
 					x: typeMgr(point.x),
@@ -299,10 +299,10 @@ export let curvesVM = {
 	create: (get, { props, state, mgrId } ) => {
 
 		const { spaces } = state;
-		return map(state.series, (serie,idx) => {
+		return state.series.map( (serie,idx) => {
 			const data   = props.data[idx];
 			const gprops = props.graphProps[idx];
-      const { css } = props;
+			const { css } = props;
 			return curve(() => get()[idx], { spaces, serie, data, gprops, idx, css, mgrId });
 		});
 	}
