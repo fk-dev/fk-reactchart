@@ -423,7 +423,7 @@ const makeSpan = function(series,data,rev){
 			}
 		});
 
-		each(out, (serie,idx) => serie ? spanDiv(serie,n,idx,rev ? n - oidx[idx] : oidx[idx]) : null );
+		each(out, (serie,idx) => serie ? spanDiv(serie,n,idx,rev ? n - oidx[idx] - 1 : oidx[idx]) : null );
 	};
 
 	spanSer('Bars');
