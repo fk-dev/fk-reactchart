@@ -16,7 +16,7 @@ export function isDate(v){ return v && (v instanceof Date || isPeriod(v));}
 
 export function isArray(v){ return v && Array.isArray(v);}
 
-export function isString(v){ return v && typeof v === 'string';}
+export function isString(v){ return !isNil(v) && typeof v === 'string';}
 
 export function isNil(v){ return v === null || v === undefined;}
 
