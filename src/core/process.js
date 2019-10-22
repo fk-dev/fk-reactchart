@@ -243,8 +243,8 @@ const addDefaultDrop = function(serie, dir, ds, after){
 const copySerie = function(serie){
 
 	return serie.map( (point,idx) => {
-		const xstr = utils.isString(point.x);
-		const ystr = utils.isString(point.y);
+		const xstr = utils.isString(point.x) && !utils.isDate(point.y);
+		const ystr = utils.isString(point.y) && !utils.isDate(point.x);
 		let raw = {
 			x: xstr ? idx : point.x,
 			y: ystr ? idx : point.y,
