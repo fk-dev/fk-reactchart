@@ -91,15 +91,14 @@ const computeTicks = function(first, last, step, { majAuto, majLabelize, spaceFa
 		minDist.offset = mStep.offset;
 	}
 
-// redefine start to have the closest rounded value if needed
-	start = starter(majDist);
-
 	length = mgr.distance(start,last);
 	//const llength = mgr.getValue(mgr.multiply(majDist,mgr.labelF)) * toPixel;
 
 	let tries = [majDist];
 	const tickerBuilder = (n) => {
 		let out = [];
+// redefine start to have the closest rounded value if needed
+		start = starter(majDist);
 		let curValue = start;
 		let along = mgr.offset(majDist);
 	// careful for infinite looping
