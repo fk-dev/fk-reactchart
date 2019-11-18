@@ -115,15 +115,15 @@ const roundDownPeriod = function(p){
 		out = make('years',Math.max(floor(p.years)/10,1));
 	}else if(p.total > moment.duration({years: 1}).asDays()){
 		out = make('years',1);
-	}else if(p.total >= moment.duration({months: 6}).asDays()){
+	}else if(p.total > moment.duration({months: 6}).asDays()){
 		out = make('months', 6);
-	}else if(p.total >= moment.duration({months: 3}).asDays()){
+	}else if(p.total > moment.duration({months: 3}).asDays()){
 		out = make('months', 3);
-	}else if(p.total >= moment.duration({months: 1}).asDays()){
+	}else if(p.total > moment.duration({months: 1}).asDays()){
 		out = make('months', 1);
-	}else if(p.total >= moment.duration({weeks: 2}).asDays()){
+	}else if(p.total > moment.duration({weeks: 2}).asDays()){
 		out = make('weeks', 2);
-	}else if(p.total >= moment.duration({weeks: 1}).asDays()){
+	}else if(p.total > moment.duration({weeks: 1}).asDays()){
 		out = make('weeks', 1);
 	}else{
 		out = make('days', 1);
