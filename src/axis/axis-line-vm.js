@@ -102,7 +102,8 @@ export function vm(ds,props,partnerDs,dir, motherCss, measurer){
 		css,
 		label: props.label,
 		FSize: props.labelFSize,
-		LLength: 10,
+		LLength: props.labelFSize * 2/3 * props.label.length,
+		LHeight: props.labelFSize,
 		anchor: props.labelAnchor,
 		color: props.labelColor,
 		dir: {
@@ -119,7 +120,9 @@ export function vm(ds,props,partnerDs,dir, motherCss, measurer){
 	};
 
 	// & anchoring the text
-	const { height } = lengthOfText(label.label,label.FSize);
+	const { height, width } = lengthOfText(label.label,label.FSize);
+	label.LHeight = height;
+	label.LLength = width;
 	const defOff = props.marginOff;
 
 	const offsetLab = (() => {
