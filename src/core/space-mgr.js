@@ -299,7 +299,7 @@ const computeOuterMargin = (where, limits, axis, measure, title ) => {
 // axis label
 
   let labelLength = 0;
-  if(!axis.empty && axis.label.length){
+  if(axis.label.length){
     const cN = axis.css ? `axis-label-${where}` : '';
     const { label, labelFSize, labelRotate } = axis;
     const {width, height} = measureText(label, labelFSize, cN);
