@@ -40,7 +40,7 @@ const marksVM = {
 	BAR:        barVM
 };
 
-const curve = function(get, { spaces, serie, data, gprops, idx, css, mgrId  }){
+const curve = function(get, { spaces, serie, data, gprops, idx, css, mgrId, onSelect, unSelect }){
 
 			// 1 - find ds: {x: , y:}
 			// common to everyone
@@ -83,8 +83,8 @@ const curve = function(get, { spaces, serie, data, gprops, idx, css, mgrId  }){
 				const offy = isNil(point.offset.y) ? 0 : point.offset.y;
 
 				let out = {
-					x: mgr.x.add(point.x,offx),
-					y: mgr.y.add(point.y,offy),
+					x: isNil(point.x) ? null : mgr.x.add(point.x,offx),
+					y: isNil(point.y) ? null : mgr.y.add(point.y,offy),
 					drop: {
 						x: isNil(point.drop.x) ? null : mgr.x.add(point.drop.x,offx),
 						y: isNil(point.drop.y) ? null : mgr.y.add(point.drop.y,offy),
@@ -133,16 +133,24 @@ const curve = function(get, { spaces, serie, data, gprops, idx, css, mgrId  }){
 			});
 
 
+			const selectMark = (iMark,data) => {
+				onSelect(data,idx);
+				get().marks.forEach( (m,i) => i !== iMark ? get().marks[i].mark.unselect() : null);
+			};
+			const unSelectAll = () => get().marks.forEach( (m,i) => get().marks[i].mark.unselect());
+			const unSelectMe  = () => get().marks.forEach( (m,i) => get().marks[i].mark.unselect());
+
 			const isBar = (type) => type.search('Bars') >= 0 || type.search('bars') >= 0;
 
 			const graphKey = gtype + '.' + idx;
 			const mtype = isBar(gtype) ? 'bar' : gprops.markType || 'dot';
-			const mprops = gprops.mark ? (data.drawing === 'reverse' ? positions.reverse() : positions).map( (pos,midx) => {
+			const mprops = gtype !== 'Pie' && gprops.mark ? (data.drawing === 'reverse' ? positions.reverse() : positions).map( (pos,midx) => {
 				const markKey = `${graphKey}.${mtype[0]}.${midx}`;
+				const selectMyMark = (data) => selectMark(midx,data);
 				return {
 					key: markKey,
-					mark: marksVM[mtype.toUpperCase()].create(() => get().marks[midx], { position: pos, props: gprops, ds, motherCss: css}), 
-					pin: pinVM.create(() => get().marks[midx], {pos, tag: gprops.tag, ds, motherCss: css, dir: gtype.startsWith('y') ? 'y' : 'x' }) 
+					mark: marksVM[mtype.toUpperCase()].create(() => get().marks[midx].mark, { position: pos, props: gprops, ds, motherCss: css, onSelect: selectMyMark, unSelect, curveIdx: idx }), 
+					pin: pinVM.create(() => get().marks[midx].pin, {pos, tag: gprops.tag, ds, motherCss: css, dir: gtype.startsWith('y') ? 'y' : 'x' }) 
 				};
 			}) : [];
 
@@ -150,10 +158,12 @@ const curve = function(get, { spaces, serie, data, gprops, idx, css, mgrId  }){
 				css: css || gprops.css || mprops.reduce( (memo,mp) => memo || mp.mark.css || (mp.pin && mp.pin.css), false),
 				key: graphKey,
 				type: gtype,
-				path: gprops.onlyMarks && !isBar(gtype)? {show: false} : graphVM[gtype.toUpperCase()].create(() => get().path, { serie: positions, props: gprops, ds, motherCss: css }),
+				path: gprops.onlyMarks && !isBar(gtype)? {show: false} : graphVM[gtype.toUpperCase()].create(() => get().path, { serie: positions, props: gprops, ds, motherCss: css, onSelect, unSelect, curveIdx: idx }),
 				markType: mtype,
 				marks: mprops,
-				show: gprops.show
+				show: gprops.show,
+				unSelectAll,
+				unSelectMe
 			};
 };
 
@@ -296,14 +306,21 @@ export let axesVM = {
 
 export let curvesVM = {
 
-	create: (get, { props, state, mgrId } ) => {
+	create: (get, { props, state, mgrId, onSelect, unSelect } ) => {
+
+		const vm = get;
+
+		const onSelectOneCurve = (data,ic) => {
+			onSelect(data);
+			vm().forEach( (c,i) => i === ic ? null : c.unSelectMe());
+		};
 
 		const { spaces } = state;
 		return state.series.map( (serie,idx) => {
 			const data   = props.data[idx];
 			const gprops = props.graphProps[idx];
 			const { css } = props;
-			return curve(() => get()[idx], { spaces, serie, data, gprops, idx, css, mgrId });
+			return curve(() => get()[idx], { spaces, serie, data, gprops, idx, css, mgrId, onSelect: onSelectOneCurve, unSelect });
 		});
 	}
 

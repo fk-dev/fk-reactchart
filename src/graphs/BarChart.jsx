@@ -16,7 +16,7 @@ export default class BarChart extends React.Component {
 	}
 
 	render() {
-		const { state, gIdx } = this.props;
+		const { state, gIdx, selectable } = this.props;
 		const opts = { gIdx };
 		const { marks, css } = state;
 
@@ -25,7 +25,7 @@ export default class BarChart extends React.Component {
 		}
 
 		return <g className={ css ? 'barchart' : null }>
-			{marks.map( (bar,i) => <Mark {...opts} index={i} key={bar.key} state={bar} type='bar'/>)}
+			{marks.map( (bar,i) => <Mark {...opts} index={i} key={bar.key} selectable={selectable} state={bar} type='bar'/>)}
 		</g>;
 	}
 }

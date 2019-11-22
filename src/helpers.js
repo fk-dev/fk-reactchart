@@ -51,12 +51,13 @@ export function init(rawProps, type, Obj, debug){
 		};
 
 
-		// direct delete: updatee, updated, keys, pointsTo, invPointsTo
+		// direct delete: updatee, updated, keys, pointsTo, invPointsTo, freezer
 		_del(keys);
 		delete updatee[k];
 		delete updated[k];
 		delete pointsTo[k];
 		delete invPointsTo[k];
+		delete freezer[k];
 		// indirect: invPointsTo
 		if(ik){
 			_del(invPointsTo[ik]);
@@ -68,8 +69,6 @@ export function init(rawProps, type, Obj, debug){
 	const isALegend = key => key.startsWith('l.') && keys.indexOf(key.substring(2)) !== -1;
 
 	const updateDeps = (key) => {
-
-
 		const updateDef = () => {// look for 'em
 			for(let u in pointsTo){
 				if(pointsTo[u] === '_def'){
@@ -144,7 +143,7 @@ export function init(rawProps, type, Obj, debug){
 	};
 
 	const vmPointsTo = (k,p) => {
-		if(k !== p){
+		if(k !== p && p !== '_def'){
 			// all that points to k now points to p
 			for(let u in pointsTo){
 				if(pointsTo[u] === k){
@@ -277,6 +276,13 @@ export function init(rawProps, type, Obj, debug){
 		}
 	};
 
+	const checkDone = k => {
+		if(_atDone[k]){
+			_atDone[k]();
+			delete _atDone[k];
+		}
+	};
+
 	// id
 		// getter
 	rc.isUpdated = (key) => updated[key];
@@ -298,15 +304,18 @@ export function init(rawProps, type, Obj, debug){
 		}
 		if(!freezer[k] && k !== '_def' && keys.indexOf(key) !== -1){
 			_process(() => freezer[k].get(), props, rc.__mgrId, () => rc.getLengthes(k), (err, imVM) => {
+				if(obj && obj.props.onSelect){
+					imVM.outSelect = obj.props.onSelect;
+				}
+				if(obj && obj.props.onUnselect){
+					imVM.outUnselect = obj.props.onUnselect;
+				}
 				freezer[k] = freeze(imVM);
 				freezer[k].on('update',() => updateDeps(k)); // last
 				if(obj){
 					rc.updateGraph(obj, key);
 				}
-				if(_atDone[k]){
-					_atDone[k]();
-					delete _atDone[k];
-				}
+				checkDone(k);
 			});
 		}else if(obj){
 			rc.updateGraph(obj, key);
@@ -345,7 +354,9 @@ export function init(rawProps, type, Obj, debug){
 		}
 	};
 
-	rc.onGraphDone = (key,fct) => {_atDone[key] = fct;};
+	rc.onGraphDone = (key,fct) => {
+		_atDone[key] = fct;
+	};
 
 	// utils
 	rc.defaults = (p) => defaultTheProps(p || props);

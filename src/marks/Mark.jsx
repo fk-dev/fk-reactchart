@@ -13,8 +13,8 @@ export default class Mark extends React.Component {
 	}
 
 	mark(state){
-		const { css, gIdx, type, index } = this.props;
-		const opts = {css, gIdx, index };
+		const { css, gIdx, type, index, selectable } = this.props;
+		const opts = {css, gIdx, index, selectable };
 		switch(type){
 			case 'square':
 			case 'Square':

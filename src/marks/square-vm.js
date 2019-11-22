@@ -1,7 +1,9 @@
 import { isNil } from '../core/utils.js';
 
 export const vm = {
-	create: (get, { position, props, ds, key, open, motherCss }) => {
+	create: (get, { position, props, ds, key, open, motherCss, onSelect, unSelect, curveIdx }) => {
+
+		const vm = get;
 
 		const draw  = props.markProps.draw || position.draw         || false;
 		const color = position.color       || props.markProps.color || props.markColor || props.color || 'black';
@@ -11,8 +13,18 @@ export const vm = {
 		const css    = isNil(props.css) ? motherCss : props.css;
 
 		const fill  = open ? 'none' : position.fill || props.markProps.fill || color;
+
+		const onClick = () => {
+			vm().set('selected', !vm().selected);
+			let out = position;
+			out.serieIdx = curveIdx;
+			return vm().selected ? onSelect(out) : unSelect();
+		};
+	
 	
 		return {
+			selected: false,
+			unselect: () => vm().set('selected',false),
 			open,
 			key,
 			css,
@@ -26,15 +38,16 @@ export const vm = {
 			width,
 			fill,
 			size,
-			shade
+			shade,
+			onClick
 		};
 	}
 };
 
 
 export const ovm = {
-	create: (get, { position, props, ds, key, motherCss } ) => {
+	create: (get, { position, props, ds, key, motherCss, onSelect, unSelect } ) => {
 		props.markProps.draw = true;
-		return vm.create(get, { position, props, ds, key, open: true, motherCss });
+		return vm.create(get, { position, props, ds, key, open: true, motherCss, onSelect, unSelect });
 	}
 };

@@ -29,7 +29,7 @@ export default class DotMark extends React.Component {
 	}
 
 	render(){
-		const { gIdx, state, index } = this.props;
+		const { gIdx, state, index, selectable } = this.props;
 		const { ds, position, size, color, radius, fill, shade, width, css, open } = state;
 
 		const x = toC(ds.x,position.x);
@@ -39,6 +39,11 @@ export default class DotMark extends React.Component {
 
 		const cProps = { r: r, fill: f, opacity: shade, stroke: color, strokeWidth: width };
 
-		return <circle className={css ? `mark mark-${gIdx} mark-${gIdx}-${index}${open ? ' open': ''}` : ''} cx={x} cy={y} {...cProps}/>;
+		const click = selectable ? () => {
+			return state.onClick();
+		} : null;
+		const circ = () => <circle onClick={click} className={css ? `mark mark-${gIdx} mark-${gIdx}-${index}${open ? ' open': ''}` : ''} cx={x} cy={y} {...cProps}/>;
+
+		return state.selected ? <g className='selected'>{circ()}</g>: circ();
 	}
 }

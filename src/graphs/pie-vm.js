@@ -3,17 +3,21 @@ import { toC, toCwidth} from '../core/space-transf.js';
 import { isNil } from '../core/utils.js';
 import { shader } from '../core/colorMgr.js';
 
-export let vm = {
+export const vm = {
 
-	create: function(get, { serie, props, ds }){
+	create: function(get, { serie, props, ds, onSelect, unSelect }){
 
-		let sum	= reduce(serie, (memo, value) => memo + value.value, 0);
-		let positions = map(serie, (point,idx) => {return {
-			value: Math.max(Math.min(point.value/sum * 360,360),0),
-			color: point.color || shader(idx)
-		};});
+		const vm = get;
 
-		let origin = {
+		const sum	= reduce(serie, (memo, value) => memo + value.value, 0);
+		const positions = map(serie, (point,idx) => {
+			return {
+				value: Math.max(Math.min(point.value/sum * 360,360),0),
+				color: point.color || shader(idx)
+			};
+		});
+
+		const origin = {
 			x: toC(ds.x, props.pieOrigin.x + (ds.x.d.max + ds.x.d.min)/2),
 			y: toC(ds.y, props.pieOrigin.y + (ds.y.d.max + ds.y.d.min)/2)
 		};
@@ -23,11 +27,22 @@ export let vm = {
 			labels = map(serie, (val) => props.tag.print(val));
 		}
 
-		let maxR = Math.min( toCwidth(ds.x,ds.x.d.max - ds.x.d.min) / 2, toCwidth(ds.y,ds.y.d.max - ds.y.d.min) / 2);
+		const maxR = Math.min( toCwidth(ds.x,ds.x.d.max - ds.x.d.min) / 2, toCwidth(ds.y,ds.y.d.max - ds.y.d.min) / 2);
 
-		let radius = isNil(props.pieRadius) ? maxR : Math.min(maxR,props.pieRadius);
+		const radius = isNil(props.pieRadius) ? maxR : Math.min(maxR,props.pieRadius);
+
+		const onClick = (p) => {
+			vm().set('selected',p === vm().selected ? null : p);
+			let position = serie[p];
+			position.tag = labels[p];
+			position.rel = ( positions[p].value / 360 * 100).toFixed(2);
+			return !isNil(vm().selected) ? onSelect(position) : unSelect();
+		};
 
 		return {
+			selected: null,
+			unselect: () => vm().set('selected',null),
+			isSelected: p => p === vm().selected,
 			ds,
 			fill: props.pie !== 'tore',
 			positions,
@@ -39,7 +54,8 @@ export let vm = {
 			pinLength: props.tag.pinLength * radius,
 			pinHook: props.tag.pinHook,
 			pinDraw: props.tag.pin,
-			pinFontSize: props.tag.fontSize
+			pinFontSize: props.tag.fontSize,
+			onClick
 		};
 	}
 };

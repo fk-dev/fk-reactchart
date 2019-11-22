@@ -633,14 +633,40 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 ////
 
 
+//// events
+
+	const onSelect = (data) => {
+		getNode().set('selected', true);
+		if(getNode().outSelect){
+			getNode().outSelect(data);
+		}
+	};
+	const unSelect = () => {
+		getNode().set('selected',false);
+		if(getNode().outUnselect){
+			getNode().outUnselect();
+		}
+	};
+	const unSelectAll = () => {
+		unSelect();
+		getNode().curves.forEach(c => c.unSelectAll());
+	};
+
 	//now to immutable VM
 	let imVM = {
+		setSelection: fct => getNode().set('outSelect',fct),
+		unsetSelection: () => getNode().set('outSelect',null),
+		setUnselection: fct => getNode().set('outUnselect',fct),
+		unsetUnselection: () => getNode().set('outUnselect',null),
 		relative: props.relative,
 		width: props.width,
 		height: props.height,
 		axisOnTop: props.axisOnTop,
 		css: props.css,
-		order: props.drawing
+		order: props.drawing,
+		onSelect,
+		unSelect,
+		unSelectAll
 	};
 
 	// 1 - cadre
@@ -667,7 +693,7 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 	imVM.axes = axesVM.create(() => getNode().axes, { props, state, measurer: getMeasurer(), motherCss: props.css});
 
 	// 6 - Curves
-	imVM.curves = curvesVM.create(() => getNode().curves, { props, state, mgrId } );
+	imVM.curves = curvesVM.create(() => getNode().curves, { props, state, mgrId, onSelect, unSelect } );
 
 	// 7 - legend
 	imVM.legend = legendVM.create(() => getNode().legend, { props, mgrId } );
