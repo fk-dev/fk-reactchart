@@ -31,16 +31,16 @@ export default class Drawer extends React.Component {
 	}
 
 	orderAG(){
-		const { state, selectable } = this.props;
+		const { state } = this.props;
 		const { order } = state;
 		const idx = order === 'default' ? i => i : (i,n) => n - 1 - i;
 		const curves = order === 'default' ? state.curves : state.curves.concat().reverse();
 		return state.axisOnTop === true ? <g>
-			{curves.map( (curve, i) => grapher(curve.type,curve, { gIdx: idx(i,curves.length), selectable }))}
+			{curves.map( (curve, i) => grapher(curve.type,curve, { gIdx: idx(i,curves.length)}))}
 			<Axes state={state.axes}/>
 		</g> : <g>
 			<Axes state={state.axes}/>
-			{curves.map( (curve, i) => grapher(curve.type,curve, { gIdx: idx(i,curves.length), selectable }))}
+			{curves.map( (curve, i) => grapher(curve.type,curve, { gIdx: idx(i,curves.length)}))}
 		</g>;
 	}
 
@@ -70,7 +70,7 @@ export default class Drawer extends React.Component {
 			{width: '100%', height: '100%', viewBox} : 
 				{width: width, height: height};
 
-		const svg = () => <svg {...size} id={this.props.id}  data={this.props.mgrId} className={this.props.className} style={style}>
+		return <svg {...size} id={this.props.id}  data={this.props.mgrId} className={`${this.props.className}${state.selected ? ' selected' : ''}`} style={style}>
 			{ state.gradient ? <defs>{state.gradient.print( (x,id) => <Gradienter key={`grad.${id}`} state={x}/>)}</defs> : null}
 			{ state.cadre.show ? <Cadre state={state.cadre} width={state.width} height={state.height}/> : null }
 			{ state.background.show ? <Background state={state.background}/>  : null }
@@ -81,7 +81,5 @@ export default class Drawer extends React.Component {
 			{ this.empty(state) }
 			<Measurer id={this.props.id}/>
 		</svg>;
-
-		return state.selected ? <div className='selected'>{svg()}</div> : svg();
 	}
 }

@@ -9,7 +9,7 @@ export default class Pie extends React.Component {
 	}
 
 	render(){
-		const { state, selectable } = this.props;
+		const { state } = this.props;
 		const { path, css } = state;
 		const { labels, positions, 
 			pinRadius, pinLength, pinHook, pinDraw, pinFontSize, 
@@ -27,7 +27,7 @@ export default class Pie extends React.Component {
 	//	let x = abs(oldT,radius,origin);
 	//	let y = coo(oldT,radius,origin);
 
-		const pieClass = p => css ? `mark mark-${p}` : '';
+		const pieClass = p => `${css ? `mark mark-${p}` : ''}${state.path.isSelected(p) ? ' selected' : ''}`;
 
 		for(let p = 0; p < positions.length; p++){
 
@@ -47,12 +47,7 @@ export default class Pie extends React.Component {
 			const laf = theta > 180 ? 1 : 0;
 			const path = `M${x1},${y1} L${x2},${y2} A${radius},${radius} 0 ${laf},0 ${x3},${y3} L ${x4},${y4} A${toreRadius},${toreRadius} 0 ${laf},1 ${x1},${y1}`;
 
-			const click = selectable ? () => {
-				return state.path.onClick(p);
-			} : null;
-			const piece = () => <path className={pieClass(p)} onClick={click} key={p} fill={color} stroke='none' strokeWidth='0' d={path}/>;
-
-			out.push(state.path.isSelected(p) ? <g key={`g.${p}`} className='selected'>{piece()}</g> : piece());
+			out.push(<path className={pieClass(p)} onClick={() => state.path.onClick(p)} key={p} fill={color} stroke='none' strokeWidth='0' d={path}/>);
 
 			if(label){
 				const curAng = theta / 2 + oldT;

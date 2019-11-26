@@ -96,7 +96,7 @@ export default class Graph extends React.Component {
 		const state = this.sh && this.sh.ready() ? this.sh.get(this.myKey) : emptyState;
 		const cn = this.props.namespace || ( this.sh ? this.sh.getNamespace() : 'reactchart' );
 		const mgrId = this.sh ? this.sh.__mgrId : 'noMgr';
-		return <Drawer id={this.myKey} mgrId={mgrId} state={state} selectable={this.props.selectable} className={cn} overflow={this.props.overflow} debug={this.showIds()}/>;
+		return <Drawer id={this.myKey} mgrId={mgrId} state={state} className={cn} overflow={this.props.overflow} debug={this.showIds()}/>;
 	}
 }
 

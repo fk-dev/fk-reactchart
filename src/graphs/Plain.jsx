@@ -18,8 +18,8 @@ export default class PlainChart extends React.Component {
 	}
 
 	render(){
-		const { state, gIdx, selectable } = this.props;
-		const opts = { gIdx, selectable };
+		const { state, gIdx } = this.props;
+		const opts = { gIdx };
 		const { marks, path, markType, css } = state;
 		return marks.length === 0 ? <Path className={ css ? 'plain' : ''} {...opts} state={path}/> : <g className={ css ? 'plain' : ''}>
 			<Path {...opts} state={path}/>

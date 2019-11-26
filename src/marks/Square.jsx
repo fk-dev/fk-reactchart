@@ -28,7 +28,7 @@ export default class SquareMark extends React.Component {
 	}
 
 	render(){
-		const { gIdx, state, index, selectable } = this.props;
+		const { gIdx, state, index } = this.props;
 		const { ds, position, size, fill, color, shade, width, css, open } = state;
 
 		const x = toC(ds.x,position.x) - size;
@@ -37,12 +37,6 @@ export default class SquareMark extends React.Component {
 
 		const rectProps = { width: 2 * size, height: 2 * size, fill: f, opacity: shade, stroke: color, strokeWidth: width };
 
-		const click = selectable ? () => {
-			return state.onClick();
-		} : null;
-
-		const rect = () => <rect onClick={click} className={css ? `mark mark-${gIdx} mark-${gIdx}-${index}${open ? ' open' : ''}` : ''} x={x} y={y} {...rectProps}/>;
-
-		return state.selected ? <g className='selected'>{rect()}</g>: rect();
+		return <rect onClick={state.onClick} className={`${css ? `mark mark-${gIdx} mark-${gIdx}-${index}${open ? ' open' : ''}` : ''}${state.selected ? ' selected' : ''}`} x={x} y={y} {...rectProps}/>;
 	}
 }

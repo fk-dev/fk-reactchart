@@ -34,7 +34,7 @@ export default class BarMark extends React.Component {
 
 	render() {
 
-		const { state, gIdx, index, selectable } = this.props;
+		const { state, gIdx, index } = this.props;
 
 		const mgr = {
 			x: typeMgr(state.position.x),
@@ -83,9 +83,6 @@ export default class BarMark extends React.Component {
 		const { strokeWidth, shade, css } = state;
 		const rProps = { height, width, stroke, strokeWidth, fill: color, opacity: shade };
 
-		const click = selectable ? () => state.onClick() : null;
-		const rect = () => <rect onClick={click} className={css ? `mark mark-${gIdx} mark-${gIdx}-${index}` : ''} x={x} y={y} {...rProps}/>; 
-
-		return state.selected ? <g className='selected'>{rect()}</g>: rect();
+		return <rect onClick={state.onClick} className={`${css ? `mark mark-${gIdx} mark-${gIdx}-${index}` : ''}${state.selected ? ' selected' : ''}`} x={x} y={y} {...rProps}/>; 
 	}
 }
