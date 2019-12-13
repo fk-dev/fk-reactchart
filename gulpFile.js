@@ -1,7 +1,8 @@
 var gulp = require('gulp');
 // js
 var browserify = require('browserify');
-var uglify     = require('gulp-uglify');
+//var uglify     = require('gulp-uglify');
+var terser     = require('gulp-terser');
 var header     = require('gulp-header');
 var replace    = require('gulp-replace');
 
@@ -111,7 +112,11 @@ gulp.task('min', function(){
       .bundle()
       .pipe(source('reactchart.min.js'))
       .pipe(buffer())
-      .pipe(uglify())
+      .pipe(terser({
+        output: {
+          comments: false
+        }
+      }))
       .pipe(header(headerTxt))
       .pipe(gulp.dest('./dist'));
   
