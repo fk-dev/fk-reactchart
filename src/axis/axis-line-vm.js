@@ -34,7 +34,7 @@ import { direction, isNil } from '../core/utils.js';
 	}
 */
 
-export function vm(ds,props,partnerDs,dir, motherCss, measurer){
+export function vm(ds,cs, props,partnerDs,dir, motherCss, measurer){
 
 	//// general defs
 	const { measureText } = measurer;
@@ -49,8 +49,6 @@ export function vm(ds,props,partnerDs,dir, motherCss, measurer){
 			CS: ''
 			start: {x,y},
 			end: {x, y},
-			origin: {x,y},
-			radius: {x, y},
 			color: '',
 			width:,
 		},
@@ -63,22 +61,32 @@ export function vm(ds,props,partnerDs,dir, motherCss, measurer){
 		width: true
 	};
 
-	const othdir = dir === 'x' ? 'y' : 'x';
-	line.CS = props.CS;
+	const othdir = dir === 'x' ? 'y' : dir === 'y' ? 'x' : 'polar';
+	line.CS = cs;
 		// cart
-	line.start = {};
-	line.start[dir] = ds.c.min;
-	line.start[othdir] = props.placement === 'right' || props.placement === 'top' ?  partnerDs.c.max : partnerDs.c.min;
-	line.end = {};
-	line.end[dir] = ds.c.max;
-	line.end[othdir] = line.start[othdir];
+	if(cs === 'cart'){
+		line.start = {};
+		line.start[dir] = ds.c.min;
+		line.start[othdir] = props.placement === 'right' || props.placement === 'top' ?  partnerDs.c.max : partnerDs.c.min;
+		line.end = {};
+		line.end[dir] = ds.c.max;
+		line.end[othdir] = line.start[othdir];
 		// polar
-	line.origin = {};
-	line.origin[dir] = (ds.c.min + ds.c.max) / 2;
-	line.origin[othdir] = (partnerDs.c.min + partnerDs.c.max) / 2;
-	line.radius = {};
-	line.radius[dir] = Math.abs(ds.c.max - ds.c.min) / 2;
-	line.radius[othdir] = Math.abs(partnerDs.c.max - partnerDs.c.min) / 2;
+	}else{
+		const lines = props.dim.map( ({theta}) => {
+			const x = ds.c.origin.x + ds.c.max * Math.cos(theta);
+			const y = ds.c.origin.y + ds.c.max * Math.sin(theta);
+			return {
+				start: {
+					x: ds.c.origin.x,
+					y: ds.c.origin.y
+				},
+				end: { x, y }
+			};
+		});
+		line.start = lines.map(x => x.start);
+		line.end   = lines.map(x => x.end);
+	}
 
 	for(let u in tmp){
 		line[u] = props[u];
@@ -99,12 +107,12 @@ export function vm(ds,props,partnerDs,dir, motherCss, measurer){
 
 	const lineDir = direction(line);
 	let label = {
+		cs,
 		css,
-		label: props.label,
+		label: cs === 'polar' ? props.dim.map(x => x.label) : props.label,
 		FSize: props.labelFSize,
 		LLength: props.labelFSize * 2/3 * props.label.length,
 		LHeight: props.labelFSize,
-		anchor: props.labelAnchor,
 		color: props.labelColor,
 		dir: {
 			x: Math.sqrt(lineDir.x / lineDir.line),
@@ -116,7 +124,9 @@ export function vm(ds,props,partnerDs,dir, motherCss, measurer){
 
 	label.position = {
 		x: (line.end.x + line.start.x)/2,
-		y: (line.end.y + line.start.y)/2
+		y: (line.end.y + line.start.y)/2,
+		r: ds.c.max,
+		theta: props.dim ? props.dim.map(x => x.theta) : null
 	};
 
 	// & anchoring the text
@@ -125,8 +135,8 @@ export function vm(ds,props,partnerDs,dir, motherCss, measurer){
 	label.LLength = width;
 	const defOff = props.marginOff;
 
-	const offsetLab = (() => {
-		switch(props.placement){
+	const placer = (pl) => {
+		switch(pl){
 			case 'top':
 				return {
 					x: 0,
@@ -147,19 +157,74 @@ export function vm(ds,props,partnerDs,dir, motherCss, measurer){
 					x: height + defOff,
 					y: 0
 				};
+			case 'r':
+				return {
+					x: height + defOff,
+					y: 0
+				};
 			default:
 				throw new Error('Where is this axis: ' + props.placement);
 		}
-	})();
+	};
 
-	label.offset = {
+	const anchorer = pl => {
+		switch(pl){
+			case 'top':
+			case 'bottom':
+				return 'middle';
+			case 'left':
+			case 'r':
+				return 'end';
+			case 'right':
+				return 'start';
+			default:
+				throw new Error('Where is this axis: ' + props.placement);
+		}
+	};
+
+	const placeTheta = t => {
+		const rad = a => a / 180 * Math.PI;
+		const places = {
+			right:  { inf: 0,         sup: rad(45), infS: rad(7*45)},
+			bottom:    { inf: rad(45),   sup: rad(3*45)},
+			left:   { inf: rad(3*45), sup: rad(5*45)},
+			top: { inf: rad(5*45), sup: rad(7*45)}
+		};
+
+		for(let u in places){
+			if(places[u].infS){
+				if(places[u].infS <= t){
+					return u;
+				}
+			}
+			if(places[u].inf <= t && places[u].sup > t){
+				return u;
+			}
+		}
+
+		return 'r';
+	};
+
+	const offsetLab = cs === 'polar' ? label.position.theta.map( t => placer(placeTheta(t))) : placer(props.placement);
+
+	label.offset = Array.isArray(offsetLab) ? offsetLab.map( off => {
+		return {
+			x: off.x + props.labelOffset.x,
+			y: off.y + props.labelOffset.y,
+		};
+	}) : {
 		x: offsetLab.x + props.labelOffset.x,
 		y: offsetLab.y + props.labelOffset.y
 	};
 
+	label.anchor = cs === 'polar' ? label.position.theta.map(t => anchorer(placeTheta(t))) : props.labelAnchor;
+
 	label.ds = {};
 	label.ds[dir] = ds;
 	label.ds[othdir] = partnerDs;
+	if(cs === 'polar'){
+		label.angle = 0;
+	}
 
 /*
 		comFac: {

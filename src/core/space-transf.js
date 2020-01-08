@@ -14,7 +14,7 @@ import { homothe, isNil, toValue } from './utils.js';
  * ds is { c : {min, max}, d: {min,max}, c2d , d2c}
  */
 
-export function toC(ds, data){ return homothe(ds.d.min,ds.c.min,ds.d2c,data);}
+export function toC(ds, data, offset){ return homothe(ds.d.min,ds.c.min,ds.d2c,data) + (offset ? offset : 0);}
 
 export function toCwidth(ds, dist){
 	let d = isNil(dist) ? 1 : toValue(dist);

@@ -340,8 +340,9 @@ export function init(rawProps, type, Obj, debug){
 	// getters
 	const hasAKey       = (key) => key && pointsTo[key] && pointsTo[key] !== '_def' && freezer[pointsTo[key]];
 	rc.mgr              = (key) => hasAKey(key) ? freezer[pointsTo[key]] : checkFreezer();
-	rc.props   = rc.get = (key) => rc.mgr(key).get();
-	rc.unprocessedProps = () => props;
+	rc.props   = rc.get = (key) => rc.mgr(key).get(); // processed props
+	rc.unprocessedProps = () => props; // delfaulted unprocessed props
+	rc.rawProps         = () => rawProps; // raw props
 	rc.legend           = (key) => rc.props(key).legend;
 	// vm manipulation
 	rc.manipAVM         = (todo,key) => key ? freezer[key] ? todo(freezer[key].get,key) : null : todo(checkFreezer().get);
@@ -418,6 +419,7 @@ export function init(rawProps, type, Obj, debug){
 	};
 
 	rc.reinit = (newProps, type) => {
+		rawProps = newProps;
 		// check measurer
 		if(!rc.canMeasure()){
 			rc.setMeasurer();

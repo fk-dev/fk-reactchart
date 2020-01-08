@@ -1,7 +1,6 @@
 import React from 'react';
 import Axe from './axis/Axe.jsx';
 import { isEqual } from './core/im-utils.js';
-import { map } from 'underscore';
 
 /*
 	{
@@ -17,11 +16,15 @@ export default class Axes extends React.Component {
 	}
 
 	abscissa(){
-		return map(this.props.state.abs, (p) => p.show ? <Axe className='xAxis' key={p.key} state={p}/> : null);
+		return this.props.state.abs ? this.props.state.abs.map( p => p.show ? <Axe className='xAxis' key={p.key} state={p}/> : null) : null;
 	}
 
 	ordinate(){
-		return map(this.props.state.ord, (p) => p.show ? <Axe className='yAxis' key={p.key} state={p}/> : null);
+		return this.props.state.ord ? this.props.state.ord.map( p => p.show ? <Axe className='yAxis' key={p.key} state={p}/> : null) : null;
+	}
+
+	polar(){
+		return this.props.state.polar ? this.props.state.polar.map( p => p.show ? <Axe className='rAxis' key={p.key} state={p}/> : null) : null;
 	}
 
 	render(){
@@ -29,6 +32,7 @@ export default class Axes extends React.Component {
 		return <g>
 				{this.abscissa()}
 				{this.ordinate()}
+				{this.polar()}
 			</g>;
 	}
 
