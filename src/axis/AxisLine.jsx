@@ -1,6 +1,6 @@
 import React from 'react';
 import Label from './Label.jsx';
-import { mgr as mgrUtil, direction, isNil, toNumber, deepCp } from '../core/utils.js';
+import { mgr as mgrUtil, direction, isNil, toNumber } from '../core/utils.js';
 import { isEqual } from '../core/im-utils.js';
 import { defMargins } from '../core/proprieties.js';
 
@@ -45,7 +45,7 @@ export default class AxisLine extends React.Component {
 	axis(){
 		const { state, placement } = this.props;
 		const { line } = state;
-		const { css, color, width, CS, start, end } = line;
+		const { css, color, width, CS, start, end, origin, radius } = line;
 
 		const lp = {
 			stroke: color,
@@ -56,11 +56,10 @@ export default class AxisLine extends React.Component {
 			case 'cart':
 				return <line className={css ? `axis-line axis-line-${placement} ${this.props.className}` : ''} {...lp}
 					x1={start.x} x2={end.x} y1={start.y} y2={end.y}/>;
-			case 'polar':{
-				return start.map( ({x, y},i) => <line key={`pol.${i}`} className={css ? `axis-line axis-line-${placement} ${this.props.className}` : ''} {...lp}
-						x1={x} x2={end[i].x} y1={y} y2={end[i].y}/>
-				);
-			}default:
+			case 'polar':
+				return <ellipse className={css ? `axis-line axis-line-${placement} ${this.props.className}` : '' } {...lp}
+					cx={origin.x} cy={origin.y} rx={radius.x} ry={radius.y}/>;
+			default:
 				throw new Error(`Unknown coordinate system: "${this.props.state.CS}"`);
 		}
 	}
@@ -111,32 +110,15 @@ export default class AxisLine extends React.Component {
 		</text>;
 	}
 
-	label(){
-
-		const { state, className, placement } = this.props;
-		const { label } = state;
-
-		const labName = `axis-label axis-label-${placement} ${className}Label`;
-		if(this.props.state.line.CS === "polar"){
-			return label.label.map( (lab,i) => {
-				let cp = deepCp({},label);
-				cp.label = lab;
-				cp.position.theta = cp.position.theta[i];
-				cp.offset = cp.offset[i];
-				cp.anchor = cp.anchor[i];
-				return <Label key={`polar.label.${lab}`} className={labName} state={cp}/>;
-			});
-		}else{
-			return <Label className={labName} state={label}/>;
-		}
-	}
-
 	render(){
+
+		const { className, placement } = this.props;
+		const labName = `axis-label axis-label-${placement} ${className}Label`;
 
 		return this.props.state.show === false ? null : <g>
 			{this.axis()}
 			{this.factor()}
-			{this.label()}
+			<Label className={labName} state={this.props.state.label}/>
 		</g>;
 	}
 

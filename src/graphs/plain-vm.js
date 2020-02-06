@@ -1,8 +1,7 @@
-import { isNil, coord } from '../core/utils.js';
-const { cart } = coord;
+import { isNil } from '../core/utils.js';
 
 export const vm = {
-	create: (get, { serie, props, ds, cs, motherCss }) => {
+	create: (get, { serie, props, ds, motherCss }) => {
 
 		// easy stuff
 		const color = props.color || 'back';
@@ -11,7 +10,12 @@ export const vm = {
 		const shade = props.shade || 1;
 		const css   = isNil(props.css) ? motherCss : css;
 
-		const positions = serie.map( ({ x, y, r, theta }) => 	cs === 'cart' && !isNil(x) ? {x, y} : cart(r,theta));
+		const positions = serie.map( ({ x, y }) => {
+			return {
+				x,
+				y
+			};
+		});
 		const drops = serie.map( ({ drop }) => {
 			const { x, y } = drop;
 			return {
@@ -27,7 +31,6 @@ export const vm = {
 		const dly = props.dropLine.y || false;
 
 		return {
-			cs,
 			ds,
 			css,
 			color,

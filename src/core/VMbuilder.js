@@ -40,7 +40,7 @@ const marksVM = {
 	BAR:        barVM
 };
 
-const curve = function(get, { cs, spaces, serie, data, gprops, idx, css, mgrId, onSelect, unSelect }){
+const curve = function(get, { spaces, serie, data, gprops, idx, css, mgrId, onSelect, unSelect }){
 
 			// 1 - find ds: {x: , y:}
 			// common to everyone
@@ -64,9 +64,8 @@ const curve = function(get, { cs, spaces, serie, data, gprops, idx, css, mgrId, 
 			}
 
 			const ds = {
-				x: spaces.x ? spaces.x[xplace] : null,
-				y: spaces.y ? spaces.y[yplace] : null,
-				r: spaces.r ? spaces.r.r : null
+				x: spaces.x[xplace],
+				y: spaces.y[yplace]
 			};
 
 			// 2 - line of graph
@@ -150,7 +149,7 @@ const curve = function(get, { cs, spaces, serie, data, gprops, idx, css, mgrId, 
 				const selectMyMark = (data) => selectMark(midx,data);
 				return {
 					key: markKey,
-					mark: marksVM[mtype.toUpperCase()].create(() => get().marks[midx].mark, { position: pos, cs, props: gprops, ds, motherCss: css, onSelect: selectMyMark, unSelect, curveIdx: idx }), 
+					mark: marksVM[mtype.toUpperCase()].create(() => get().marks[midx].mark, { position: pos, props: gprops, ds, motherCss: css, onSelect: selectMyMark, unSelect, curveIdx: idx }), 
 					pin: pinVM.create(() => get().marks[midx].pin, {pos, tag: gprops.tag, ds, motherCss: css, dir: gtype.startsWith('y') ? 'y' : 'x' }) 
 				};
 			}) : [];
@@ -159,7 +158,7 @@ const curve = function(get, { cs, spaces, serie, data, gprops, idx, css, mgrId, 
 				css: css || gprops.css || mprops.reduce( (memo,mp) => memo || mp.mark.css || (mp.pin && mp.pin.css), false),
 				key: graphKey,
 				type: gtype,
-				path: gprops.onlyMarks ? {show: false} : graphVM[gtype.toUpperCase()].create(() => get().path, { serie: positions, cs, props: gprops, ds, motherCss: css, onSelect, unSelect, curveIdx: idx }),
+				path: gprops.onlyMarks && !isBar(gtype)? {show: false} : graphVM[gtype.toUpperCase()].create(() => get().path, { serie: positions, props: gprops, ds, motherCss: css, onSelect, unSelect, curveIdx: idx }),
 				markType: mtype,
 				marks: mprops,
 				show: gprops.show,
@@ -170,11 +169,11 @@ const curve = function(get, { cs, spaces, serie, data, gprops, idx, css, mgrId, 
 
 const axis = function(props,state,measurer,axe,dir, motherCss){
 
-	const partnerAxe = axe === 'polar' ? 'polar' : axe === 'abs' ? 'ord' : 'abs';
-	const othdir = axe === 'polar' ? 'r' : dir === 'x' ? 'y' : 'x';
+	const partnerAxe = axe === 'abs' ? 'ord' : 'abs';
+	const othdir = dir === 'x' ? 'y' : 'x';
 
 	// for every abscissa
-	const out = map(state.spaces[dir],(ds,key) => {
+	const out = map(state.spaces[dir], (ds,key) => {
 
 		if(isNil(ds)){
 			return null;
@@ -211,30 +210,15 @@ const axis = function(props,state,measurer,axe,dir, motherCss){
 
 		const { margins } = state.spaces;
 
-		const ticksOpts = {
-			css: { major: axisProps.ticks.major.css, minor: axisProps.ticks.minor.css }, 
-			cs: props.coordSys,
-			measurer, 
-			ds: DS, 
-			partner, 
-			bounds, 
-			dir, 
-			locProps: axisProps, 
-			comFac: axisProps.factor, 
-			axisKey, 
-			motherCss: css, 
-			placement: axisProps.placement, 
-			margins
-		};
-
-		const ticks = rev ? ticksVM(ticksOpts).reverse() : ticksVM(ticksOpts);
+		const ticks = rev ? ticksVM(css: { major: axisProps.ticks.major.css, minor: axisProps.ticks.minor.css }, measurer, DS, partner, bounds, dir, axisProps, axisProps.factor, axisKey, motherCss: css, axisProps.placement, margins).reverse() : 
+			ticksVM(css: { major: axisProps.ticks.major.css, minor: axisProps.ticks.minor.css }, measurer, DS, partner, bounds, dir, axisProps, axisProps.factor, axisKey, motherCss: css, axisProps.placement, margins);
 
 		return {
 			css: motherCss || axisProps.css || ticks.reduce( (memo,tp) => memo || tp.css, false),
 			show: axisProps.show,
 			placement: axisProps.placement,
 			key: axisKey,
-			axisLine: axisLineVM(ds, axe === 'polar' ? 'polar' : 'cart', axisProps,partnerDs,dir, motherCss, measurer),
+			axisLine: axisLineVM(ds,axisProps,partnerDs,dir, motherCss, measurer),
 			ticks
 		};
 	});
@@ -312,11 +296,9 @@ export let titleVM = {
 export let axesVM = {
 
 	create: (get, { props, state, measurer, motherCss }) => {
-		const isCart = props.coordSys !== 'polar';
 		return {
-			abs: isCart ? axis(props,state,measurer,'abs','x', motherCss) : null,
-			ord: isCart ? axis(props,state,measurer,'ord','y', motherCss) : null,
-			polar: isCart ? null : axis(props,state,measurer,'polar','r', motherCss)
+			abs: axis(props,state,measurer,'abs','x', motherCss),
+			ord: axis(props,state,measurer,'ord','y', motherCss)
 		};
 	}
 
@@ -338,7 +320,7 @@ export let curvesVM = {
 			const data   = props.data[idx];
 			const gprops = props.graphProps[idx];
 			const { css } = props;
-			return curve(() => get()[idx], { cs: props.coordSys, spaces, serie, data, gprops, idx, css, mgrId, onSelect: onSelectOneCurve, unSelect });
+			return curve(() => get()[idx], { spaces, serie, data, gprops, idx, css, mgrId, onSelect: onSelectOneCurve, unSelect });
 		});
 	}
 

@@ -1,11 +1,11 @@
 import { isDate, makePeriod, isNil } from '../core/utils.js';
 
 export const vm = {
-	create: (get, { position, props, ds, key, motherCss, onSelect, unSelect, curveIdx, cs }) => {
+	create: (get, { position, props, ds, key, motherCss, onSelect, unSelect, curveIdx }) => {
 
 		const vm = get;
 
-		const defSpan = cs === 'polar' ? null : {
+		const defSpan = {
 			x: isDate(position.x) ? makePeriod({months: 3}) : 0.5,
 			y: isDate(position.y) ? makePeriod({months: 3}) : 0.5
 		};
@@ -24,9 +24,8 @@ export const vm = {
 			position.serieIdx = curveIdx;
 			return vm().selected ? onSelect(out) : unSelect();
 		};
-
+	
 		return {
-			cs,
 			selected: false,
 			unselect: () => vm().set('selected',false),
 			key,
@@ -35,9 +34,7 @@ export const vm = {
 			ds,
 			position: {
 				x: position.x,
-				y: position.y,
-				r: position.r,
-				theta: position.theta
+				y: position.y
 			},
 			drop:{
 				x: position.drop.x,

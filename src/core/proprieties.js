@@ -1,7 +1,7 @@
 /*
 	all the proprieties
 */
-import { deepCp } from './utils.js';
+import { extend, extendOwn } from 'underscore';
 
 // defaults for marks
 let marks = {};
@@ -23,20 +23,20 @@ const commonMark = () => {
 	};
 };
 
-marks.dot = marks.Dot = () => deepCp(commonMark(), {
+marks.dot = marks.Dot = () => extend(commonMark(), {
 	radius: 3,
 	color: 'black',
 	fill: null,
 	size: null
 });
 
-marks.square = marks.Square = () => deepCp(commonMark(),{
+marks.square = marks.Square = () => extend(commonMark(),{
 	color: 'black',
 	fill: null,
 	size: 0,
 });
 
-marks.bar = marks.Bar = () => deepCp(commonMark(),{
+marks.bar = marks.Bar = () => extend(commonMark(),{
 	drop:{
 		x:null,
 		y:0
@@ -89,9 +89,9 @@ graph.common = () => {
 	};
 };
 
-graph.Bars = graph.bars = (polar) => deepCp(graph.common(), {
+graph.Bars = graph.bars = () => extend(graph.common(), {
 	color: 'none',
-	width: polar ? 1 : 0,
+	width: 0,
 	dir: {
 		x: false,
 		y: true
@@ -107,14 +107,14 @@ graph.Bars = graph.bars = (polar) => deepCp(graph.common(), {
 	offset: {x: 0, y: 0}
 });
 
-graph.yBars = graph.ybars = (opt) => deepCp(graph.Bars(opt),{
+graph.yBars = graph.ybars = () => extend(graph.Bars(),{
 	dir: {
 		x: true,
 		y: false
 	},
 });
 
-graph.Pie = graph.pie = () => deepCp(graph.common(),{
+graph.Pie = graph.pie = () => extend(graph.common(),{
 	pie: 'disc', // tore
 	pieOrigin: {x: 0, y:0}, // offset from center
 	pieRadius: null, // 2/3 of world
@@ -138,7 +138,7 @@ graph.Pie = graph.pie = () => deepCp(graph.common(),{
 //graph.Bars = graph.common;
 graph.Plain = graph.plain = graph.common;
 
-graph.Stairs = graph.stairs = () => deepCp(graph.common(), { stairs: "right" });
+graph.Stairs = graph.stairs = () => extend(graph.common(), { stairs: "right" });
 
 ///////////
 // major / minor props
@@ -149,9 +149,7 @@ export const Grid = {
 	show: false,
 	color: 'LightGray',
 	width: 0.5,
-	length: 0,
-	circle: false, // for radar chart
-	dim: 1 // for radar chart
+	length: 0
 };
 
 // that's a major
@@ -174,58 +172,55 @@ export const Tick = {
 };
 
 //
-const axe = () => {
-	return {
-		ticks: {
-			major: Tick,
-			minor: deepCp(deepCp({},Tick),{
-				show: false,
-				length: 7,
-				out: 0,
-				color: 'gray',
-				labelize: () => false
-			})
-		},
-		grid: {
-			major: Grid,
-			minor: deepCp(deepCp({},Grid),{
-				width: 0.3
-			})
-		},
-		show: true,
-		drawing: 'default', // reverse to get reversed ticks order
-		css: null, //
-		// to force locally definition
-		min: null,
-		max: null,
-		interval: null,
-		tickLabels: [], //{coord: where, label: ''}, coord in ds
-		color:     'black',
-		width:      1,
-		label:      '',
-		labelOffset: {x: 0, y: 0},
-		labelAnchor: 'middle',
-		labelFSize:  20,
-		labelRotate: 0,
-		labelColor: 'black',
-		empty:      false,
-		CS:         'cart',
-		partner: 0,
-		marginOff: 0,
-		// for ticklabel formatting
-		factor: 1,
-		factorColor: 'black',
-		factorOffset: {x: 0, y: 0},
-		factorAnchor: 'middle',
-		factorFSize: 10
-	};
+const axe = {
+	ticks: {
+		major: Tick,
+		minor: extendOwn(extend({},Tick),{
+			show: false,
+			length: 7,
+			out: 0,
+			color: 'gray',
+			labelize: () => false
+		})
+	},
+	grid: {
+		major: Grid,
+		minor: extendOwn(extend({},Grid),{
+			width: 0.3
+		})
+	},
+	show: true,
+	drawing: 'default', // reverse to get reversed ticks order
+	css: null, //
+	// to force locally definition
+	min: null,
+	max: null,
+	interval: null,
+	tickLabels: [], //{coord: where, label: ''}, coord in ds
+	color:     'black',
+	width:      1,
+	label:      '',
+	labelOffset: {x: 0, y: 0},
+	labelAnchor: 'middle',
+	labelFSize:  20,
+	labelRotate: 0,
+	labelColor: 'black',
+	empty:      false,
+	CS:         'cart',
+	partner: 0,
+	marginOff: 0,
+	// for ticklabel formatting
+	factor: 1,
+	factorColor: 'black',
+	factorOffset: {x: 0, y: 0},
+	factorAnchor: 'middle',
+	factorFSize: 10
 };
 
 export function Axes(axis){
 	return {
-		abs: axis.abs ? axis.abs.map( p => deepCp({placement: p}, axe())) : [],
-		ord: axis.ord ? axis.ord.map( p => deepCp({placement: p}, axe())) : [],
-		polar: axis.polar ? axis.polar.map( (ax) => deepCp(deepCp({},axe()), ax)) : []
+		abs: axis.abs.map( p => extend({placement: p}, axe)),
+		ord: axis.ord.map( p => extend({placement: p}, axe))
 	};
 }
 
@@ -239,7 +234,6 @@ export function Graph(axis){
 		height: 400,	// defines the universe's height
 		width:	600,	// defines the universe's width
 		axisOnTop: false,
-		coordSys: 'cart', // cart || polar
 		// margins
 		innerMargin: {left: null, bottom: null, right: null, top: null}, // left, bottom, right, top
 		// defMargins.axis.ticks
@@ -307,8 +301,8 @@ const type = (arr,dir) => {
 
 const data = (serie,axis,axe) => {
 
-	axis.abs   = axis.abs   && axis.abs.length ? axis.abs     : ["bottom"];
-	axis.ord   = axis.ord   && axis.ord.length ? axis.ord     : ["left"];
+	axis.abs = axis.abs.length ? axis.abs : ["bottom"];
+	axis.ord = axis.ord.length ? axis.ord : ["left"];
 
 	const absDef = axis.abs.indexOf('bottom') !== -1 ? axis.abs.indexOf('bottom') : 0;
 	const ordDef = axis.ord.indexOf('left')   !== -1 ? axis.ord.indexOf('left')   : 0;
@@ -323,6 +317,7 @@ const data = (serie,axis,axe) => {
 		series: [], // x, y
 		phantomSeries:[], // added points to play on the world's limit
 		stacked: null, // x || y || null
+		coordSys: 'cart', // cart || polar
 		ord: {
 			axis: axis.ord[index.ord], // 'left' || 'right'
 			type: type(serie,'y') // 'number' || 'date' || 'label'
@@ -334,7 +329,7 @@ const data = (serie,axis,axe) => {
 	};
 };
 
-export function defaults(key,opts){ return key === 'data' ? data : graph[key](opts);}
+export function defaults(key){ return key === 'data' ? data : graph[key]();}
 
 export function marksDefault(key){ return marks[key]();}
 

@@ -35,11 +35,11 @@ export default class Path extends React.Component {
 	}
 
 
-	compute(){
+	render(){
 
 		const { state } = this.props;
 
-		if(state.positions.length === 0){
+		if(state.show === false || state.positions.length === 0){
 			return null;
 		}
 
@@ -105,39 +105,6 @@ export default class Path extends React.Component {
 			<path className={css ? 'curve' : ''} {...props} fill='none' d={points}/>
 				{dropLines}
 			</g>;
-	}
-
-	draw(){
-		const { state } = this.props;
-		const { path, css, shade, fill, width, color} = state;
-		const { filling, points, dropLines } = path;
-
-		const props = {
-			strokeWidth: width,
-			stroke: color,
-			opacity: shade,
-		};
-
-		return <g className={css ? this.props.className : ''}>
-			{state.close.y || state.close.x ? <path
-				d={filling} 
-				strokeWidth={0}
-				opacity={shade}
-				fill={fill}/> : null }
-			<path className={css ? 'curve' : ''} {...props} fill='none' d={points}/>
-				{dropLines}
-			</g>;
-	}
-
-	render(){
-		const { state } = this.props;
-
-		if(state.show === false){
-			return null;
-		}
-
-		return state.path ? this.draw() : this.compute();
-
 	}
 
 }

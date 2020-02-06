@@ -60,31 +60,14 @@ export function mgr(ex){
 }
 
 export function homothe(src,tgt,fac,val){
-	const t = isDate(tgt) ? date.getValue(tgt) : tgt;
-	const v = isDate(val) ? date.getValue(val) : val;
-	const s = isDate(src) ? date.getValue(src) : src;
-	const sol = t + (v - s) * fac;
+	let t = isDate(tgt) ? date.getValue(tgt) : tgt;
+	let v = isDate(val) ? date.getValue(val) : val;
+	let s = isDate(src) ? date.getValue(src) : src;
+	let sol = t + (v - s) * fac;
   return ( isDate(tgt) ) ? new Date(sol) : sol ;
 }
 
 export function toValue(val){ return isDate(val) ? date.getValue(val) : val;}
-
-export const coord = {
-
-	cart: (r,theta) => {
-		return {
-			x: r * Math.cos(theta),
-			y: r * Math.sin(theta)
-		};
-	},
-	polar: (x,y) => {
-		return {
-			r: Math.sqrt(x*x + y*y),
-			theta: (Math.atan(-y/x) + Math.PI/2)%(2*Math.PI)
-		};
-	}
-
-};
 
 export function direction(line, ds){
 		// line is AC
@@ -98,14 +81,10 @@ export function direction(line, ds){
 		//	A -------- B
 		//
 
-		if(Array.isArray(line.start)){
-			return line.start.map( (s,i) => direction({start: s, end: line.end[i]}, ds));
-		}
-
-		const distSqr = (p1,p2) => (p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y);
-		const B = {x: line.end.x, y: line.start.y};
-		const AB = distSqr(line.start,B);
-		const BC = distSqr(B,line.end);
+		let distSqr = (p1,p2) => (p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y);
+		let B = {x: line.end.x, y: line.start.y};
+		let AB = distSqr(line.start,B);
+		let BC = distSqr(B,line.end);
 
 		let hor = '-1';
 		let ver = '-1';
@@ -161,17 +140,15 @@ export function measure(gid, debug){
 			cadratin: (props) => {
 				const { titleFSize } = props.titleProps;
 
-				const places = {left: 'ord', right: 'ord', bottom: 'abs', top: 'abs', r: 'polar'};
+				const places = {left: 'ord', right: 'ord', bottom: 'abs', top: 'abs'};
 
 				// axis label
 				// ticks label
 				let axisLabel = {};
 				let tickLabel = {};
 				for(let u in places){
-					if(props.axisProps[places[u]] && props.axisProps[places[u]].length){
-						axisLabel[u] = ( props.axisProps[places[u]].find(x => x.placement === u) || {labelFSize: 0}).labelFSize;
-						tickLabel[u] = ( props.axisProps[places[u]].find(x => x.placement === u) || {ticks: { major: {labelFSize: 0} } }).ticks.major.labelFSize;
-					}
+					axisLabel[u] = ( props.axisProps[places[u]].find(x => x.placement === u) || {labelFSize: 0}).labelFSize;
+					tickLabel[u] = ( props.axisProps[places[u]].find(x => x.placement === u) || {ticks: { major: {labelFSize: 0} } }).ticks.major.labelFSize;
 				}
 				const cad = {
 					title: titleFSize,
@@ -260,7 +237,7 @@ export function measure(gid, debug){
 
 		const getCadratin = (fs,cn) => _measureText('&mdash;', fs, css ? cn : null).width;
 
-		const places = {left: 'ord', right: 'ord', bottom: 'abs', top: 'abs', r: 'polar'};
+		const places = {left: 'ord', right: 'ord', bottom: 'abs', top: 'abs'};
 
 		// axis label
 		// ticks label
@@ -291,11 +268,8 @@ export function measure(gid, debug){
 		// axis ticks
 		let axis  = {};
 		let ticks = {};
-		["abs","ord", "polar"].forEach(a => (props.axisProps[a] || []).forEach( ax => {
+		["abs","ord"].forEach(a => props.axisProps[a].forEach( ax => {
 			const { placement, factorFSize, labelFSize } = ax;
-			if(!placement){
-				return;
-			}
 			axis[placement] = {
 				factor: _measureText(`${placement} factor`,factorFSize,css ? 'axis-factor' : ''),
 				label: _measureText(`${placement} label`,labelFSize,css ? 'axis-factor' : ''),
