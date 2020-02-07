@@ -293,12 +293,14 @@ export function defaultTheProps(props){
 	return fullprops;
 }
 
-const addDefaultDrop = function(serie, dir, ds, after){
+const addDefaultDrop = function(serie, dir, ds, places, after){
 
-	const fetchDs = (d) => ds[d].bottom ? ds[d].bottom :
+	const fetchDefDs = (d) => ds[d].bottom ? ds[d].bottom :
 			ds[d].top ? ds[d].top :
 			ds[d].left ? ds[d].left :
 			ds[d].right ? ds[d].right : null;
+
+	const fetchDs = d => ds[d][places[d]] || fetchDefDs(d);
 
 	const defZero = (point) => utils.isDate(point[dir]) ? new Date(0) : 0 ;
 
@@ -556,7 +558,7 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 
 	const acti = props.graphProps.map( (g,idx) => g.show ? idx : null).filter( l => !utils.isNil(l));
 
-	const filterData = (series) => {
+	const filterData = series => {
 		let out = [];
 		for(let i = 0; i < acti.length; i++){
 			out.push(series[acti[i]]);
@@ -645,8 +647,8 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 
 	// span and offet pointwise
 	// drops if required and not given (default value)
-	each(state.series, (serie,idx) => {
-	let dir;
+	state.series.forEach( (serie,idx) => {
+									let dir;
 		switch(props.data[idx].type){
 			case 'Bars':
 			case 'bars':
@@ -664,7 +666,7 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 		}
 	});
 
-	const data = map(filterData(state.series),(ser,idx) => {
+	const data = filterData(state.series).map( (ser,idx) => {
 		return {
 			series: ser,
 			phantomSeries: props.data[idx].phantomSeries,
@@ -685,7 +687,7 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 	state.spaces = spaces(props.coordSys, {width: props.width, height: props.height}, data, {abs, ord, polar}, borders, props.titleProps, getMeasurer());
 
 	// defaut drops for those that don't have them
-	state.series = map(state.series, (serie,idx) => {
+	state.series = state.series.map( (serie,idx) => {
 	let dir;
 	const ds = state.spaces; 
 		switch(props.data[idx].type){
@@ -707,7 +709,14 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 		if(!dir && props.graphProps[idx].process){
 			dir = !props.graphProps[idx].process.dir || props.graphProps[idx].process.dir === 'x' ? 'y' : 'x';
 		}
-		return isCart ? addDefaultDrop(serie,dir,ds,true) : serie;
+		const places = () => {
+			return {
+				x: props.data[idx].abs && props.data[idx].abs.axis ? props.data[idx].abs.axis : 'bottom',
+				y: props.data[idx].ord && props.data[idx].ord.axis ? props.data[idx].ord.axis : 'left'
+			};
+		};
+
+		return isCart ? addDefaultDrop(serie,dir,ds,places(), true) : serie;
 	});
 
 ////
