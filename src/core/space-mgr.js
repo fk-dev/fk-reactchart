@@ -415,7 +415,7 @@ const _filter = (datas,dir, user) => {
 
 };
 
-export function spaces(universe, datas, axis, borders, titleProps, lengthMgr){
+const _spaces = (universe, datas, axis, borders, titleProps, lengthMgr) => {
 
   const ob = {right: 'ord', left: 'ord', top: 'abs', bottom: 'abs'};
   const getDir = w => w === 'right' || w === 'left' ? 'y' : 'x';
@@ -473,5 +473,72 @@ export function spaces(universe, datas, axis, borders, titleProps, lengthMgr){
     },
     margins
   };
+
+};
+
+const _polarSpace = (universe, datas, axis, borders, titleProps, lengthMgr) => {
+
+	const length = universe.width < universe.height ? universe.width : universe.height;
+
+	const axisBounds = axis.polar.reduce( (memo,ax) => {
+		const max = isNil(ax.max) || ( !isNil(memo.max) && memo.max > ax.max ) ? memo.max : ax.max;
+		const min = isNil(ax.min) || ( !isNil(memo.min) && memo.min < ax.min ) ? memo.min : ax.min;
+		return { max, min };
+	}, {});
+
+	const { max, min } = datas.reduce( (memo,v) => {
+		const valueMin = Math.min.apply(null, v.series.map( vv => isNil(vv.r) ? vv.y : vv.r ));
+		const valueMax = Math.max.apply(null, v.series.map( vv => isNil(vv.r) ? vv.y : vv.r ));
+		return {
+			max: !isNil(memo.max) && memo.max > valueMax ? memo.max: valueMax,
+			min: !isNil(memo.min) && memo.min < valueMin ? memo.min: valueMin,
+		};
+	}, {});
+
+	const marginsO = computeOuterMargin('top', {min: 0, max }, axis.polar[0], lengthMgr, titleProps );
+
+	const dWorld = {
+		min: isNil(axisBounds.min) ? min : axisBounds.min, 
+		max: isNil(axisBounds.max) ? max : axisBounds.max
+	};
+
+	const cWorld = {
+		min: 0, max: length/2 - marginsO,
+		origin: {x: universe.width/2, y: universe.height/2}
+	};
+
+	// delta d / delta c
+	const fromCtoD = (dWorld.max - dWorld.min) / cWorld.max;
+
+	return {
+		r: {
+			r: {
+				c: {
+					min: cWorld.min,
+					max: cWorld.max,
+					origin: cWorld.origin
+				},
+				d: {
+					min: dWorld.min,
+					max: dWorld.max
+				},
+				d2c: 1 / fromCtoD,
+				c2d: fromCtoD
+			}
+		},
+    margins: {
+			r: { 
+				marginsI: 0,
+				marginsF: 0,
+				marginsO,
+			}
+		}
+	};
+
+};
+
+export function spaces(cs, universe, datas, axis, borders, titleProps, lengthMgr){
+
+	return cs === 'polar' ? _polarSpace(universe, datas, axis, borders, titleProps, lengthMgr) : _spaces(universe, datas, axis, borders, titleProps, lengthMgr);
 
 }

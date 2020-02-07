@@ -23,5 +23,5 @@ export function grapher(key,props, opts){
 		throw new Error('Unknown graph type "' + key + '"');
 	}
 
-	return props.show ? graph[key](props,opts) : null;
+	return props.show && !props.onlyMarks ? graph[key](props,opts) : null;
 }

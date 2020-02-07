@@ -1,6 +1,6 @@
 import React from 'react';
 import { toCwidth as _toCwidth, toC as _toC} from '../core/space-transf.js';
-import { isNil, mgr as typeMgr } from '../core/utils.js';
+import { isNil, mgr as typeMgr, coord } from '../core/utils.js';
 import { isEqual } from '../core/im-utils.js';
 
 /*
@@ -32,7 +32,7 @@ export default class BarMark extends React.Component {
 		return !isEqual(props.state,this.props.state);
 	}
 
-	render() {
+	cart() {
 
 		const { state, gIdx, index } = this.props;
 
@@ -84,5 +84,26 @@ export default class BarMark extends React.Component {
 		const rProps = { height, width, stroke, strokeWidth, fill: color, opacity: shade };
 
 		return <rect onClick={state.onClick} className={`${css ? `mark mark-${gIdx} mark-${gIdx}-${index}` : ''}${state.selected ? ' selected' : ''}`} x={x} y={y} {...rProps}/>; 
+	}
+
+	polar(){
+		const { state, gIdx, index } = this.props;
+		const { position, css, color, fill, strokeWidth, shade, ds } = state;
+
+		const cr = _toC(ds.r,position.r);
+		const cxy = coord.cart(cr,position.theta);
+		const cx = cxy.x + ds.r.c.origin.x;
+		const cy = cxy.y + ds.r.c.origin.y;
+
+		const rProps = { fill: color || fill || 'none', strokeWidth, opacity: shade, cx, cy, r: 3 };
+
+		return <circle onClick={state.onClick} className={`${css ? `mark mark-${gIdx} mark-${gIdx}-${index}` : ''}${state.selected ? ' selected' : ''}`} {...rProps}/>;
+
+	}
+
+	render(){
+		const { state } = this.props;
+		const { cs } = state;
+		return cs === 'cart' ? this.cart() : this.polar();
 	}
 }

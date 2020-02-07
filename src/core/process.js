@@ -8,76 +8,132 @@ import * as gradientMgr from './gradient-mgr.js';
 
 const preprocessAxis = function(props){
 
-
   const { css } = props;
-	let def = {abs : 'bottom', ord: 'left'};
-	// axisProps is an Array,
-	// can be given as a non array
-	// empty <==> ticks.major.show === false && ticks.minor.show === false
-	if(props.axisProps){
-		for(let u in props.axisProps){
-			if(!Array.isArray(props.axisProps[u])){
-				props.axisProps[u] = [props.axisProps[u]];
-			}
-			for(let ax = 0; ax < props.axisProps[u].length; ax++){
-				let axe = props.axisProps[u][ax]; // too long
-        axe.css = utils.isNil(axe.css) ? css : axe.css;
-				if((ax === 0 && axe.placement) || ['left','bottom'].indexOf(axe.placement) !== -1){
-					def[u] = axe.placement;
+	let axis;
+
+	if(props.coordSys === 'polar'){
+
+		/// axisProps gives the axis
+		if(props.axisProps && props.axisProps.polar && props.axisProps.polar.length){ //ok
+			axis = props.axisProps;
+		}else{
+		/// labels give the axis
+			let labels = [];
+			(props.data || []).forEach( d => {
+				const dir = d.type === 'radar' || d.type === 'Bars' ? 'x' : 'y'; // want angles (label || indexes)
+				labels = labels.concat( d.series.map(p => p.label && p.label[dir] ? p.label[dir] : p[dir]));
+				for(let i = 0; i < labels.length - 1; i++){
+					for(let j = i + 1; j < labels.length; j++){
+						if(labels[j] === labels[i]){
+							labels.splice(j,1);
+							break; // only doublons => a serie is not supposed to have doublons
+						}
+					}
 				}
-				if(!axe.ticks){
-					axe.ticks = {};
+			});
+
+			const dim = labels.length;
+			(props.data || []).forEach( d => {
+				const dir = d.type === 'radar' || d.type === 'Bars' ? 'y' : 'x'; // want values
+				const tdir = d.type === 'radar' || d.type === 'Bars' ? 'x' : 'y'; // want idxs
+					d.series.forEach(p => {
+					const lab = p.label && p.label[tdir] ? p.label[tdir] : p[tdir];
+					p.theta = utils.isNil(p.theta) ? ( (labels.indexOf(lab) * 4 /dim + 3)%4 * Math.PI/2) : p.theta;
+					p.r = p[dir];
+				});
+			});
+			axis = {
+				polar: [{
+					cycle: true,
+					dim: labels.map( (l,i) => {
+						return {
+							label: l,
+							theta: ((i * 4 /dim + 3)%4)*Math.PI/2
+						};
+					}),
+					placement: 'r',
+					min: 0,
+					label: '',
+					grid: { major: { dim, show: true } },
+					ticks: { major: { length: 0 } }
+				}]
+			};
+		}
+	}else{
+
+		let def = {abs : 'bottom', ord: 'left'};
+		// axisProps is an Array,
+		// can be given as a non array
+		// empty <==> ticks.major.show === false && ticks.minor.show === false
+		if(props.axisProps){
+			for(let u in props.axisProps){
+				if(!Array.isArray(props.axisProps[u])){
+					props.axisProps[u] = [props.axisProps[u]];
 				}
-				if(!axe.ticks.major){
-					axe.ticks.major = {};
-				}
-				if(!axe.ticks.minor){
-					axe.ticks.minor = {};
-				}
-				if(axe.empty){
-					axe.ticks.major.show = false;
-					axe.ticks.minor.show = false;
-				}else{
-					axe.ticks.major.css = utils.isNil(axe.ticks.major.css) ? axe.css : axe.ticks.major.css;
-					axe.ticks.minor.css = utils.isNil(axe.ticks.minor.css) ? axe.css : axe.ticks.minor.css;
-						// no major ticks
-					if(axe.ticks.major.show === false){
-							// no minor ticks
-							if(axe.ticks.minor.show !== true){
-								axe.empty = true;
-							}
+				for(let ax = 0; ax < props.axisProps[u].length; ax++){
+					let axe = props.axisProps[u][ax]; // too long
+					if(!axe){
+						continue;
+					}
+					axe.css = utils.isNil(axe.css) ? css : axe.css;
+					if((ax === 0 && axe.placement) || ['left','bottom'].indexOf(axe.placement) !== -1){
+						def[u] = axe.placement;
+					}
+					if(!axe.ticks){
+						axe.ticks = {};
+					}
+					if(!axe.ticks.major){
+						axe.ticks.major = {};
+					}
+					if(!axe.ticks.minor){
+						axe.ticks.minor = {};
+					}
+					if(axe.empty){
+						axe.ticks.major.show = false;
+						axe.ticks.minor.show = false;
+					}else{
+						axe.ticks.major.css = utils.isNil(axe.ticks.major.css) ? axe.css : axe.ticks.major.css;
+						axe.ticks.minor.css = utils.isNil(axe.ticks.minor.css) ? axe.css : axe.ticks.minor.css;
+							// no major ticks
+						if(axe.ticks.major.show === false){
+								// no minor ticks
+								if(axe.ticks.minor.show !== true){
+									axe.empty = true;
+								}
+						}
 					}
 				}
 			}
 		}
-	}
 
-	// axis depends on data,
-	// where are they?
-	// by data
-	let axis = {
-		abs: props.data ? uniq(props.data.map( e => !utils.isNil(e.abs) && e.abs.axis ? e.abs.axis : def.abs)) : [def.abs],
-		ord: props.data ? uniq(props.data.map( e => !utils.isNil(e.ord) && e.ord.axis ? e.ord.axis : def.ord)) : [def.ord],
-	};
+		// axis depends on data,
+		// where are they?
+		// by data
+		axis = {
+			abs: props.data ? uniq(props.data.map( e => !utils.isNil(e.abs) && e.abs.axis ? e.abs.axis : def.abs)) : [def.abs],
+			ord: props.data ? uniq(props.data.map( e => !utils.isNil(e.ord) && e.ord.axis ? e.ord.axis : def.ord)) : [def.ord],
+		};
 
-	// by axis props
-	if(props.axisProps){
-		['abs','ord'].forEach( ax => {
-			const axisP = props.axisProps[ax];
-			if(!axisP){
-				return;
-			}
-			const fromP = (Array.isArray(axisP) ? axisP.map(x => x.placement) : [axisP.placement]).filter(x => x).filter(x => axis[ax].indexOf(x) === -1);
-			axis[ax] = axis[ax].concat(fromP);
-		});
-	}
+		// by axis props
+		if(props.axisProps){
+			['abs','ord'].forEach( ax => {
+				const axisP = props.axisProps[ax];
+				if(!axisP){
+					return;
+				}
+				const fromP = (Array.isArray(axisP) ? axisP.map(x => x.placement) : [axisP.placement]).filter(x => x).filter(x => axis[ax].indexOf(x) === -1);
+				axis[ax] = axis[ax].concat(fromP);
+			});
+		}
 
-	// default
-	if(axis.abs.length === 0){
-		axis.abs.push('bottom');
-	}
-	if(axis.ord.length === 0){
-		axis.ord.push('left');
+		// default
+		if(axis.abs.length === 0){
+			axis.abs.push('bottom');
+		}
+		if(axis.ord.length === 0){
+			axis.ord.push('left');
+		}
+
 	}
 
 	return axis;
@@ -200,16 +256,34 @@ export function defaultTheProps(props){
 		fullprops.data[idx].coordSys = 'polar';
 	};
 
-	if(find(props.data, (data) => data.type === 'Pie')){
-		each(fullprops.axisProps.abs, (ax) => { ax.show = false; });
-		each(fullprops.axisProps.ord, (ax) => { ax.show = false; });
-		each(props.data, (d,idx) => d.type === 'Pie' ? noMark(idx) : null);
+	if(props.data && props.data.find( data => data.type === 'Pie' || data.coordSys === 'polar')){
+		fullprops.axisProps.abs.forEach( ax => { ax.show = false; });
+		fullprops.axisProps.ord.forEach( ax => { ax.show = false; });
+		props.data.forEach( (d,idx) => {
+			if(d.type === 'Pie'){
+				noMark(idx);
+			}else if(d.coordSys === 'polar'){
+				const n = d.series.length;
+				d.series.forEach( (p,i) => {
+					if(utils.isNil(p.r)){
+						p.r = d.series === 'yBars' ? p.x : p.y;
+					}
+					const idx = d =>  utils.isNil(p[d]) ? i : p[d];
+					if(utils.isNil(p.theta)){
+						p.theta = ( ( ( d.series === 'yBars' ? idx('y') : idx('x') ) * 2/n + 1.5 ) * Math.PI);
+					}
+					if(!p.label || utils.isNil(p.label.r)){
+						p.label.r = d.series === 'yBars' ? p.label.y || `${p.y}` : p.label.x || `${p.x}`;
+					}
+				});
+			}
+		});
 	}
 
 	// data & graphProps
 	let dataDef = gProps.defaults('data');
 	for(let ng = 0; ng < fullprops.data.length; ng++){
-		const gprops = gProps.defaults(props.data[ng].type || 'Plain');
+		const gprops = gProps.defaults(props.data[ng].type || 'Plain',props.coordSys === 'polar');
 		fullprops.data[ng] = utils.deepCp(dataDef(props.data[ng].series, axis, {abs: props.data[ng].abs, ord: props.data[ng].ord}), props.data[ng]);
 		fullprops.graphProps[ng] = utils.deepCp(utils.deepCp({},gprops), props.graphProps[ng]);
 	}
@@ -476,6 +550,8 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 
 	const props = rawProps && rawProps.__defaulted ? rawProps : defaultTheProps(utils.deepCp({},rawProps));
 
+	const isCart = props.coordSys !== 'polar';
+
 	const raw = props.data.map( x => x.series);
 
 	const acti = props.graphProps.map( (g,idx) => g.show ? idx : null).filter( l => !utils.isNil(l));
@@ -520,8 +596,11 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 	};
 
 		// axis data, min-max from series (computed in space-mgr)
-	let abs = utils.isArray(props.axisProps.abs) ? props.axisProps.abs : [props.axisProps.abs];
-	let ord = utils.isArray(props.axisProps.ord) ? props.axisProps.ord : [props.axisProps.ord];
+	let abs   = utils.isArray(props.axisProps.abs)   ? props.axisProps.abs   : props.axisProps.abs   ? [props.axisProps.abs]   : [];
+	let ord   = utils.isArray(props.axisProps.ord)   ? props.axisProps.ord   : props.axisProps.ord   ? [props.axisProps.ord]   : [];
+	let polar = utils.isArray(props.axisProps.polar) ? props.axisProps.polar : props.axisProps.polar ? [props.axisProps.polar] : [];
+
+	const isTick = (u,type) => props.coordSys === 'polar' && ( ( u === 'x' && type === 'Bars' ) || ( u === 'y' && type === 'yBars' ) ) ? 'axis' : 'tick';
 
 	// let's look for labels given in the data
 	each(props.data, (dat,idx) => {
@@ -529,12 +608,12 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 		const ser = state.series[idx];
 		for(let u in locObDir){
 			const dir = locObDir[u];
-			const locAxis = find(props.axisProps[dir], (ax) => ax.placement === dat[dir].axis);
+			const locAxis = find(props.axisProps[dir], (ax) => ax.placement === dat[dir].axis) || props.axisProps.polar[0];
 			const mm = utils.mgr(ser[0]);
 			for(let p = 0; p < ser.length; p++){
 				const point = ser[p];
 				if(point.label[u] && locAxis.tickLabels.findIndex( l => mm.equal(l.coord,point[u]) && l.label === point.label[u]) === -1 ){
-					locAxis.tickLabels.push({coord: point[u], label: point.label[u]});
+					locAxis.tickLabels.push({coord: point[u], label: point.label[u], type: isTick(u,dat.type)});
 				}
 			}
 		}
@@ -580,7 +659,9 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 			default:
 				break;
 		}
-		addDefaultDrop(serie,dir);
+		if(isCart){
+			addDefaultDrop(serie,dir);
+		}
 	});
 
 	const data = map(filterData(state.series),(ser,idx) => {
@@ -601,21 +682,20 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 	}
 
 	// space = {dsx, dsy}
-	state.spaces = spaces({width: props.width, height: props.height}, data, {abs, ord}, borders, props.titleProps, getMeasurer());
+	state.spaces = spaces(props.coordSys, {width: props.width, height: props.height}, data, {abs, ord, polar}, borders, props.titleProps, getMeasurer());
 
 	// defaut drops for those that don't have them
 	state.series = map(state.series, (serie,idx) => {
-	let dir, ds;
+	let dir;
+	const ds = state.spaces; 
 		switch(props.data[idx].type){
 			case 'Bars':
 			case 'bars':
 				dir = 'y';
-				ds = state.spaces;
 				break;
 			case 'yBars':
 			case 'ybars':
 				dir = 'x';
-				ds = state.spaces;
 				break;
 			default:
 				break;
@@ -627,7 +707,7 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 		if(!dir && props.graphProps[idx].process){
 			dir = !props.graphProps[idx].process.dir || props.graphProps[idx].process.dir === 'x' ? 'y' : 'x';
 		}
-		return addDefaultDrop(serie,dir,ds,true);
+		return isCart ? addDefaultDrop(serie,dir,ds,true) : serie;
 	});
 
 ////
@@ -718,8 +798,8 @@ const _processLegend = (getNode,rawProps, mgrId) => {
 	// data depening on serie, geographical data only
 	props.data = map(props.data, (dat,idx) =>  {
 		return {
-		type: rawProps.data[idx].type,
-		series: copySerie(dat.series)
+			type: rawProps.data[idx].type,
+			series: copySerie(dat.series)
 		};
 	});
 

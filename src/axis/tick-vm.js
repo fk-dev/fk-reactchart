@@ -37,15 +37,15 @@ import { ticks } from '../core/ticker.js';
 	}
 */
 
-export function vm(css, measurer, ds, partner, bounds, dir, locProps, comFac, axisKey, motherCss, placement, margins){
+export function vm({css, cs, measurer, ds, partner, bounds, dir, locProps, comFac, axisKey, motherCss, placement, margins}){
 
 	//// general defs
 	const { measureText, lengthes } = measurer;
 	const cadratin = lengthes();
 	const lengthOfText = (txt,fs) => measureText(txt,fs,css ? `label-major-${locProps.placement} ticksmajor${dir}${locProps.placement}` : '');
 	const outerMargins = {
-		min: dir === 'x' ? margins.left  : margins.bottom,
-		max: dir === 'x' ? margins.right : margins.top,
+		min: dir === 'x' ? margins.left  : dir === 'y' ? margins.bottom : margins.r,
+		max: dir === 'x' ? margins.right : dir === 'y' ? margins.top : margins.r,
 	};
 
 	const othdir = dir === 'x' ? 'y' : 'x';
@@ -65,7 +65,7 @@ export function vm(css, measurer, ds, partner, bounds, dir, locProps, comFac, ax
 	const minGrid  = locProps.grid.minor;
 
 	// do we have labels? Only majorTicks
-	const ticksLabel = locProps.tickLabels;
+	const ticksLabel = dir === 'r' && locProps.tickLabels.find(tl => tl.type === 'axis') ? null : locProps.tickLabels;
 	// do we want the minor ticks to be computed?
 	// do we want the minor grid?
 	const minor = (minProps.show === true || locProps.grid.minor.show === true);
@@ -173,7 +173,7 @@ export function vm(css, measurer, ds, partner, bounds, dir, locProps, comFac, ax
 */
 		const p = tick.minor ? minProps : majProps;
 		const css = tick.minor ? minCss : majCss;
-		let ticksProps = {css};
+		let ticksProps = {css, cs};
 		let tmp = {
 			show: true,
 			color: true,
@@ -202,7 +202,8 @@ export function vm(css, measurer, ds, partner, bounds, dir, locProps, comFac, ax
 
 		let mgr = {
 			x: typeMgr(ticksProps.position.x),
-			y: typeMgr(ticksProps.position.y)
+			y: typeMgr(ticksProps.position.y),
+			r: typeMgr(ticksProps.position.r)
 		};
 
 /*
@@ -221,6 +222,7 @@ export function vm(css, measurer, ds, partner, bounds, dir, locProps, comFac, ax
 		// label
 		let labelProps = {
 			css,
+			cs,
 			ds: ds,
 			label:	p.labelize(tick.position, prevTick(idx), nextTick(idx)) === false ? tick.label : p.labelize(tick.position, prevTick(idx), nextTick(idx)),
 			FSize:	p.labelFSize,
@@ -248,7 +250,8 @@ export function vm(css, measurer, ds, partner, bounds, dir, locProps, comFac, ax
 		const alOff = isNil(p.labelOffset.along) ? tick.offset.along : p.labelOffset.along;
 		const offset = {
 			x: labelProps.dir.x !== 0 ? alOff : 0,
-			y: labelProps.dir.y !== 0 ? alOff : 0
+			y: labelProps.dir.y !== 0 ? alOff : 0,
+			r: 0
 		};
 
 		// adding a little margin
@@ -296,6 +299,14 @@ export function vm(css, measurer, ds, partner, bounds, dir, locProps, comFac, ax
 							y: fd
 						}
 					};
+				case 'r':
+					return {
+						anchor: 'start',
+						off: {
+							x: outTick + mar,
+							y: fd
+						}
+					};
 				default:
 					throw new Error('Where is this axis: ' + locProps.placement);
 			}
@@ -308,8 +319,10 @@ export function vm(css, measurer, ds, partner, bounds, dir, locProps, comFac, ax
 		}
 
 		labelProps.position = {
-			x: mgr.x.add(ticksProps.position.x,offset.x),
-			y: mgr.y.add(ticksProps.position.y,offset.y)
+			x: isNil(ticksProps.position.r)  ? mgr.x.add(ticksProps.position.x,offset.x) : null,
+			y: isNil(ticksProps.position.r)  ? mgr.y.add(ticksProps.position.y,offset.y) : null,
+			r: !isNil(ticksProps.position.r) ? mgr.r.add(ticksProps.position.r,offset.r) : null,
+			theta: !isNil(ticksProps.position.r) ? - Math.PI/2 : null
 		};
 
 		labelProps.offset = offsetCspace;
@@ -327,7 +340,9 @@ export function vm(css, measurer, ds, partner, bounds, dir, locProps, comFac, ax
 		tmp = {
 			show: true,
 			color: true,
-			width: true
+			width: true,
+			circle: true,
+			dim: true
 		};
 
 		const cus = tick.grid || {};
@@ -335,7 +350,7 @@ export function vm(css, measurer, ds, partner, bounds, dir, locProps, comFac, ax
 			gridProps[u] = isNil(cus[u]) ? pg[u] : cus[u];
 		}
 		gridProps.length = partner.length;
-		gridProps.show = tick.type.startsWith('borders-') ? false : gridProps.show;
+		gridProps.show = tick.type.startsWith('borders-') && isNil(ticksProps.position.r) ? false : gridProps.show;
 
 		const tickKey = axisKey + '.t.' + idx;
 		return {
