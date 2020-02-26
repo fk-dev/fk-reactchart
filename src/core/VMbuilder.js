@@ -151,7 +151,7 @@ const curve = function(get, { cs, spaces, serie, data, gprops, idx, css, mgrId, 
 				return {
 					key: markKey,
 					mark: marksVM[mtype.toUpperCase()].create(() => get().marks[midx].mark, { position: pos, cs, props: gprops, ds, motherCss: css, onSelect: selectMyMark, unSelect, curveIdx: idx }), 
-					pin: pinVM.create(() => get().marks[midx].pin, {pos, tag: gprops.tag, ds, motherCss: css, dir: gtype.startsWith('y') ? 'y' : 'x' }) 
+					pin: pinVM.create(() => get().marks[midx].pin, {pos, tag: gprops.tag, ds, motherCss: css, dir: cs === 'polar' ? 'r' : gtype.startsWith('y') ? 'y' : 'x' }) 
 				};
 			}) : [];
 

@@ -1,5 +1,5 @@
 import { toC } from '../core/space-transf.js';
-import { isNil } from '../core/utils.js';
+import { isNil, coord } from '../core/utils.js';
 
 const _angle = (deg) => {
 
@@ -23,7 +23,7 @@ const _angle = (deg) => {
 
 const nat = (d,p) => {
 
-	const oDir = d === 'x' ? 'y' : 'x';
+	const oDir = d === 'x' || d === 'r' ? 'y' : 'x';
 
 	const ang = {
 		x: {
@@ -31,6 +31,10 @@ const nat = (d,p) => {
 			i: 180
 		},
 		y: {
+			o: 90,
+			i: -90
+		},
+		r: {
 			o: 90,
 			i: -90
 		}
@@ -71,10 +75,20 @@ const pin = function(get, { pos, tag, ds, motherCss, dir }) {
 	const css = isNil(tag.css) ? motherCss : tag.css;
 
 		// mark
-	const mpos = {
-		x: toC(ds.x,pos.x),
-		y: toC(ds.y,pos.y)
-	};
+	let mpos;
+	if(dir === 'r'){
+		const ra = toC(ds.r,pos.r);
+		const cxy = coord.cart(ra,pos.theta);
+		mpos = {
+			x: cxy.x + ds.r.c.origin.x,
+			y: cxy.y + ds.r.c.origin.y
+		};
+	}else{
+		mpos = {
+			x: toC(ds.x,pos.x),
+			y: toC(ds.y,pos.y)
+		};
+	}
 
 		// pin length
 	const pl = {
