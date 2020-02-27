@@ -141,6 +141,7 @@ const pin = function(get, { pos, tag, ds, motherCss, dir }) {
     css,
 		label: tag.print(pos),
 		baseline,
+		anchor,
 		labelAnc: anchor.top || anchor.bottom ? 'middle' : anchor.left ? 'start' : 'end',
 		labelFS: tag.fontSize,
 		x: lpos.x,

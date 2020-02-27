@@ -3,6 +3,7 @@ import React from 'react';
 import Dot from './Dot.jsx';
 import Bar from './Bar.jsx';
 import Square from './Square.jsx';
+import { renderText } from './label-text.jsx';
 
 import { isEqual } from '../core/im-utils.js';
 
@@ -36,18 +37,29 @@ export default class Mark extends React.Component {
 
 	pin(pinS){
 		const { gIdx, index } = this.props;
-		const { pinColor, path, pinWidth, labelFS, labelAnc, color, css, baseline } = pinS;
+		const { pinColor, path, pinWidth, labelFS, labelAnc, color, css, baseline, anchor } = pinS;
 		const fontSize = typeof labelFS === 'number' ? `${labelFS}pt` : labelFS;
 		const pathProps = { strokeWidth: pinWidth, stroke: pinColor, fill: 'none'};
-		const textProps = { fontSize, fill: color } ;
 		const style = {
 			alignmentBaseline: baseline
 		};
+
+		const textProps = {
+			style,
+			className: css ? `tag tag-${gIdx} tag-${gIdx}-${index}` : '',
+			fontSize, 
+			fill: color,
+			x: pinS.xL,
+			textAnchor: labelAnc,
+			y: pinS.yL
+		};
+		const anc = anchor.top ? 'top' : anchor.bottom ? 'bottom' : 'else';
+
 		return pinS.path ? <g>
 			<path className={css ? `pin pin-${gIdx} pin-${gIdx}-${index}` : ''} {...pathProps} d={path}/>
-			<text style={style} className={css ? `tag tag-${gIdx} tag-${gIdx}-${index}` : ''} {...textProps} textAnchor={labelAnc} x={pinS.xL} y={pinS.yL}>{pinS.label}</text>
+			{renderText(textProps,pinS.label,anc)}
 		</g> : 
-		<text style={style} className={css ? `tag tag-${gIdx} tag-${gIdx}-${index}` : ''} {...textProps} x={pinS.xL} textAnchor={labelAnc} y={pinS.yL}>{pinS.label}</text>;
+		renderText(textProps,pinS.label,anc);
 	}
 
 	render(){
