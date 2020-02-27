@@ -22,8 +22,10 @@ const offset = (i,l) => {
 
 };
 
-export function renderText(opts,text,anchor){
+export function renderText(opts,text,anchor,lheight){
 	const texts = text.split('\n');
+
+	lheight = lheight || opts.fontSize || 12;
 
 	const ancOffset = () => {
 		switch(anchor){
@@ -38,15 +40,16 @@ export function renderText(opts,text,anchor){
 
 	const ao = ancOffset();
 
-	return <text key={opts.key} {...opts}>{texts.map((t,i) => <tspan key={`${rndKey()}.${i}`} {...opts} dy={offset(i - ao,opts.fontSize || 12)}>{t}</tspan>)}</text>;
+	return <text key={opts.key} {...opts}>{texts.map((t,i) => <tspan {...opts} key={`${rndKey()}.${i}`} dy={offset(i - ao,lheight)}>{t}</tspan>)}</text>;
 }
 
 export function renderTextOptions(opts,text){
 	const texts = text.split('\n');
 
-	return texts.map((t,i) => {
+	return texts.map(t => {
 		return {
-			dy: offset(i,opts.fontSize || 12),
+			dy: opts.fontSize || 12,
+			line: t
 		};
 	});
 }
