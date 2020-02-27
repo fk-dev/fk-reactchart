@@ -1,6 +1,7 @@
 /* global document, window */
 import * as date from './dateMgr.js';
 import * as nbr from './nbrMgr.js';
+import { renderTextOptions } from '../marks/label-text.jsx';
 
 const isPeriod = function(v){
 	let out = false;
@@ -150,13 +151,30 @@ export function measure(gid, debug){
 		}
 		return {
 			text: (txt,fs) => {
-				const _meas = x => x.length * toNumber(fs) * 2/3;
+
+				const lineHeight = toNumber(fs);
+
+				const _meas = x => {
+					const texts = renderTextOptions({fs},x);
+					let tWidth = 0; 
+
+					const oneMeasure = txt => {
+						const width = txt.length * lineHeight * 2/3;
+						tWidth   = width > tWidth ? width : tWidth;
+					};
+
+					// \n => (x,y) = (-10,-10) in Measurer.jsx
+					texts.forEach( ({line}) => oneMeasure(line));
+					return {width: tWidth, height: lineHeight * texts.length};
+				};
+
 				txt = Array.isArray(txt) ? txt : [txt];
 				const ls = txt.map(_meas);
-				const width = Math.max.apply(null,ls);
-				const height = toNumber(fs);
+
+				const width  = Math.max.apply(null,ls.map(x => x.width));
+				const height = Math.max.apply(null,ls.map(x => x.height));
 				debug.log(`Old Style Measurements: will return (width, heigh) = (${width},${height}) for text = ${txt} at font size ${fs}`);
-				return { width, height };
+				return { width, height, lineHeight};
 			},
 			cadratin: (props) => {
 				const { titleFSize } = props.titleProps;
@@ -193,7 +211,7 @@ export function measure(gid, debug){
 
 	const _measureText = (str, fontSize, clNs) => {
 		if(!str){
-			return { width: 0, height: 0};
+			return { width: 0, height: 0, lineHeight: 0};
 		}
 		clNs = clNs ? Array.isArray(clNs) ? clNs.map(x => x.split(' ')[0]) : clNs.split(' ')[0] : null;
 
@@ -220,21 +238,35 @@ export function measure(gid, debug){
 		}else{
 			meas.style.fontSize = typeof fontSize === 'number' ? `${fontSize}pt` : fontSize;
 		}
-		meas.innerHTML = str;
-		const rect = meas.getBoundingClientRect();
-		const { width, height }  = rect;
+
+		const texts = renderTextOptions({fontSize},str);
+		let tWidth = 0; 
+		let tHeight = 0;
+		let tLineHeight = 0;
+
+		const oneMeasure = txt => {
+			meas.innerHTML = txt;
+			const { width, height }  = meas.getBoundingClientRect();
+			tWidth   = width > tWidth ? width : tWidth;
+			tLineHeight = height > tLineHeight ? height : tLineHeight;
+		};
+
+		// \n => (x,y) = (-10,-10) in Measurer.jsx
+		texts.forEach( ({line}) => oneMeasure(line));
+		tHeight = tLineHeight * texts.length;
 
 		/// this 0.6 factor we can't (yet) explain...
-		const cwidth  = factor * width;
-		const cheight = factor * height;
+		const cwidth      = factor * tWidth;
+		const cheight     = factor * tHeight;
+		const clineHeight = factor * tLineHeight;
 
-		if(fontSize && width === 0 && height === 0){
+		if(fontSize && tWidth === 0 && tHeight === 0){
 			active = false;
 		}
 
-		debug.log(`Actual Measurements: will return (width, height) = (${cwidth},${cheight}) for text = ${str} ${clN ? `for class name ${clN}` : `at font size ${fontSize}`}`);
+		debug.log(`Actual Measurements: will return (width, height, lineHeight) = (${cwidth},${cheight},${clineHeight}) for text = ${str} ${clN ? `for class name ${clN}` : `at font size ${fontSize}`}`);
 
-		return { width: cwidth, height: cheight };
+		return { width: cwidth, height: cheight, lineHeight: clineHeight };
 	};
 
 	const measureText = (texts,fontSize,cn) => {
@@ -244,12 +276,13 @@ export function measure(gid, debug){
 		}
 
 		const compare = (ref,cand) => {
-			const width  = ref.width  > cand.width  ? ref.width  : cand.width;
-			const height = ref.height > cand.height ? ref.height : cand.height;
-			return {width, height};
+			const width      = ref.width  > cand.width  ? ref.width  : cand.width;
+			const height     = ref.height > cand.height ? ref.height : cand.height;
+			const lineHeight = ref.lineHeight > cand.lineHeight ? ref.lineHeight : cand.lineHeight;
+			return {width, height, lineHeight};
 		};
 
-		return texts.map( str => _measureText(str,fontSize,cn )).reduce( (memo,v) => compare(memo,v) , {width: 0, height: 0});
+		return texts.map( str => _measureText(str,fontSize,cn )).reduce( (memo,v) => compare(memo,v) , {width: 0, height: 0, lineHeight: 0});
 	};
 
 	const cadratin = (props) => {
