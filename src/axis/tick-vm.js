@@ -239,6 +239,7 @@ export function vm({css, cs, measurer, ds, partner, bounds, dir, locProps, comFa
 		labelProps.dir[othdir] = 0;
 		labelProps.LLength = labelLenthes.width;
 		labelProps.LHeight = labelLenthes.height;
+		labelProps.LLineHeight = labelLenthes.lineHeight;
 
 		const addPerp =  tick.minor ? 3.75 : 0;
 		const perpOff = isNil(p.labelOffset.perp) ? tick.offset.perp : p.labelOffset.perp ;
@@ -257,9 +258,12 @@ export function vm({css, cs, measurer, ds, partner, bounds, dir, locProps, comFa
 		// adding a little margin
 		// & anchoring the text
 		
-		const height = labelLenthes.height;
-		const fd = 0.25 * height; // font depth, 25 %
-		const fh = 0.75 * height; // font height, 75 %
+		const { height, lineHeight } = labelLenthes;
+		const nLines = height / ( lineHeight || 1 );
+			// multilines margin (middle is in the middle of the text box => 1. up to the top/bottom line, 2. add the font height/depth
+		const multMar = (nLines - 1)/2 * lineHeight;
+		const fd = 0.25 * lineHeight; // font depth, 25 %
+		const fh = 0.75 * lineHeight; // font height, 75 %
 			// see space mgr
 		const mar = isNil(p.labelFMargin) ? cadratin.tickLabel[locProps.placement] / 2 : p.labelFMargin;
 		const outTick = p.length * p.out;
@@ -272,7 +276,7 @@ export function vm({css, cs, measurer, ds, partner, bounds, dir, locProps, comFa
 						anchor: p.rotate > 0 ? 'end' : p.rotate < 0 ? 'start' : 'middle',
 						off: {
 							x: 0,
-							y: - mar - outTick
+							y: - mar - outTick - multMar
 						}
 					};
 				case 'bottom':
@@ -280,7 +284,7 @@ export function vm({css, cs, measurer, ds, partner, bounds, dir, locProps, comFa
 						anchor: p.rotate > 0 ? 'start' : p.rotate < 0 ? 'end' : 'middle',
 						off: {
 							x: 0,
-							y: ( p.rotate !== 0 ? Math.abs(Math.sin(p.rotate * Math.PI / 180) ) * height : fh ) + outTick + mar
+							y: ( p.rotate !== 0 ? Math.abs(Math.sin(p.rotate * Math.PI / 180) ) * height : fh + multMar ) + outTick + mar
 						}
 					};
 				case 'left':

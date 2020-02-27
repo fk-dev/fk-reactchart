@@ -3,6 +3,7 @@ import React from 'react';
 import { toC }                    from '../core/space-transf.js';
 import { isEqual }                from '../core/im-utils.js';
 import { isNil, toNumber, coord as computeCoord } from '../core/utils.js';
+import { renderText }             from '../marks/label-text.jsx';
 
 /*
 	{
@@ -25,9 +26,9 @@ export default class Label extends React.Component {
 		return !isEqual(props.state,this.props.state);
 	}
 
-	power(label, props,key){
+	power(label, props){
 		const { base, power } = label;
-		return <text key={key} {...props}>
+		return <text {...props}>
 			<tspan>{base}</tspan>
 			{ power !== 0 ? <tspan>&#183;10</tspan> : null }
 			{ power !== 0 ? <tspan dy={-0.5 * toNumber(props.fontSize)}>{power}</tspan> : null }
@@ -45,7 +46,7 @@ export default class Label extends React.Component {
 
 		const { state, className } = this.props;
 
-		const { transform, ds, position, offset, rotate, angle, dir, color, FSize, anchor, label, howToRotate, LLength, LHeight, css, cs } = state;
+		const { transform, ds, position, offset, rotate, angle, dir, color, FSize, anchor, label, howToRotate, LLength, LHeight, LLineHeight, css, cs } = state;
 
 		const cart = () => {
 			const xL = ( transform ? toC(ds.x,position.x) : position.x ) + offset.x;
@@ -54,7 +55,7 @@ export default class Label extends React.Component {
 		};
 
 		const polar = () => {
-			const r =  ( transform ? toC(ds.r,position.r) : position.r );
+			const r =  transform ? toC(ds.r,position.r) : position.r;
 
 			const { theta } = position;
 			const { x, y } = computeCoord.cart(r,theta);
@@ -79,7 +80,7 @@ export default class Label extends React.Component {
 
 		const rotateAnchor = theta * howToRotate;
 
-		const props = ({xL, yL}) => {
+		const props = ({xL, yL},key) => {
 			return {
 				className: css ? className : '',
 				x: xL,
@@ -87,11 +88,12 @@ export default class Label extends React.Component {
 				transform: `${translation} ${rotation({xL, yL})}`,
 				textAnchor: rotateAnchor  > 0 ? 'start' : rotateAnchor < 0 ? 'end' : anchor,
 				fill: color,
-				fontSize: typeof FSize === 'number' ? `${FSize}pt` : FSize
+				fontSize: typeof FSize === 'number' ? `${FSize}pt` : FSize,
+				key
 			};
 		};
 
-		const _write = (point,key) => isNil(label.base) ? <text key={key} {...props(point)}>{label}</text> : this.power(label,props(point),key);
+		const _write = (point,key) => isNil(label.base) ? renderText(props(point,key),label,'else',LLineHeight) : this.power(label,props(point,key));
 		const write = Array.isArray(coord) ? () => <g>{coord.map( (point,i) => _write(point,`lT.${position.r}.${i}`))}</g> : () => _write(coord);
 
 		const rectMe = () => {
