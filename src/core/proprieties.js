@@ -225,7 +225,7 @@ export function Axes(axis){
 	return {
 		abs: axis.abs ? axis.abs.map( p => deepCp({placement: p}, axe())) : [],
 		ord: axis.ord ? axis.ord.map( p => deepCp({placement: p}, axe())) : [],
-		polar: axis.polar ? axis.polar.map( (ax) => deepCp(deepCp({},axe()), ax)) : []
+		polar: axis.polar ? axis.polar.map( (ax) => deepCp(deepCp({placement : 'r'},axe()), ax)) : []
 	};
 }
 

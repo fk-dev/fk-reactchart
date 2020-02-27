@@ -12,52 +12,54 @@ const preprocessAxis = function(props){
 	let axis;
 
 	if(props.coordSys === 'polar'){
-
-		/// axisProps gives the axis
-		if(props.axisProps && props.axisProps.polar && props.axisProps.polar.length){ //ok
-			axis = props.axisProps;
-		}else{
 		/// labels give the axis
-			let labels = [];
-			(props.data || []).forEach( d => {
-				const dir = d.type === 'radar' || d.type === 'Bars' ? 'x' : 'y'; // want angles (label || indexes)
-				labels = labels.concat( d.series.map(p => p.label && p.label[dir] ? p.label[dir] : p[dir]));
-				for(let i = 0; i < labels.length - 1; i++){
-					for(let j = i + 1; j < labels.length; j++){
-						if(labels[j] === labels[i]){
-							labels.splice(j,1);
-							break; // only doublons => a serie is not supposed to have doublons
-						}
+		let labels = [];
+		(props.data || []).forEach( d => {
+			const dir = d.type === 'radar' || d.type === 'Bars' ? 'x' : 'y'; // want angles (label || indexes)
+			labels = labels.concat( d.series.map(p => p.label && p.label[dir] ? p.label[dir] : p[dir]));
+			for(let i = 0; i < labels.length - 1; i++){
+				for(let j = i + 1; j < labels.length; j++){
+					if(labels[j] === labels[i]){
+						labels.splice(j,1);
+						break; // only doublons => a serie is not supposed to have doublons
 					}
 				}
-			});
+			}
+		});
 
-			const dim = labels.length;
-			(props.data || []).forEach( d => {
-				const dir = d.type === 'radar' || d.type === 'Bars' ? 'y' : 'x'; // want values
-				const tdir = d.type === 'radar' || d.type === 'Bars' ? 'x' : 'y'; // want idxs
-					d.series.forEach(p => {
-					const lab = p.label && p.label[tdir] ? p.label[tdir] : p[tdir];
-					p.theta = utils.isNil(p.theta) ? ( (labels.indexOf(lab) * 4 /dim + 3)%4 * Math.PI/2) : p.theta;
-					p.r = p[dir];
-				});
+		const dim = labels.length;
+		(props.data || []).forEach( d => {
+			const dir = d.type === 'radar' || d.type === 'Bars' ? 'y' : 'x'; // want values
+			const tdir = d.type === 'radar' || d.type === 'Bars' ? 'x' : 'y'; // want idxs
+				d.series.forEach(p => {
+				const lab = p.label && p.label[tdir] ? p.label[tdir] : p[tdir];
+				p.theta = utils.isNil(p.theta) ? ( (labels.indexOf(lab) * 4 /dim + 3)%4 * Math.PI/2) : p.theta;
+				p.r = p[dir];
 			});
-			axis = {
-				polar: [{
-					cycle: true,
-					dim: labels.map( (l,i) => {
-						return {
-							label: l,
-							theta: ((i * 4 /dim + 3)%4)*Math.PI/2
-						};
-					}),
-					placement: 'r',
-					min: 0,
-					label: '',
-					grid: { major: { dim, show: true } },
-					ticks: { major: { length: 0 } }
-				}]
-			};
+		});
+		axis = {
+			polar: [{
+				cycle: true,
+				dim: labels.map( (l,i) => {
+					return {
+						label: l,
+						theta: ((i * 4 /dim + 3)%4)*Math.PI/2
+					};
+				}),
+				placement: 'r',
+				min: 0,
+				label: '',
+				grid: { major: { dim, show: true } },
+				ticks: { major: { length: 0 } }
+			}]
+		};
+
+		/// axisProps gives the axis
+		if(props.axisProps && props.axisProps.polar){
+			const axPol = Array.isArray(props.axisProps.polar) ? props.axisProps.polar[0] : props.axisProps.polar;
+			for(let u in axPol){
+				axis.polar[0][u] = axPol[u];
+			}
 		}
 	}else{
 
