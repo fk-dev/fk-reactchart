@@ -23,7 +23,7 @@ const offset = (i,l) => {
 };
 
 export function renderText(opts,text,anchor,lheight){
-	const texts = text.split('\n');
+	const texts = `${text}`.split('\n');
 
 	lheight = lheight || opts.fontSize || 12;
 
@@ -44,7 +44,7 @@ export function renderText(opts,text,anchor,lheight){
 }
 
 export function renderTextOptions(opts,text){
-	const texts = text.split('\n');
+	const texts = `${text}`.split('\n');
 
 	return texts.map(t => {
 		return {
