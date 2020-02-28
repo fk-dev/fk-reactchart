@@ -7,6 +7,7 @@ import { map } from 'underscore';
 import { isNil, mgr as mgrU, isString, isArray, computeSquare } from './utils.js';
 import { defMargins } from './proprieties.js';
 import { errorMgr }   from './errorMgr.js';
+import { radius }     from './polar-search.js';
 
 /* universe is {width , height}, this
  * is the total size of the svg picture.
@@ -281,9 +282,17 @@ const computeOuterMargin = (where, limits, axis, measure, title ) => {
 			if(dir === 'r'){
 				axis.marginOff = 10;
 				const cN = axis.css ? `axis-label-${where}` : '';
-				const { labelFSize } = axis;
-				const {width, height} = measureText(labels, labelFSize, cN);
-				labelLength = ( height > width ? height : width ) + cadratin.axisLabel[where] / 3;
+				const { labelFSize, dim } = axis;
+				return {
+					cadMar,
+					title: titleLength ? cadratin.tickLabel[where] / 2 + titleLength : 0,
+					labelLengthes: dim.map( ({label, theta}) => {
+						return {
+							theta: theta,
+							labelLength: measureText(label, labelFSize, cN)
+						};
+					})
+				};
 			}else{
 				const cn = css ? `label-major-${where}` : null;
 				const { width, height } = measureText(labels,labelFSize, cn );
@@ -486,8 +495,6 @@ const _spaces = (universe, datas, axis, borders, titleProps, lengthMgr) => {
 
 const _polarSpace = (universe, datas, axis, borders, titleProps, lengthMgr) => {
 
-	const length = universe.width < universe.height ? universe.width : universe.height;
-
 	const axisBounds = axis.polar.reduce( (memo,ax) => {
 		const max = isNil(ax.max) || ( !isNil(memo.max) && memo.max > ax.max ) ? memo.max : ax.max;
 		const min = isNil(ax.min) || ( !isNil(memo.min) && memo.min < ax.min ) ? memo.min : ax.min;
@@ -503,19 +510,28 @@ const _polarSpace = (universe, datas, axis, borders, titleProps, lengthMgr) => {
 		};
 	}, {});
 
-	const marginsO = computeOuterMargin('r', {min: 0, max }, axis.polar[0], lengthMgr, titleProps );
+	const { cadMar, title, labelLengthes } = computeOuterMargin('r', {min: 0, max }, axis.polar[0], lengthMgr, titleProps );
+	const sol = radius(universe.width - 2 * cadMar,universe.height - 2*cadMar - title,labelLengthes);
+	const marginsO = {
+		left:   sol.outerMargins.left   + cadMar,
+		right:  sol.outerMargins.right  + cadMar,
+		top:    sol.outerMargins.top    + cadMar + title,
+		bottom: sol.outerMargins.bottom + cadMar
+	};
 
 	const dWorld = {
 		min: isNil(axisBounds.min) ? min : axisBounds.min, 
 		max: isNil(axisBounds.max) ? max : axisBounds.max
 	};
 
+	const oriOffset = (w,u) => (u - w)/2;
+
 	const cWorld = {
 		min: 0, 
-		max: length/2 - marginsO,
+		max: sol.r,
 		origin: {
-			x: universe.width/2, 
-			y: universe.height/2
+			x: marginsO.left + sol.r/2 + oriOffset(marginsO.left + marginsO.right + sol.r, universe.width),
+			y: marginsO.top  + sol.r/2 + oriOffset(marginsO.bottom + marginsO.top + sol.r, universe.height),
 		}
 	};
 
