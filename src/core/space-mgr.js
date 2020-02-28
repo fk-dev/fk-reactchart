@@ -210,7 +210,7 @@ const computeOuterMargin = (where, limits, axis, measure, title ) => {
   measure = measure || {};
   const { measureText, lengthes } = measure;
   const cadratin = lengthes();
-  const dir = where === 'left' || where === 'right' ? 'y' : 'x';
+  const dir = where === 'r' ? 'r' : where === 'left' || where === 'right' ? 'y' : 'x';
 
   let { min , max } = limits;
 
@@ -239,6 +239,8 @@ const computeOuterMargin = (where, limits, axis, measure, title ) => {
     max = mgr.value(4);
   }
 
+  let labelLength = 0;
+  let tickLabelLength = 0;
 // tick label
   // tick, outer part
   const tick = axis.ticks.major;
@@ -246,7 +248,6 @@ const computeOuterMargin = (where, limits, axis, measure, title ) => {
   // cadratin
   // tickLabelLength
   // cadratin
-  let tickLabelLength = 0;
   const cadMar = Math.max(cadratin.tickLabel[where]/2, 3);
   if(axis){
     const { labelFSize, css } = axis.ticks.major;
@@ -276,29 +277,36 @@ const computeOuterMargin = (where, limits, axis, measure, title ) => {
     const labels = axis.empty ? [] : tickLabels && tickLabels.length ? tickLabels.map(x => x.label) : computeLabels();
 
     if(labels.length){
-      const cn = css ? `label-major-${where}` : null;
-      const { width, height } = measureText(labels,labelFSize, cn );
-      const angle = axis.ticks.major.rotate * Math.PI/180;
-      const square = computeSquare(angle,  width, height);
-      tickLabelLength = dir === "y" ? square.width : square.height;
+			// this is the axises label
+			if(dir === 'r'){
+				axis.marginOff = 10;
+				const cN = axis.css ? `axis-label-${where}` : '';
+				const { labelFSize } = axis;
+				const {width, height} = measureText(labels, labelFSize, cN);
+				labelLength = ( height > width ? height : width ) + cadratin.axisLabel[where] / 3;
+			}else{
+				const cn = css ? `label-major-${where}` : null;
+				const { width, height } = measureText(labels,labelFSize, cn );
+				const angle = axis.ticks.major.rotate * Math.PI/180;
+				const square = computeSquare(angle,  width, height);
+				tickLabelLength = dir === "y" ? square.width : square.height;
 
-      axis.marginOff = Math.max(tickLength + tickLabelLength + cadMar , defMargins.outer.min);
-      // offset for the label
-      for(let ti in {major: true, minor: true}){
-        const ticks = axis.ticks[ti];
-        if(!ticks.show){
-          continue;
-        }
-        ticks.labelFMargin =  cadMar / 2;
-      }
+				axis.marginOff = Math.max(tickLength + tickLabelLength + cadMar , defMargins.outer.min);
+				// offset for the label
+				for(let ti in {major: true, minor: true}){
+					const ticks = axis.ticks[ti];
+					if(!ticks.show){
+						continue;
+					}
+					ticks.labelFMargin =  cadMar / 2;
+				}
+			}
     }
     
   }
 
 
 // axis label
-
-  let labelLength = 0;
   if(axis.label.length){
     const cN = axis.css ? `axis-label-${where}` : '';
     const { label, labelFSize, labelRotate } = axis;
@@ -495,7 +503,7 @@ const _polarSpace = (universe, datas, axis, borders, titleProps, lengthMgr) => {
 		};
 	}, {});
 
-	const marginsO = computeOuterMargin('top', {min: 0, max }, axis.polar[0], lengthMgr, titleProps );
+	const marginsO = computeOuterMargin('r', {min: 0, max }, axis.polar[0], lengthMgr, titleProps );
 
 	const dWorld = {
 		min: isNil(axisBounds.min) ? min : axisBounds.min, 
@@ -503,8 +511,12 @@ const _polarSpace = (universe, datas, axis, borders, titleProps, lengthMgr) => {
 	};
 
 	const cWorld = {
-		min: 0, max: length/2 - marginsO,
-		origin: {x: universe.width/2, y: universe.height/2}
+		min: 0, 
+		max: length/2 - marginsO,
+		origin: {
+			x: universe.width/2, 
+			y: universe.height/2
+		}
 	};
 
 	// delta d / delta c
