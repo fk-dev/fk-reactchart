@@ -269,8 +269,11 @@ export function vm({css, cs, measurer, ds, partner, bounds, dir, locProps, comFa
 		const outTick = p.length * p.out;
 
 		// know where you are, label rotation anchor handling
-		const anchor = (() => {
-			switch(locProps.placement){
+		const anchorFromPlacement = placement => {
+
+			//const placeFromTheta = t => t < Math.PI/2 ? 'left' : 'right';
+
+			switch(placement){
 				case 'top':
 					return {
 						anchor: p.rotate > 0 ? 'end' : p.rotate < 0 ? 'start' : 'middle',
@@ -304,17 +307,13 @@ export function vm({css, cs, measurer, ds, partner, bounds, dir, locProps, comFa
 						}
 					};
 				case 'r':
-					return {
-						anchor: 'start',
-						off: {
-							x: outTick + mar,
-							y: fd
-						}
-					};
+					return anchorFromPlacement('right');//placeFromTheta(locProps.dim[tick.position].theta)); 
 				default:
 					throw new Error('Where is this axis: ' + locProps.placement);
 			}
-		})();
+		};
+
+		const anchor = anchorFromPlacement(locProps.placement);
 		labelProps.anchor = anchor.anchor;
 		offsetCspace.x += anchor.off.x;
 		offsetCspace.y += anchor.off.y;
@@ -322,11 +321,12 @@ export function vm({css, cs, measurer, ds, partner, bounds, dir, locProps, comFa
 			offsetCspace.x *= -1;
 		}
 
+		const isCart = isNil(ticksProps.position.r);
 		labelProps.position = {
-			x: isNil(ticksProps.position.r)  ? mgr.x.add(ticksProps.position.x,offset.x) : null,
-			y: isNil(ticksProps.position.r)  ? mgr.y.add(ticksProps.position.y,offset.y) : null,
-			r: !isNil(ticksProps.position.r) ? mgr.r.add(ticksProps.position.r,offset.r) : null,
-			theta: !isNil(ticksProps.position.r) ? - Math.PI/2 : null
+			x: isCart  ? mgr.x.add(ticksProps.position.x,offset.x) : null,
+			y: isCart  ? mgr.y.add(ticksProps.position.y,offset.y) : null,
+			r: !isCart ? mgr.r.add(ticksProps.position.r,offset.r) : null,
+			theta: !isCart ? - Math.PI/2 : null
 		};
 
 		labelProps.offset = offsetCspace;

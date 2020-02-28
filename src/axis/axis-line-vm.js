@@ -130,22 +130,30 @@ export function vm(ds,cs, props,partnerDs,dir, motherCss, measurer){
 	};
 
 	// & anchoring the text
-	const { height, width } = lengthOfText(label.label,label.FSize);
-	label.LHeight = height;
-	label.LLength = width;
+	const { height, width, lineHeight } = lengthOfText(label.label,label.FSize);
+	label.LWidth      = width;
+	label.LHeight     = height;
+	label.LLineHeight = lineHeight;
+
+	const nLines = height / ( lineHeight || 1 );
+		// multilines margin (middle is in the middle of the text box => 1. up to the top/bottom line, 2. add the font height/depth
+	const multMar = (nLines - 1)/2 * lineHeight;
+	const fd = 0.25 * lineHeight; // font depth, 25 %
+	const fh = 0.75 * lineHeight; // font height, 75 %
 	const defOff = props.marginOff;
 
 	const placer = (pl) => {
+
 		switch(pl){
 			case 'top':
 				return {
 					x: 0,
-					y: - height - defOff
+					y: - fd - multMar - defOff
 				};
 			case 'bottom':
 				return {
 					x: 0,
-					y: height + defOff
+					y: fh + multMar + defOff
 				};
 			case 'left':
 				return {
@@ -154,12 +162,7 @@ export function vm(ds,cs, props,partnerDs,dir, motherCss, measurer){
 				};
 			case 'right':
 				return {
-					x: height + defOff,
-					y: 0
-				};
-			case 'r':
-				return {
-					x: height + defOff,
+					x: defOff + (cs === 'polar' ? 0 : height),
 					y: 0
 				};
 			default:
@@ -173,7 +176,6 @@ export function vm(ds,cs, props,partnerDs,dir, motherCss, measurer){
 			case 'bottom':
 				return 'middle';
 			case 'left':
-			case 'r':
 				return 'end';
 			case 'right':
 				return 'start';
@@ -186,9 +188,9 @@ export function vm(ds,cs, props,partnerDs,dir, motherCss, measurer){
 		const rad = a => a / 180 * Math.PI;
 		const places = {
 			right:  { inf: 0,         sup: rad(45), infS: rad(7*45)},
-			bottom:    { inf: rad(45),   sup: rad(3*45)},
+			bottom: { inf: rad(45),   sup: rad(3*45)},
 			left:   { inf: rad(3*45), sup: rad(5*45)},
-			top: { inf: rad(5*45), sup: rad(7*45)}
+			top:    { inf: rad(5*45), sup: rad(7*45)}
 		};
 
 		for(let u in places){
