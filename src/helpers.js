@@ -419,7 +419,7 @@ export function init(rawProps, type, Obj, debug){
 	};
 
 	rc.reinit = (newProps, type) => {
-		rawProps = newProps;
+		rawProps = newProps || rawProps;
 		// check measurer
 		if(!rc.canMeasure()){
 			rc.setMeasurer();
