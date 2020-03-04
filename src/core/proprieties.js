@@ -379,7 +379,8 @@ export const defMargins = {
 		left: 10, 
 		bottom: 10, 
 		right: 10, 
-		top: 10
+		top: 10,
+		min: 5
 	},
 	title: 10,
 	min: 0,

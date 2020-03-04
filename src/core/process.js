@@ -574,7 +574,7 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 	// empty
 	if(!validate(raw,props.discard)){
 
-		state.series = map(props.data, (/*ser*/) => [] );
+		state.series = props.data.map( () => [] );
 
 	}else{
 			// data depening on serie, geographical data only
@@ -686,7 +686,15 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 	}
 
 	// space = {dsx, dsy}
-	state.spaces = spaces(props.coordSys, {width: props.width, height: props.height}, data, {abs, ord, polar}, borders, props.titleProps, getMeasurer());
+	const tags = props.graphProps.map( (x,i) => {
+		let out = false;
+		if(x.tag.show && props.data[i].type.indexOf('Bar') !== -1){
+			out = x.tag;
+			out.dir = props.data[i].type.startsWith('y') ? 'y' : 'x';
+		}
+		return out;
+	});
+	state.spaces = spaces(props.coordSys, {width: props.width, height: props.height}, data, {abs, ord, polar}, borders, props.titleProps, tags, getMeasurer());
 
 	// defaut drops for those that don't have them
 	state.series = state.series.map( (serie,idx) => {

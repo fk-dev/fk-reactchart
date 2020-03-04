@@ -43,7 +43,7 @@ const nat = (d,p) => {
 
 	return {
 		isVert: d === 'x',
-		rad: (p[oDir] < 0 ? ang[d].i : ang[d].o) * Math.PI / 180,
+		rad: (p[oDir] < 0 ? ang[oDir].i : ang[oDir].o) * Math.PI / 180,
 		dir: p[oDir] < 0 ? -1 : 1,
 		hookDir: 1
 	};
@@ -52,16 +52,9 @@ const nat = (d,p) => {
 
 const angle = (ang,dir,pos) => ang === 'nat' ? nat(dir,pos) : _angle(ang);
 
-// in fct so we don't compute if
-// no tag
-// tag = {
-//	 pin: true || false // show the line
-//	 pinHook:  // horizontal line
-//	 pinLength: // length to mark
-//	 print: // how to print
-//	 theta: // angle from mark
-// }
-const pin = function(get, { pos, tag, ds, motherCss, dir }) {
+
+export function precompute(tag, dir, pos){
+
 	// angle
 	const ang = angle(tag.pinAngle,dir,pos);
 	// anchor
@@ -71,25 +64,6 @@ const pin = function(get, { pos, tag, ds, motherCss, dir }) {
 		left:  !ang.isVert && ang.dir > 0,
 		right: !ang.isVert && ang.dir < 0
 	};
-
-	const css = isNil(tag.css) ? motherCss : tag.css;
-
-		// mark
-	let mpos;
-	if(dir === 'r'){
-		const ra = toC(ds.r,pos.r);
-		const cxy = coord.cart(ra,pos.theta);
-		mpos = {
-			x: cxy.x + ds.r.c.origin.x,
-			y: cxy.y + ds.r.c.origin.y
-		};
-	}else{
-		mpos = {
-			x: toC(ds.x,pos.x),
-			y: toC(ds.y,pos.y)
-		};
-	}
-
 		// pin length
 	const pl = {
 		x: Math.cos(ang.rad) * tag.pinLength,
@@ -124,6 +98,39 @@ const pin = function(get, { pos, tag, ds, motherCss, dir }) {
 
 	const baseline = anchor.top ? 'hanging' : anchor.bottom ? 'text-after-edge' : 'middle';
 
+	return { pl, ph, anchor, baseline };
+}
+
+// in fct so we don't compute if
+// no tag
+// tag = {
+//	 pin: true || false // show the line
+//	 pinHook:  // horizontal line
+//	 pinLength: // length to mark
+//	 print: // how to print
+//	 theta: // angle from mark
+// }
+const pin = (get, { pos, tag, ds, motherCss, dir }) => {
+
+	const {pl, ph, anchor, baseline } = precompute(tag,dir,pos);
+
+	const css = isNil(tag.css) ? motherCss : tag.css;
+
+	// mark
+	let mpos;
+	if(dir === 'r'){
+		const ra = toC(ds.r,pos.r);
+		const cxy = coord.cart(ra,pos.theta);
+		mpos = {
+			x: cxy.x + ds.r.c.origin.x,
+			y: cxy.y + ds.r.c.origin.y
+		};
+	}else{
+		mpos = {
+			x: toC(ds.x,pos.x),
+			y: toC(ds.y,pos.y)
+		};
+	}
 	// position = mark + length + hook
 	const lpos = {
 		x: mpos.x + pl.x + ph.x,
@@ -157,5 +164,5 @@ const pin = function(get, { pos, tag, ds, motherCss, dir }) {
 
 
 export let vm = {
-	create: (get, { pos, tag, ds, motherCss, dir, measurer, cn }) => tag.show ? pin(get, { pos, tag, ds, motherCss, dir, measurer, cn }) : null
+	create: (get, { pos, tag, ds, motherCss, dir, cn }) => tag.show ? pin(get, { pos, tag, ds, motherCss, dir, cn }) : null
 };

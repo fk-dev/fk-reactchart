@@ -8,6 +8,8 @@ import { isNil, mgr as mgrU, isString, isArray, computeSquare } from './utils.js
 import { defMargins } from './proprieties.js';
 import { errorMgr }   from './errorMgr.js';
 import { radius }     from './polar-search.js';
+import { toC }        from './space-transf.js';
+import { precompute } from '../marks/pin.js';
 
 /* universe is {width , height}, this
  * is the total size of the svg picture.
@@ -87,28 +89,7 @@ import { radius }     from './polar-search.js';
  * the cs/ds correspondance is found with:
  *    universe - marginsO - marginsI = datas
  */
-const space = function(where, universe, margins, bounds, type){
-
-    // quick utils
-    const ifNil = (a,b) => isNil(a) ? b : a;
-
-    const _marginMap = {
-      y: {
-        min: 'bottom',
-        max: 'top',
-      },
-      x: {
-        min: 'left',
-        max: 'right',
-      }
-    };
-
-    const marginMap = {
-      left:   _marginMap.y,
-      right:  _marginMap.y,
-      bottom: _marginMap.x,
-      top:    _marginMap.x,
-    };
+const space = function(where, universe, margins, bounds, tags, type){
 
   // the margins (outer)
 
@@ -118,8 +99,8 @@ const space = function(where, universe, margins, bounds, type){
     // margins between borders and axis
 
     let OMargin = {
-      min: margins[marginMap[where].min].marginsO,
-      max: margins[marginMap[where].max].marginsO
+      min: margins.minO,
+      max: margins.maxO
     };
 
     // we have the world's corners
@@ -130,14 +111,14 @@ const space = function(where, universe, margins, bounds, type){
     let rmin, rmax;
     if(where === 'left' || where === 'right'){ // beware sign
       min = universe - OMargin.min;
-      max = OMargin.max + ifNil(margins.top.marginsF, 0);
-      rmin = min - ifNil(margins.bottom.marginsI, defMargins.inner.bottom);
-      rmax = max + ifNil(margins.top.marginsI,    defMargins.inner.top);
+      max = OMargin.max;
+      rmin = min - margins.minI;
+      rmax = max + margins.maxI;
     }else{
       min = OMargin.min;
-      max = universe - OMargin.max -  + ifNil(margins.right.marginsF,0);
-      rmin = min + ifNil(margins.left.marginsI,  defMargins.inner.left);
-      rmax = max - ifNil(margins.right.marginsI, defMargins.inner.right);
+      max = universe - OMargin.max;
+      rmin = min + margins.minI;
+      rmax = max - margins.maxI;
     }
 
     const cWorld = {
@@ -189,7 +170,7 @@ const space = function(where, universe, margins, bounds, type){
   }
 */
     const fromCtoD = mgr.getValue( mgr.divide( mgr.distance( dWorld.max , dWorld.min ), cWorld.max - cWorld.min));
-    return {
+    let cur = {
       c: {
         min: cWorld.min,
         max: cWorld.max,
@@ -202,9 +183,42 @@ const space = function(where, universe, margins, bounds, type){
       c2d: fromCtoD
     };
 
+	/// tags
+		if(tags.length){
+			//// definitions of function depending on axis
+			let doMin = (_tags) => Math.min.apply(null,_tags.map(tag => toC(cur,tag.pos) + tag.min));
+			let doMax = (_tags) => Math.max.apply(null,_tags.map(tag => toC(cur,tag.pos) + tag.max));
+			let checkBounds = (min,max) => min < cur.c.min || max > cur.c.max;
+			let updateMin = min => min < cur.c.min ? cur.c.min - min : 0;
+			let updateMax = max => max > cur.c.max ? max - cur.c.max : 0;
+				// y axis is reversed in SVG
+			if(where === 'left' || where === 'right'){
+				doMin = (_tags) => Math.max.apply(null,_tags.map(tag => toC(cur,tag.pos) + tag.min));
+				doMax = (_tags) => Math.min.apply(null,_tags.map(tag => toC(cur,tag.pos) + tag.max));
+				checkBounds = (min,max) => min > cur.c.min || max < cur.c.max;
+				updateMin = min => min > cur.c.min ? min - cur.c.min : 0;
+				updateMax = max => max < cur.c.max ? cur.c.max - max : 0;
+			}
+
+			let minC = doMin(tags);
+			let maxC = doMax(tags);
+			let loop = 0;
+
+			// vertical is reversed
+
+			while( checkBounds(minC,maxC) && loop < 5){
+				margins.minI += updateMin(minC);
+				margins.maxI += updateMax(maxC);
+				cur = space(where, universe, margins, bounds, [], type);
+				loop++;
+				minC = doMin(tags);
+				maxC = doMax(tags);
+			}
+		}
+
+		return cur;
+
 };
-
-
 
 const computeOuterMargin = (where, limits, axis, measure, title ) => {
 
@@ -432,8 +446,39 @@ const _filter = (datas,dir, user) => {
 
 };
 
-const _spaces = (universe, datas, axis, borders, titleProps, lengthMgr) => {
+const measureTags = (tagProps, pos, tag, lengthMgr) => {
 
+  const { measureText } = lengthMgr;
+	const { width, height } = measureText(tag,tagProps.fontSize);
+
+	const {anchor, ph, pl} = precompute(tagProps, tagProps.dir, pos);
+
+	// see pin.js for details
+	const offset = {
+		x: pl.x + ph.x + ( anchor.left ? 3 : -3 ),
+		y: - pl.y + ph.y + ( anchor.top ? 3 : anchor.bottom ? -3 : 0 )
+	};
+
+	return {
+		hor: {
+			pos: pos.x,
+			min: offset.x - (anchor.right ? width : anchor.left ? 0  : width/2 ) - defMargins.inner.min,
+			max: offset.x + (anchor.left  ? width : anchor.right ? 0 : width/2 ) + defMargins.inner.min
+		},
+		vert: {
+			pos: pos.y,
+			min: offset.y + (anchor.top    ? height : anchor.bottom ? 0 : 0.25 * height) + defMargins.inner.min, // depth
+			max: offset.y - (anchor.bottom ? height : anchor.top    ? 0 : 0.75 * height) - defMargins.inner.min // line height
+		},
+		
+	};
+
+};
+
+
+const _spaces = (universe, datas, axis, borders, titleProps, showTags, lengthMgr) => {
+
+	/// ordering the data
   const ob = {right: 'ord', left: 'ord', top: 'abs', bottom: 'abs'};
   const getDir = w => w === 'right' || w === 'left' ? 'y' : 'x';
 
@@ -456,37 +501,64 @@ const _spaces = (universe, datas, axis, borders, titleProps, lengthMgr) => {
     type[_who] = _type;
   }));
 
+	const { max } = Math;
+
+	/// margins
   const margins = {
     left: {
-      marginsI: borders.marginsI.left,
-      marginsF: borders.marginsF.left,
-      marginsO: Math.max(defMargins.outer.min, borders.marginsO.left ? borders.marginsO.left : computeOuterMargin('left', limits.left, axises.left, lengthMgr,null ) )
+      marginsI: borders.marginsI.left || defMargins.inner.left,
+      marginsF: borders.marginsF.left || 0,
+      marginsO: max(defMargins.outer.min, borders.marginsO.left ? borders.marginsO.left : computeOuterMargin('left', limits.left, axises.left, lengthMgr, null ) )
     },
     right: {
-      marginsI: borders.marginsI.right,
-      marginsF: borders.marginsF.right,
-      marginsO: Math.max(defMargins.outer.min, borders.marginsO.right ? borders.marginsO.right : computeOuterMargin('right', limits.right, axises.right, lengthMgr,null) )
+      marginsI: borders.marginsI.right || defMargins.inner.right,
+      marginsF: borders.marginsF.right || 0,
+      marginsO: max(defMargins.outer.min, borders.marginsO.right ? borders.marginsO.right : computeOuterMargin('right', limits.right, axises.right, lengthMgr, null) )
     },
     top: {
-      marginsI: borders.marginsI.top,
-      marginsF: borders.marginsF.top,
-      marginsO: Math.max(defMargins.outer.min, borders.marginsO.top ? borders.marginsO.top : computeOuterMargin('top', limits.top, axises.top, lengthMgr, titleProps ) )
+      marginsI: borders.marginsI.top || defMargins.inner.top,
+      marginsF: borders.marginsF.top || 0,
+      marginsO: max(defMargins.outer.min, borders.marginsO.top ? borders.marginsO.top : computeOuterMargin('top', limits.top, axises.top, lengthMgr, titleProps ) )
     },
     bottom: {
-      marginsI: borders.marginsI.bottom,
-      marginsF: borders.marginsF.bottom,
-      marginsO: Math.max(defMargins.outer.min, borders.marginsO.bottom ? borders.marginsO.bottom : computeOuterMargin('bottom', limits.bottom, axises.bottom, lengthMgr,null ) )
+      marginsI: borders.marginsI.bottom || defMargins.inner.bottom,
+      marginsF: borders.marginsF.bottom || 0,
+      marginsO: max(defMargins.outer.min, borders.marginsO.bottom ? borders.marginsO.bottom : computeOuterMargin('bottom', limits.bottom, axises.bottom, lengthMgr, null ) )
     },
   };
 
+	// tmp var for clarity
+	const head = margins.top.marginsO    + margins.top.marginsF;
+	const foot = margins.bottom.marginsO + margins.bottom.marginsF;
+	const pre  = margins.left.marginsO   + margins.left.marginsF;
+	const post = margins.right.marginsO  + margins.right.marginsF;
+
+	const headi = margins.top.marginsI;
+	const footi = margins.bottom.marginsI;
+	const prei  = margins.left.marginsI;
+	const posti = margins.right.marginsI;
+
+	/// tags
+	let tag = {left: [], right: [], top: [], bottom:[]};
+	for(let i = 0; i < datas.length; i++){
+		if(!showTags[i]){
+			continue;
+		}
+		const hor  = datas[i].abs.axis;
+		const vert = datas[i].ord.axis;
+		const tags = datas[i].series.map( p => measureTags(showTags[i],p, p.tag, lengthMgr)).filter(x => x);
+		tag[hor] = tag[hor].concat(tags.map(t => t.hor));
+		tag[vert] = tag[vert].concat(tags.map(t => t.vert));
+	}
+
   return {
     y: {
-      left:  axises.left  ? space('left',  universe.height, margins, limits.left,  type.left )  : null,
-      right: axises.right ? space('right', universe.height, margins, limits.right, type.right ) : null
+      left:  axises.left  ? space('left',  universe.height, {minO: foot, maxO: head, minI: footi, maxI: headi}, limits.left,  tag.left,  type.left )  : null,
+      right: axises.right ? space('right', universe.height, {minO: foot, maxO: head, minI: footi, maxI: headi}, limits.right, tag.right, type.right ) : null
     },
     x: {
-      top:    axises.top    ? space('top',    universe.width, margins, limits.top,    type.top )    : null,
-      bottom: axises.bottom ? space('bottom', universe.width, margins, limits.bottom, type.bottom ) : null
+      top:    axises.top    ? space('top',    universe.width, {minO: pre, maxO: post, minI: prei, maxI: posti}, limits.top,    tag.top,    type.top )    : null,
+      bottom: axises.bottom ? space('bottom', universe.width, {minO: pre, maxO: post, minI: prei, maxI: posti}, limits.bottom, tag.bottom, type.bottom ) : null
     },
     margins
   };
@@ -565,8 +637,8 @@ const _polarSpace = (universe, datas, axis, borders, titleProps, lengthMgr) => {
 
 };
 
-export function spaces(cs, universe, datas, axis, borders, titleProps, lengthMgr){
+export function spaces(cs, universe, datas, axis, borders, titleProps, showTags, lengthMgr){
 
-	return cs === 'polar' ? _polarSpace(universe, datas, axis, borders, titleProps, lengthMgr) : _spaces(universe, datas, axis, borders, titleProps, lengthMgr);
+	return cs === 'polar' ? _polarSpace(universe, datas, axis, borders, titleProps, lengthMgr) : _spaces(universe, datas, axis, borders, titleProps, showTags, lengthMgr);
 
 }
