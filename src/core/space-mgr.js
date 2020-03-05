@@ -184,35 +184,41 @@ const space = function(where, universe, margins, bounds, tags, type){
     };
 
 	/// tags
-		if(tags.length){
+		if(tags.min.length || tags.max.length){
 			//// definitions of function depending on axis
+			const minActive = tags.min.length;
+			const maxActive = tags.max.length;
+
+			const check = (c,b) => b ? c : true;
+
 			let doMin = (_tags) => Math.min.apply(null,_tags.map(tag => toC(cur,tag.pos) + tag.min));
 			let doMax = (_tags) => Math.max.apply(null,_tags.map(tag => toC(cur,tag.pos) + tag.max));
-			let checkBounds = (min,max) => min < cur.c.min || max > cur.c.max;
+			let checkBounds = (min,max) => check(min < cur.c.min,minActive) || check(max > cur.c.max,maxActive);
 			let updateMin = min => min < cur.c.min ? cur.c.min - min : 0;
 			let updateMax = max => max > cur.c.max ? max - cur.c.max : 0;
+
 				// y axis is reversed in SVG
 			if(where === 'left' || where === 'right'){
 				doMin = (_tags) => Math.max.apply(null,_tags.map(tag => toC(cur,tag.pos) + tag.min));
 				doMax = (_tags) => Math.min.apply(null,_tags.map(tag => toC(cur,tag.pos) + tag.max));
-				checkBounds = (min,max) => min > cur.c.min || max < cur.c.max;
+				checkBounds = (min,max) => check(min > cur.c.min,minActive) || check(max < cur.c.max,maxActive);
 				updateMin = min => min > cur.c.min ? min - cur.c.min : 0;
 				updateMax = max => max < cur.c.max ? cur.c.max - max : 0;
 			}
 
-			let minC = doMin(tags);
-			let maxC = doMax(tags);
+			let minC = minActive ? doMin(tags.min) : 0;
+			let maxC = maxActive ? doMax(tags.max) : 0;
 			let loop = 0;
 
 			// vertical is reversed
 
 			while( checkBounds(minC,maxC) && loop < 5){
-				margins.minI += updateMin(minC);
-				margins.maxI += updateMax(maxC);
-				cur = space(where, universe, margins, bounds, [], type);
+				margins.minI += minActive ? updateMin(minC) : 0;
+				margins.maxI += maxActive ? updateMax(maxC) : 0;
+				cur = space(where, universe, margins, bounds, {min: [], max: []}, type);
 				loop++;
-				minC = doMin(tags);
-				maxC = doMax(tags);
+				minC = minActive ? doMin(tags.min) : 0;
+				maxC = maxActive ? doMax(tags.max) : 0;
 			}
 		}
 
@@ -539,7 +545,7 @@ const _spaces = (universe, datas, axis, borders, titleProps, showTags, lengthMgr
 	const posti = margins.right.marginsI;
 
 	/// tags
-	let tag = {left: [], right: [], top: [], bottom:[]};
+	let tag = {left: {min: [], max: []}, right: {min: [], max: []}, top: {min: [], max: []}, bottom: {min: [], max: []}};
 	for(let i = 0; i < datas.length; i++){
 		if(!showTags[i]){
 			continue;
@@ -547,8 +553,14 @@ const _spaces = (universe, datas, axis, borders, titleProps, showTags, lengthMgr
 		const hor  = datas[i].abs.axis;
 		const vert = datas[i].ord.axis;
 		const tags = datas[i].series.map( p => measureTags(showTags[i],p, p.tag, lengthMgr)).filter(x => x);
-		tag[hor]  = isNil(borders.marginsI[hor])  ? tag[hor].concat(tags.map(t => t.hor))  : [];
-		tag[vert] = isNil(borders.marginsI[vert]) ? tag[vert].concat(tags.map(t => t.vert)) : [];
+		tag[hor]  = {
+			min: isNil(borders.marginsI.left)  ? tag[hor].min.concat(tags.map(t => t.hor))  : [], 
+			max: isNil(borders.marginsI.right) ? tag[hor].max.concat(tags.map(t => t.hor))  : [],
+		};
+		tag[vert] = {
+			min: isNil(borders.marginsI.bottom) ? tag[vert].min.concat(tags.map(t => t.vert)) : [],
+			max: isNil(borders.marginsI.top)    ? tag[vert].max.concat(tags.map(t => t.vert)) : []
+		};
 	}
 
   return {
