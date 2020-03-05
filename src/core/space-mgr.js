@@ -506,24 +506,24 @@ const _spaces = (universe, datas, axis, borders, titleProps, showTags, lengthMgr
 	/// margins
   const margins = {
     left: {
-      marginsI: borders.marginsI.left || defMargins.inner.left,
+      marginsI: isNil(borders.marginsI.left) ? defMargins.inner.left : borders.marginsI.left,
       marginsF: borders.marginsF.left || 0,
-      marginsO: max(defMargins.outer.min, borders.marginsO.left ? borders.marginsO.left : computeOuterMargin('left', limits.left, axises.left, lengthMgr, null ) )
+      marginsO: max(defMargins.outer.min, !isNil(borders.marginsO.left) ? borders.marginsO.left : computeOuterMargin('left', limits.left, axises.left, lengthMgr, null ) )
     },
     right: {
-      marginsI: borders.marginsI.right || defMargins.inner.right,
+      marginsI: isNil(borders.marginsI.right) ? defMargins.inner.right : borders.marginsI.right,
       marginsF: borders.marginsF.right || 0,
-      marginsO: max(defMargins.outer.min, borders.marginsO.right ? borders.marginsO.right : computeOuterMargin('right', limits.right, axises.right, lengthMgr, null) )
+      marginsO: max(defMargins.outer.min, !isNil(borders.marginsO.right) ? borders.marginsO.right : computeOuterMargin('right', limits.right, axises.right, lengthMgr, null) )
     },
     top: {
-      marginsI: borders.marginsI.top || defMargins.inner.top,
+      marginsI: isNil(borders.marginsI.top) ? defMargins.inner.top : borders.marginsI.top,
       marginsF: borders.marginsF.top || 0,
-      marginsO: max(defMargins.outer.min, borders.marginsO.top ? borders.marginsO.top : computeOuterMargin('top', limits.top, axises.top, lengthMgr, titleProps ) )
+      marginsO: max(defMargins.outer.min, !isNil(borders.marginsO.top) ? borders.marginsO.top : computeOuterMargin('top', limits.top, axises.top, lengthMgr, titleProps ) )
     },
     bottom: {
-      marginsI: borders.marginsI.bottom || defMargins.inner.bottom,
+      marginsI: isNil(borders.marginsI.bottom) ? defMargins.inner.bottom : borders.marginsI.bottom,
       marginsF: borders.marginsF.bottom || 0,
-      marginsO: max(defMargins.outer.min, borders.marginsO.bottom ? borders.marginsO.bottom : computeOuterMargin('bottom', limits.bottom, axises.bottom, lengthMgr, null ) )
+      marginsO: max(defMargins.outer.min, !isNil(borders.marginsO.bottom) ? borders.marginsO.bottom : computeOuterMargin('bottom', limits.bottom, axises.bottom, lengthMgr, null ) )
     },
   };
 
