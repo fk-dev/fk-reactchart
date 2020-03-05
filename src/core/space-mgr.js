@@ -547,8 +547,8 @@ const _spaces = (universe, datas, axis, borders, titleProps, showTags, lengthMgr
 		const hor  = datas[i].abs.axis;
 		const vert = datas[i].ord.axis;
 		const tags = datas[i].series.map( p => measureTags(showTags[i],p, p.tag, lengthMgr)).filter(x => x);
-		tag[hor] = tag[hor].concat(tags.map(t => t.hor));
-		tag[vert] = tag[vert].concat(tags.map(t => t.vert));
+		tag[hor]  = isNil(borders.marginsI[hor])  ? tag[hor].concat(tags.map(t => t.hor))  : [];
+		tag[vert] = isNil(borders.marginsI[vert]) ? tag[vert].concat(tags.map(t => t.vert)) : [];
 	}
 
   return {
