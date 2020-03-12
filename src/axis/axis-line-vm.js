@@ -142,7 +142,7 @@ export function vm(ds,cs, props,partnerDs,dir, motherCss, measurer){
 	const fh = 0.75 * lineHeight; // font height, 75 %
 	const defOff = props.marginOff;
 
-	const placer = (pl) => {
+	const placerCart = (pl) => {
 
 		switch(pl){
 			case 'top':
@@ -170,6 +170,17 @@ export function vm(ds,cs, props,partnerDs,dir, motherCss, measurer){
 		}
 	};
 
+	const placerPolar = theta => {
+		const rad = a => a / 180 * Math.PI;
+		const bot = theta > rad(1.9*45) && theta < rad(2.1*45);
+		const top = theta > rad(5.9*45) && theta < rad(6.1*45);
+		const lineHeight = bot || top ? 0 : fh;
+		return {
+			x: defOff * Math.cos(theta),
+			y: defOff * Math.sin(theta) + lineHeight
+		};
+	};
+
 	const anchorer = pl => {
 		switch(pl){
 			case 'top':
@@ -187,10 +198,10 @@ export function vm(ds,cs, props,partnerDs,dir, motherCss, measurer){
 	const placeTheta = t => {
 		const rad = a => a / 180 * Math.PI;
 		const places = {
-			right:  { inf: 0,         sup: rad(45), infS: rad(7*45)},
-			bottom: { inf: rad(45),   sup: rad(3*45)},
-			left:   { inf: rad(3*45), sup: rad(5*45)},
-			top:    { inf: rad(5*45), sup: rad(7*45)}
+			right:  { inf: 0,           sup: rad(1.9 * 45), infS: rad(6.1*45)},
+			bottom: { inf: rad(1.9*45), sup: rad(2.1*45)},
+			left:   { inf: rad(2.1*45), sup: rad(5.9*45)},
+			top:    { inf: rad(5.9*45), sup: rad(6.1*45)}
 		};
 
 		for(let u in places){
@@ -207,7 +218,7 @@ export function vm(ds,cs, props,partnerDs,dir, motherCss, measurer){
 		return 'r';
 	};
 
-	const offsetLab = cs === 'polar' ? label.position.theta.map( t => placer(placeTheta(t))) : placer(props.placement);
+	const offsetLab = cs === 'polar' ? label.position.theta.map( t => placerPolar(t)) : placerCart(props.placement);
 
 	label.offset = Array.isArray(offsetLab) ? offsetLab.map( off => {
 		return {
