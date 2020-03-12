@@ -43,11 +43,11 @@ export function isImm(obj){
 }
 
 export function immutable(obj){
-	return isImm(obj) ? obj : ( new Freezer(obj) ).get();
+	return isImm(obj) ? obj : ( new Freezer(obj, { singleParent: true}) ).get();
 }
 
 export function freeze(obj,type){
-	return type === 'no' ? noFreeze(obj) : new Freezer(obj);
+	return type === 'no' ? noFreeze(obj) : new Freezer(obj, { singleParent: true});
 }
 
 export function isEqual(obj1,obj2){
