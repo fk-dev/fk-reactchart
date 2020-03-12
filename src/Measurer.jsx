@@ -28,6 +28,7 @@ export default class Measurer extends React.Component {
 				<text textAnchor='middle' className='title' id={`fkchartmeasurer-${this.props.id}-title`}/>
 				{this.oneAxis('x',['bottom','top'])}
 				{this.oneAxis('y',['left','right'])}
+				{this.oneAxis('polar',['r'])}
 			</g>;
 		}
 }
