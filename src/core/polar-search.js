@@ -1,6 +1,7 @@
 const { PI, sin, cos, max, min, abs } = Math;
 
-const offsetH = theta => {
+const offsetH = _theta => {
+	const theta = 2*PI - _theta;
 	if(theta < PI/2){
 		return 1 - sin(theta);
 	}else{
@@ -8,7 +9,8 @@ const offsetH = theta => {
 	}
 };
 
-const offsetV = theta => {
+const offsetV = _theta => {
+	const theta = 2*PI - _theta;
 	if(theta < PI/2 || theta > 3/2*PI){
 		return 1 - cos(theta);
 	}else if(theta < 3/2*PI){
@@ -27,8 +29,8 @@ export function radius(width,height,labelLengthes){
 
 	const right  = r => max.apply(null,  rightL.map( ({theta,labelLength}) => hOM(r,{theta, length: labelLength.width})));
 	const left   = r => max.apply(null,   leftL.map( ({theta,labelLength}) => hOM(r,{theta, length: labelLength.width})));
-	const top    = r => max.apply(null,    topL.map( ({theta,labelLength}) => vOM(r,{theta, length: labelLength.width})));
-	const bottom = r => max.apply(null, bottomL.map( ({theta,labelLength}) => vOM(r,{theta, length: labelLength.width})));
+	const top    = r => max.apply(null,    topL.map( ({theta,labelLength}) => vOM(r,{theta, length: labelLength.height})));
+	const bottom = r => max.apply(null, bottomL.map( ({theta,labelLength}) => vOM(r,{theta, length: labelLength.height})));
 
 	const hLength = r => 2*r + right(r) + left(r);
 	const vLength = r => 2*r + top(r)   + bottom(r);

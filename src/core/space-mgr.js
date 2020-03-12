@@ -300,7 +300,7 @@ const computeOuterMargin = (where, limits, axis, measure, title ) => {
     if(labels.length){
 			// this is the axises label
 			if(dir === 'r'){
-				axis.marginOff = 10;
+				axis.marginOff = Math.max(cadMar , defMargins.outer.min);
 				const cN = axis.css ? `axis-label-${where}` : '';
 				const { labelFSize, dim } = axis;
 				return {
@@ -595,7 +595,7 @@ const _polarSpace = (universe, datas, axis, borders, titleProps, lengthMgr) => {
 	}, {});
 
 	const { cadMar, title, labelLengthes } = computeOuterMargin('r', {min: 0, max }, axis.polar[0], lengthMgr, titleProps );
-	const sol = radius(universe.width - 2 * cadMar,universe.height - 2*cadMar - title,labelLengthes);
+	const sol = radius(universe.width - 2 * (cadMar + axis.polar[0].marginOff), universe.height - 2 * (cadMar + axis.polar[0].marginOff) - title,labelLengthes);
 	const marginsO = {
 		left:   sol.outerMargins.left   + cadMar,
 		right:  sol.outerMargins.right  + cadMar,

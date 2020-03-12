@@ -253,6 +253,9 @@ export function measure(gid, debug){
 
 		// \n => (x,y) = (-10,-10) in Measurer.jsx
 		texts.forEach( ({line}) => oneMeasure(line));
+		// reinit, no style
+		meas.style.fontSize = "";
+
 		tHeight = tLineHeight * texts.length;
 
 		/// this 0.6 factor we can't (yet) explain...
