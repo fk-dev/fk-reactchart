@@ -43,7 +43,7 @@ const firstDigit = function(r,n){
 	if(n > 1){
 		out += str.substr(1,n);
 	}
-	return Number(out);
+	return Number(out) || 1; // beware of 0 !
 };
 
 const firstNonNull = function(v){
