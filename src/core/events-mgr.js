@@ -9,8 +9,14 @@ const clickers = {
 	},
 
 	del: (mgr, lId, idx) => {
+
+		const value = !mgr.props(lId).curves[idx].show;
+
 		// redefine
-		mgr.unprocessedProps(lId).graphProps[idx].show = !mgr.props(lId).curves[idx].show;
+		mgr.unprocessedProps(lId).graphProps[idx].show = value;
+
+		// legend
+		mgr.legend(lId)[idx].icon.props.set('faded', !value);
 
 		// recompute
 		mgr.reinit(mgr.unprocessedProps(lId));
