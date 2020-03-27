@@ -104,7 +104,7 @@ class Legend extends React.Component {
 
 	constructor(props){
 		super(props);
-		this.myKey = `l.${props.legendId}` || rndKey();
+		this.myKey = `l.${props.legendId || rndKey()}`;
 		this.type = 'legend';
 		this.init();
 	}
@@ -144,34 +144,34 @@ class Legend extends React.Component {
 		}
 	}
 
+	iconStyle(props,type){
+
+		const o = props.faded ? 0.2 : 1;
+		const c = props.clickable ? "pointer" : null;
+
+		let sty = {
+			opacity: o,
+			cursor: c
+		};
+
+		if(type === 'icon'){
+			sty.width = props.width;
+		}
+
+		return sty;
+	}
+
 	table(){
 
 		const nCol = this.props.col || 1;
 
 		const tabline = (cells,idx) => {
 
-			const iconP = (cell) => {
-				return {
-					width: cell.icon.props.width,
-					opacity: o(cell),
-					cursor: c(cell)
-				};
-			};
-
-			const iconL = (cell) => {
-				return {
-					opacity: o(cell),
-					cursor: c(cell)
-				};
-			};
-
 			const cs = (cell) => cell.icon.props.faded ? 'fade-chart' : '';
       const clicker = (cell) => this.props.noMarkClick ? null : () => cell.click(this.sh, this.myKey);
 
-			const o = cell => cell.icon.props.faded ? 0.2 : 1;
-			const c = cell => cell.icon.props.clickable ? "pointer" : null;
-			const icon  = (cell) => <td key={`i.${cell.label}`} className={cs(cell)} style={iconP(cell)} onClick={clicker(cell)}>{cell.icon.icon(cell.icon.props)}</td>;
-			const label = (cell) => <td key={`l.${cell.label}`} className={cs(cell)} style={iconL(cell)} onClick={clicker(cell)}>{cell.label}</td>;
+			const icon  = (cell) => <td key={`i.${cell.label}`} className={cs(cell)} style={this.iconStyle(cell.icon.props,'icon')} onClick={clicker(cell)}>{cell.icon.icon(cell.icon.props)}</td>;
+			const label = (cell) => <td key={`l.${cell.label}`} className={cs(cell)} style={this.iconStyle(cell.icon.props)} onClick={clicker(cell)}>{cell.label}</td>;
 
 			const fill = () => {
 				const out = [];
@@ -223,10 +223,10 @@ class Legend extends React.Component {
 					marginRight: '10pt'
 				}
 			};
-			const { icon } = l;
-			return <span key={idx} {...margin} onClick={icon.click}>
-				<span verticalAlign='sub'>{icon.icon(icon.props)}</span>
-				<span>{l.label}</span>
+			const { icon, click, label } = l;
+			return <span key={idx} {...margin} onClick={() => click(this.sh, this.myKey)}>
+				<span style={this.iconStyle(icon.props,'icon')} verticalAlign='sub'>{icon.icon(icon.props)}</span>
+				<span style={this.iconStyle(icon.props)}>{label}</span>
 			</span>;
 		};
 
