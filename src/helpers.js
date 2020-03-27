@@ -251,10 +251,10 @@ export function init(rawProps, type, Obj, debug){
 
 	const initMeasurers = () => {
 		for(let k in updatee){
-			if(!measurer[k]){
+			if(!getMeasurer(k)){
 				addAMeasurer(k);
 			}else{
-				if(!measurer[k].mgr.active){
+				if(!getMeasurer(k).mgr.active){
 					measurer[k] = initMeasurer(measure(k, debug),k);
 				}
 			}
