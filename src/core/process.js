@@ -560,12 +560,28 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 
 	const acti = props.graphProps.map( (g,idx) => g.show ? idx : null).filter( l => !utils.isNil(l));
 
-	const filterData = series => {
+	/*const filterData = series => {
 		let out = [];
 		for(let i = 0; i < acti.length; i++){
 			out.push(series[acti[i]]);
 		}
 		return out;
+	};*/
+
+	const filterAxis = (axis,type) => axis.filter( ax => {
+		const { placement } = ax;
+		return acti.findIndex( idx => props.data[idx][type].axis === placement) !== -1;
+	});
+
+		// so we have all the keywords
+	const marginalize = mar => {
+		for(let m in {left: true, right: true, bottom: true, top: true}){
+			if(utils.isNil(mar[m])){
+				mar[m] = null;
+			}
+		}
+
+		return mar;
 	};
 
 	let state = {};
@@ -588,26 +604,54 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 
 	}
 
-		// so we have all the keywords
-	const marginalize = mar => {
-		for(let m in {left: true, right: true, bottom: true, top: true}){
-			if(utils.isNil(mar[m])){
-				mar[m] = null;
-			}
+	// span and offet pointwise
+	// drops if required and not given (default value)
+	state.series.forEach( (serie,idx) => {
+		let dir;
+		switch(props.data[idx].type){
+			case 'Bars':
+			case 'bars':
+				dir = 'y';
+				break;
+			case 'yBars':
+			case 'ybars':
+				dir = 'x';
+				break;
+			default:
+				break;
 		}
+		if(isCart){
+			addDefaultDrop(serie,dir);
+		}
+	});
 
-		return mar;
-	};
+	const data = acti.map( idx => {
+		return {
+			series: state.series[idx],
+			phantomSeries: props.data[idx].phantomSeries,
+			stacked: props.data[idx].stacked,
+			abs: props.data[idx].abs,
+			ord: props.data[idx].ord,
+			coordSys: props.data[idx].coordSys,
+			limitOffset: lOffset[idx] ? lOffset[idx] : null,
+		};
+	});
+
+	// empty
+	if(data.length === 0){
+		data[0] = gProps.defaults('data')([{x: 42, y: 42}], {abs: [], ord: []});
+	}
 
 		// axis data, min-max from series (computed in space-mgr)
-	let abs   = utils.isArray(props.axisProps.abs)   ? props.axisProps.abs   : props.axisProps.abs   ? [props.axisProps.abs]   : [];
-	let ord   = utils.isArray(props.axisProps.ord)   ? props.axisProps.ord   : props.axisProps.ord   ? [props.axisProps.ord]   : [];
+	let abs   = filterAxis(utils.isArray(props.axisProps.abs)   ? props.axisProps.abs   : props.axisProps.abs   ? [props.axisProps.abs]   : [],'abs');
+	let ord   = filterAxis(utils.isArray(props.axisProps.ord)   ? props.axisProps.ord   : props.axisProps.ord   ? [props.axisProps.ord]   : [],'ord');
 	let polar = utils.isArray(props.axisProps.polar) ? props.axisProps.polar : props.axisProps.polar ? [props.axisProps.polar] : [];
 
 	const isTick = (u,type) => props.coordSys === 'polar' && ( ( u === 'x' && type === 'Bars' ) || ( u === 'y' && type === 'yBars' ) ) ? 'axis' : 'tick';
 
 	// let's look for labels given in the data
-	each(props.data, (dat,idx) => {
+	acti.forEach( idx => {
+		const dat = props.data[idx];
 		const locObDir = {x: 'abs', y: 'ord'};
 		const ser = state.series[idx];
 		for(let u in locObDir){
@@ -645,49 +689,18 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 		}
 	}
 
+	acti.forEach( i => {
+		const { abs, ord } = props.data[i];
+		props.axisProps.ord.find(x => x.placement === ord.axis).partner = props.axisProps.abs.findIndex(x => x.placement === abs.axis);
+		props.axisProps.abs.find(x => x.placement === abs.axis).partner = props.axisProps.ord.findIndex(x => x.placement === ord.axis);
+		
+	});
+
 	// getting dsx and dsy
 
-	// span and offet pointwise
-	// drops if required and not given (default value)
-	state.series.forEach( (serie,idx) => {
-		let dir;
-		switch(props.data[idx].type){
-			case 'Bars':
-			case 'bars':
-				dir = 'y';
-				break;
-			case 'yBars':
-			case 'ybars':
-				dir = 'x';
-				break;
-			default:
-				break;
-		}
-		if(isCart){
-			addDefaultDrop(serie,dir);
-		}
-	});
-
-	const data = filterData(state.series).map( (ser,i) => {
-		const idx = acti[i];
-		return {
-			series: ser,
-			phantomSeries: props.data[idx].phantomSeries,
-			stacked: props.data[idx].stacked,
-			abs: props.data[idx].abs,
-			ord: props.data[idx].ord,
-			coordSys: props.data[idx].coordSys,
-			limitOffset: lOffset[idx] ? lOffset[idx] : null,
-		};
-	});
-
-	// empty
-	if(data.length === 0){
-		data[0] = gProps.defaults('data')([{x: 42, y: 42}], {abs: [], ord: []});
-	}
-
 	// space = {dsx, dsy}
-	const tags = props.graphProps.map( (x,i) => {
+	const tags = acti.map( i => {
+		const x = props.graphProps[i];
 		let out = false;
 		if(x.tag.show && props.data[i].type.indexOf('Bar') !== -1){
 			out = x.tag;
@@ -699,8 +712,11 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 
 	// defaut drops for those that don't have them
 	state.series = state.series.map( (serie,idx) => {
-	let dir;
-	const ds = state.spaces; 
+		if(acti.indexOf(idx) === -1){
+			return serie;
+		}
+		let dir;
+		const ds = state.spaces; 
 		switch(props.data[idx].type){
 			case 'Bars':
 			case 'bars':
