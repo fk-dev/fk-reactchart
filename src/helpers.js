@@ -427,7 +427,7 @@ export function init(rawProps, type, Obj, debug){
 		const _props = newProps || props;
 		clearGradient(rc.__mgrId,newProps ? null : notUpToDate());
 		allOutOfDate();
-		props   = defaultTheProps(deepCp({},_props));
+		props   = _props.__defaulted ? _props : defaultTheProps(deepCp({},_props));
 		props.freeze = type;
 		keys.forEach( key => {
 			if(vms[key] === '_def'){

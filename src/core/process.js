@@ -650,7 +650,7 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 	// span and offet pointwise
 	// drops if required and not given (default value)
 	state.series.forEach( (serie,idx) => {
-									let dir;
+		let dir;
 		switch(props.data[idx].type){
 			case 'Bars':
 			case 'bars':
@@ -668,7 +668,8 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 		}
 	});
 
-	const data = filterData(state.series).map( (ser,idx) => {
+	const data = filterData(state.series).map( (ser,i) => {
+		const idx = acti[i];
 		return {
 			series: ser,
 			phantomSeries: props.data[idx].phantomSeries,
