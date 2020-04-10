@@ -689,12 +689,13 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 		}
 	}
 
-	acti.forEach( i => {
-		const { abs, ord } = props.data[i];
-		props.axisProps.ord.find(x => x.placement === ord.axis).partner = props.axisProps.abs.findIndex(x => x.placement === abs.axis);
-		props.axisProps.abs.find(x => x.placement === abs.axis).partner = props.axisProps.ord.findIndex(x => x.placement === ord.axis);
-		
-	});
+	if(props.coordSys !== 'polar'){
+		acti.forEach( i => {
+			const { abs, ord } = props.data[i];
+			props.axisProps.ord.find(x => x.placement === ord.axis).partner = props.axisProps.abs.findIndex(x => x.placement === abs.axis);
+			props.axisProps.abs.find(x => x.placement === abs.axis).partner = props.axisProps.ord.findIndex(x => x.placement === ord.axis);
+		});
+	}
 
 	// getting dsx and dsy
 
