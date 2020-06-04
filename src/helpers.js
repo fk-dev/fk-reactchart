@@ -8,21 +8,25 @@ import { clear as clearGradient } from './core/gradient-mgr.js';
 export function init(rawProps, type, Obj, debug){
 
 	Obj = Obj || {};
-	let { key, obj, namespace, onGraphDone } = Obj;
+	let { key, obj, namespace, onGraphDone, onGraphStart, printOnly } = Obj;
 
 	if(obj && !key){
 		key = rndKey();
 	}
 
 	let hasDebug = debug;
-	let _atDone = {};
+	let _atDone  = {};
+	let _atStart = {};
 	let props;
 	let freezer = {
 		_def: {
 			get: () => emptyState
 		}
 	};
-	const _process  = type === 'legend' ? processLegend : process;
+
+	const processALegend = (getNode, rawProps, mgrId, getMeasurer, cb) => processLegend(getNode,rawProps, mgrId, cb);
+	const processAGraph  = (getNode, rawProps, mgrId, getMeasurer, cb) => process(getNode,rawProps, mgrId, getMeasurer, printOnly, cb);
+	const _process  = type === 'legend' ? processALegend : processAGraph;
 
 	let updatee = {};
 	let updated = {};
@@ -35,10 +39,32 @@ export function init(rawProps, type, Obj, debug){
 		_def: namespace || 'reactchart'
 	};
 
+	const onViewUpdate = (key,hk) => () => checkDone(key,hk);
+
 	const allOutOfDate = () => {
+		/// views
 		for(let i in updated){
 			updated[i] = false;
 		}
+		// hooks
+		/// we keep the fct, we keep
+		/// all the hookKeys for debugging purposes
+		const hookKey = `h.${rndKey()}`;
+		for(let k in _atDone){
+			_atDone[k].done = 5;
+			if(!_atDone[k].hookKeys){
+				_atDone[k].hookKeys = {};
+			}
+			for(let hk in _atDone[k].hookKeys){
+				_atDone[k].hookKeys[hk].done = 5;
+			}
+			_atDone[k].hookKeys[hookKey] = {done: -1};
+		}
+		for(let k in _atStart){
+			_atStart[k]();
+		}
+
+		return hookKey;
 	};
 
 	const deleteKey = (k,ik) => {
@@ -68,7 +94,8 @@ export function init(rawProps, type, Obj, debug){
 
 	const isALegend = key => key.startsWith('l.') && keys.indexOf(key.substring(2)) !== -1;
 
-	const updateDeps = (key) => {
+	const updateDeps = (key,hk) => {
+
 		const updateDef = () => {// look for 'em
 			for(let u in pointsTo){
 				if(pointsTo[u] === '_def'){
@@ -89,7 +116,7 @@ export function init(rawProps, type, Obj, debug){
 			const invkey = pointsTo[_key];
 			(invPointsTo[invkey] || []).forEach( k => {
 				if(updatee[k] && updatee[k].forceUpdate){
-					updatee[k].forceUpdate();
+					updatee[k].forceUpdate(onViewUpdate(k,hk));
 					updated[k] = true;
 					// legend ?
 					if(updatee[`l.${k}`] && updatee[`l.${k}`].forceUpdate){
@@ -276,10 +303,31 @@ export function init(rawProps, type, Obj, debug){
 		}
 	};
 
-	const checkDone = k => {
-		if(_atDone[k]){
-			_atDone[k]();
-			delete _atDone[k];
+	const checkStart = k => {
+		if(_atStart[k]){
+			_atStart[k]();
+		}
+	};
+
+	// two sources: vm || view
+	// thus two passes
+	// any value outside [-1,1]
+	// is for debug
+	// 5 -> outdated by reinit
+	const hookToDo = hook => {
+		const { done } = hook;
+		if(done > -2 && done < 2){
+			hook.done++;
+			return hook.done === 1;
+		}
+		return false;
+	};
+
+	const checkDone = (k,hk) => {
+		if(_atDone[k] && hookToDo(_atDone[k],k)){
+			_atDone[k].fct();
+		}else if(hk && _atDone[k] && _atDone[k].hookKeys && _atDone[k].hookKeys[hk] && hookToDo(_atDone[k].hookKeys[hk],k)){
+			_atDone[k].fct();
 		}
 	};
 
@@ -355,8 +403,15 @@ export function init(rawProps, type, Obj, debug){
 		}
 	};
 
+	rc.onGraphStart = (key,fct) => {
+		_atStart[key] = fct;
+	};
+
 	rc.onGraphDone = (key,fct) => {
-		_atDone[key] = fct;
+		_atDone[key] = {
+			done: -1,
+			fct
+		};
 	};
 
 	// utils
@@ -377,7 +432,7 @@ export function init(rawProps, type, Obj, debug){
 			return;
 		}
 
-    obj.forceUpdate();
+    obj.forceUpdate(onViewUpdate(key));
 
 		if(!updatee[key]){
 			updatee[key] = obj;
@@ -426,7 +481,7 @@ export function init(rawProps, type, Obj, debug){
 		}
 		const _props = newProps || props;
 		clearGradient(rc.__mgrId,newProps ? null : notUpToDate());
-		allOutOfDate();
+		const hookKey = allOutOfDate();
 		props   = _props.__defaulted ? _props : defaultTheProps(deepCp({},_props));
 		props.freeze = type;
 		keys.forEach( key => {
@@ -439,7 +494,8 @@ export function init(rawProps, type, Obj, debug){
 				_process(() => freezer[key].get(), props, rc.__mgrId, () => rc.getLengthes(key), (err,imVM) => {
 					freezer[key] = freeze(imVM);
 					freezer[key].on('update', () => updateDeps(key));
-					updateDeps(key);
+					updateDeps(key,hookKey);
+					checkDone(key,hookKey);
 				}); 
 			}
 		});
@@ -486,6 +542,10 @@ export function init(rawProps, type, Obj, debug){
 	};
 		// freezer
 	let _ready = false;
+	if(key && onGraphStart ){
+		rc.onGraphStart(key,onGraphStart);
+		checkStart(key);
+	}
 	_process(() => freezer._def.get(), props, rc.__mgrId, () => rc.getLengthes('_def'), (err,imVM) => {
 		freezer._def = freeze(imVM);
 		_ready = true;

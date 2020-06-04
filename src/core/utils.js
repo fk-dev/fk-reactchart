@@ -1,4 +1,3 @@
-/* global document, window */
 import * as date from './dateMgr.js';
 import * as nbr from './nbrMgr.js';
 import { renderTextOptions } from '../marks/label-text.jsx';
@@ -381,5 +380,3 @@ export function toNumber(fs){
 }
 
 export const emptyState = {cadre: { width: 480, height: 270 }, background: {}, empty: true, width: 300, height: 200};
-
-export const async = () => typeof window !== 'undefined' && !window.nightmare;

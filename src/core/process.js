@@ -822,8 +822,8 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 
 };
 
-export function process(getNode, rawProps, mgrId, getMeasurer, cb){
-	if(utils.async()){
+export function process(getNode, rawProps, mgrId, getMeasurer, printOnly, cb){
+	if(!printOnly){
 		setImmediate(() => cb(null,processSync(getNode, rawProps, mgrId, getMeasurer)));
 	}else{
 		cb(null,processSync(getNode, rawProps, mgrId, getMeasurer));
