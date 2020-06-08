@@ -251,6 +251,7 @@ const computeOuterMargin = (where, limits, axis, measure, title ) => {
   if(!axis){
     return titleMeasure();
   }
+  const titleLength = titleMeasure();
 
   // empty graph
   if(!isFinite(min) || isNil(min)){
@@ -344,7 +345,6 @@ const computeOuterMargin = (where, limits, axis, measure, title ) => {
     labelLength = computeSquare(angle,width,height).height + cadratin.axisLabel[where] / 3;
   }
 
-  const titleLength = titleMeasure();
   return tickLength + cadMar + tickLabelLength + labelLength + ( titleLength ? cadratin.tickLabel[where] / 2 + titleLength : 0 );
 
 };
