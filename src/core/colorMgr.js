@@ -65,11 +65,11 @@ const color = function(options,f){
 		};
 	};
 
-	const addRGB = function(){
+	const addRGB = function(...args){
 		return {
-			R: arguments.reduce( (memo,ar) => memo + ar.R, 0),
-			G: arguments.reduce( (memo,ar) => memo + ar.G, 0),
-			B: arguments.reduce( (memo,ar) => memo + ar.B, 0)
+			R: args.reduce( (memo,ar) => memo + ar.R, 0),
+			G: args.reduce( (memo,ar) => memo + ar.G, 0),
+			B: args.reduce( (memo,ar) => memo + ar.B, 0)
 		};
 	};
 
