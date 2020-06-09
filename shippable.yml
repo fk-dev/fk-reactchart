@@ -1,4 +1,4 @@
 build:
   ci:
-    - npm install --unsafe-perm
+    - npm install
     - npm test
