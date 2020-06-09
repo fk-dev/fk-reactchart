@@ -1,5 +1,4 @@
 import { isNil, mgr as typeMgr } from '../core/utils.js';
-import { map } from 'underscore';
 
 const nInterval = (length, height) => {
 	const width = height * 3.5 / 2;
@@ -281,7 +280,7 @@ const computeTicks = function(first, last, step, { majAuto, majLabelize, spaceFa
 
 export function ticks(start, length, majStep, labels, majProps, minor, minStep, minProps, fac, toPixel, height, square, outer){
 	if(labels && labels.length > 0){
-		return map(labels, (lab) => {
+		return labels.map( lab => {
 			return {
 				position: lab.coord, 
 				label: lab.label, 

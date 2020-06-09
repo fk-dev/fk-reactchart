@@ -1,7 +1,6 @@
 import React from 'react';
 import Tick from './Tick.jsx';
 import AxisLine from './AxisLine.jsx';
-import { map } from 'underscore';
 import { isEqual } from '../core/im-utils.js';
 
 /*
@@ -29,7 +28,7 @@ export default class Axe extends React.Component {
 		return <g className={css ? `axis axis-${placement}` : ''}>
 			<AxisLine placement={placement} className={axisName} state={state.axisLine}/>
 			<g className={ css ? 'ticks' : ''}>
-				{ map(state.ticks, (tick) => <Tick className={tickName} key={tick.key} state={tick}/> ) }
+				{ state.ticks.map( tick => <Tick className={tickName} key={tick.key} state={tick}/> ) }
 			</g>
 		</g>;
 	}

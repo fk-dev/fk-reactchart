@@ -3,7 +3,6 @@
  *
  * ds is { c : {min, max}, d: {min,max}}
  */
-import { map } from 'underscore';
 import { isNil, mgr as mgrU, isString, isArray, computeSquare } from './utils.js';
 import { defMargins } from './proprieties.js';
 import { errorMgr }   from './errorMgr.js';
@@ -381,7 +380,7 @@ const _filter = (datas,dir, user) => {
       }
     };
 
-    return Array.isArray(v) ? v.forEach(_doMin) : _doMin(v);
+    return isArray(v) ? v.forEach(_doMin) : _doMin(v);
   };
   const doMax = v => {
     if(!isNil(user.max)){
@@ -393,7 +392,7 @@ const _filter = (datas,dir, user) => {
       }
     };
 
-    return Array.isArray(v) ? v.forEach(_doMax) : _doMax(v);
+    return isArray(v) ? v.forEach(_doMax) : _doMax(v);
   };
 
   if(isNil(user.min) || isNil(user.max)){
@@ -432,7 +431,7 @@ const _filter = (datas,dir, user) => {
         // limitOffset changes only one boundary
         if(limOfIdx === idx){
           if(isArray(val)){
-            val = map(val, (v) => v + loff);
+            val = val.map( v => v + loff);
           }else{
             val = mm.add(val,loff);
           }

@@ -1,5 +1,4 @@
-import { reduce, extend } from 'underscore';
-import { isNil } from './utils.js';
+import { isNil, deepCp } from './utils.js';
 
 const palette = [ "#3A83F1", "#DC3FF1", "#F2693F", "#8AF23F", "#758d99",
 	"#F1DC41", "#AC310C", "#40C8F2", "#980DAB", "#F6799B", "#9679F6", "#EE2038",
@@ -68,9 +67,9 @@ const color = function(options,f){
 
 	const addRGB = function(){
 		return {
-			R: reduce(arguments, (memo,ar) => memo + ar.R, 0),
-			G: reduce(arguments, (memo,ar) => memo + ar.G, 0),
-			B: reduce(arguments, (memo,ar) => memo + ar.B, 0)
+			R: arguments.reduce( (memo,ar) => memo + ar.R, 0),
+			G: arguments.reduce( (memo,ar) => memo + ar.G, 0),
+			B: arguments.reduce( (memo,ar) => memo + ar.B, 0)
 		};
 	};
 
@@ -123,7 +122,7 @@ export function shader(shade,points){
 		return palette[shade];
 	}
 
-	let mgr = extend({},shade);
+	let mgr = deepCp({},shade);
 	mgr.N = points.length - 1;
 	for(let i = 0; i < points.length; i++){
 		mgr.index = i;
