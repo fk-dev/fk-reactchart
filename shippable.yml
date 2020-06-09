@@ -1,22 +1,4 @@
-language: node_js
-
-node_js:
-   - 6.10.0
-
 build:
-  cache: true
-  cache_dir_list:
-    - $SHIPPABLE_BUILD_DIR/node_modules
-
   ci:
-    - shippable_retry npm cache clean && npm install --unsafe-perm
+    - npm install --unsafe-perm
     - npm test
-
-integrations:
-  notifications:
-    - integrationName: slack
-      type: slack
-      recipients:
-        - "#fk-builds"
-      on_success: always
-      on_failure: always
