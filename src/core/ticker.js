@@ -44,7 +44,7 @@ const checkMajDist = (labels,ref,D,first,cv, getLength, mgr, starter, spaceFac) 
  * beware of distance (period) versus
  * values (date), see {date,nbr}Mgr.js
 */
-const computeTicks = function(first, last, step, { majAuto, majLabelize, spaceFac}, minor, mStep, { minAuto, minLabelize }, fac, toPixel, height, square, outer){
+const computeTicks = function(first, last, step, { majAuto, majLabelize, spaceFac, forcedMajStep}, minor, mStep, { minAuto, minLabelize/*, forcedMinStep*/ }, fac, toPixel, height, square, outer){
 
 	// mgr
 	const mgr = typeMgr(first);
@@ -106,7 +106,7 @@ const computeTicks = function(first, last, step, { majAuto, majLabelize, spaceFa
 		}
 		let cycle = false;
 		while(mgr.lowerThan(curValue,last)){
-			if(!cycle && out.length === 4  && !minor && square){
+			if(!forcedMajStep && !cycle && out.length === 4  && !minor && square){
 				out.forEach( (t,i) => {
 					t.label = majLabelize(out,i,mgr.label(t.position,majDist,fac));
 				});

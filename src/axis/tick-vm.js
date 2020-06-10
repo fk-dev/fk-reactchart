@@ -154,7 +154,10 @@ export function vm({css, cs, measurer, ds, partner, bounds, dir, locProps, comFa
 	// spacing factor
 	const { spacingFactor } = majProps;
 
-	const tickers = ticks(min, max, majStep, ticksLabel, {majAuto: majProps.autoOffset, majLabelize, spaceFac: spacingFactor }, minor, minStep, { minAuto: minProps.autoOffset, minLabelize}, comFac, toPixel, height, labelSquare, outerMargins);
+	const tickers = ticks(min, max, 
+		majStep, ticksLabel, {majAuto: majProps.autoOffset, majLabelize, spaceFac: spacingFactor, forcedMajStep: majProps.forcedStep }, 
+		minor, minStep, { minAuto: minProps.autoOffset, minLabelize, forcedMinStep: minProps.forcedStep}, 
+		comFac, toPixel, height, labelSquare, outerMargins);
 
 	const prevTick = (idx) => idx > 0 ? tickers[idx - 1].position : null;
 	const nextTick = (idx) => idx < tickers.length - 1 ? tickers[idx + 1].position : null;

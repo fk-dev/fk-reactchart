@@ -86,9 +86,13 @@ const preprocessAxis = function(props){
 					}
 					if(!axe.ticks.major){
 						axe.ticks.major = {};
+					}else if(axe.ticks.major.step){// step is forced
+						axe.ticks.major.forcedStep = true;
 					}
 					if(!axe.ticks.minor){
 						axe.ticks.minor = {};
+					}else if(axe.ticks.minor.step){// step is forced
+						axe.ticks.minor.forcedStep = true;
 					}
 					if(axe.empty){
 						axe.ticks.major.show = false;
