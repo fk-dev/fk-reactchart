@@ -27,7 +27,7 @@ import { isEqual } from './core/im-utils.js';
 export default class Drawer extends React.Component {
 
 	shouldComponentUpdate(props){
-		return !isEqual(props.state,this.props.state);
+		return !isEqual(props.state,this.props.state) || props.className !== this.props.className;
 	}
 
 	orderAG(){

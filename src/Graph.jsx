@@ -46,7 +46,7 @@ export default class Graph extends React.Component {
 	}
 
 	shouldComponentUpdate(pr){
-		return this.changeOfMgrByRawProps(pr);
+		return this.changeOfMgrByRawProps(pr) || pr.namespace !== this.props.namespace;
 	}
 
 	changeOfMgrByRawProps(pr){
