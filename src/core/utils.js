@@ -380,3 +380,12 @@ export function toNumber(fs){
 }
 
 export const emptyState = {cadre: { width: 480, height: 270 }, background: {}, empty: true, width: 300, height: 200};
+
+export const reinitOn = (mgr,waitFor) => {
+
+	const defWaitFor = [document.fonts.ready];
+
+	const waitForUs = waitFor ? defWaitFor.concat(waitFor) : defWaitFor;
+
+	return Promise.all(waitForUs).then(() => mgr.reinit()); 
+};

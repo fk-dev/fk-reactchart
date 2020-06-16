@@ -1,6 +1,6 @@
 import { process, defaultTheProps, processLegend } from './core/process.js';
 import { freeze } from './core/im-utils.js';
-import { deepCp, isNil, measure, rndKey, emptyState } from './core/utils.js';
+import { deepCp, isNil, measure, rndKey, emptyState, reinitOn } from './core/utils.js';
 import { toC } from './core/space-transf.js';
 import * as manip from './core/data-manip.js';
 import { clear as clearGradient } from './core/gradient-mgr.js';
@@ -8,13 +8,14 @@ import { clear as clearGradient } from './core/gradient-mgr.js';
 export function init(rawProps, type, Obj, debug){
 
 	Obj = Obj || {};
-	let { key, obj, namespace, onGraphDone, onGraphStart, printOnly } = Obj;
+	let { key, obj, namespace, onGraphDone, onGraphStart, printOnly, waitFor } = Obj;
 
 	if(obj && !key){
 		key = rndKey();
 	}
 
 	let hasDebug = debug;
+	debug = debug || {log: () => null};
 	let _atDone  = {};
 	let _atStart = {};
 	let props;
@@ -562,7 +563,10 @@ export function init(rawProps, type, Obj, debug){
 
 	rc.ready = () => _ready;
 	// finalize
-  rc.__preprocessed = true;
+	// 1 - reinitializing events
+	reinitOn(rc,waitFor);
+	// 2 - done
+	rc.__preprocessed = true;
 
 	return rc;
 
