@@ -386,6 +386,7 @@ export const reinitOn = (mgr,waitFor) => {
 	const defWaitFor = [document.fonts.ready];
 
 	const waitForUs = waitFor ? defWaitFor.concat(waitFor) : defWaitFor;
-
-	return Promise.all(waitForUs).then(() => mgr.reinit()); 
+	for(let p = 0; p < waitForUs.length; p++){
+		waitForUs[p].then(() => mgr.reinit());
+	}
 };
