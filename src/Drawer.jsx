@@ -73,10 +73,10 @@ export default class Drawer extends React.Component {
 		return <svg {...size} id={this.props.id}  data={this.props.mgrId} className={`${this.props.className}${state.selected ? ' selected' : ''}`} style={style}>
 			{ state.gradient ? <defs>{state.gradient.print( (x,id) => <Gradienter key={`grad.${id}`} state={x}/>)}</defs> : null}
 			{ state.cadre.show ? <Cadre state={state.cadre} width={state.width} height={state.height}/> : null }
-			{ state.background.show ? <Background state={state.background}/>  : null }
-			{ state.title && state.title.title.length ? <Title state={state.title} /> : null }
+			{ state.background.show ? <Background className='background' state={state.background}/>  : null }
+			{ state.title && state.title.title.length ? <Title className='title' state={state.title} /> : null }
 			{ state.axis || state.curves ? this.orderAG() : null}
-			{ state.foreground ? <Foreground state={state.foreground} pWidth={state.width} pHeight={state.height}/> : null }
+			{ state.foreground ? <Foreground className='foreground' state={state.foreground} pWidth={state.width} pHeight={state.height}/> : null }
 			{ this.props.debug ? this.showMe() : null}
 			{ this.empty(state) }
 			<Measurer id={this.props.id}/>

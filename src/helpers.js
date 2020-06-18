@@ -5,10 +5,10 @@ import { toC } from './core/space-transf.js';
 import * as manip from './core/data-manip.js';
 import { clear as clearGradient } from './core/gradient-mgr.js';
 
-export function init(rawProps, type, Obj, debug){
+export function init(rawProps, type, opts, debug){
 
-	Obj = Obj || {};
-	let { key, obj, namespace, onGraphDone, onGraphStart, printOnly, waitFor } = Obj;
+	opts = opts || {};
+	let { key, obj, namespace, onGraphDone, onGraphStart, printOnly, waitFor } = opts;
 
 	if(obj && !key){
 		key = rndKey();
@@ -138,6 +138,8 @@ export function init(rawProps, type, Obj, debug){
 
 	};
 
+	const isEmpty = pr => !['data','axisProps'].reduce( (memo,v) => memo || pr[v], false);
+
 	let rc = {};
 
 	rc.graphKey = () => keys.length ? keys[0] : null;
@@ -145,6 +147,10 @@ export function init(rawProps, type, Obj, debug){
 	// raw props
 	props = defaultTheProps(deepCp({},rawProps));
 	props.freeze = type;
+
+	// empty set
+	rc.isEmpty = pr => pr ? isEmpty(pr) : rc._empty;
+	rc._empty = rc.isEmpty(rawProps);
 
 	// lengthes
 	const getMeasurer = (key) => measurer[key] ? measurer[key].pointTo ? measurer[measurer[key].pointTo] : measurer[key] : measurer._def;
@@ -325,10 +331,18 @@ export function init(rawProps, type, Obj, debug){
 	};
 
 	const checkDone = (k,hk) => {
-		if(_atDone[k] && hookToDo(_atDone[k],k)){
+		if(_atDone[k] && hookToDo(_atDone[k],k)){ // main hook
 			_atDone[k].fct();
-		}else if(hk && _atDone[k] && _atDone[k].hookKeys && _atDone[k].hookKeys[hk] && hookToDo(_atDone[k].hookKeys[hk],k)){
+		}else if(hk && _atDone[k] && _atDone[k].hookKeys && _atDone[k].hookKeys[hk] && hookToDo(_atDone[k].hookKeys[hk],k)){ // a reinitialized hook
 			_atDone[k].fct();
+		}else if(_atDone[k] && _atDone[k].hookKeys && hk === 'all'){ // view is updated independently, check if a hook is waiting
+			for(let hook in _atDone[k].hookKeys){ // hook at 0 is waiting to be fired
+				if(_atDone[k].hookKeys[hook].done === 0){
+					_atDone[k].hookKeys[hook].done++;
+					_atDone[k].fct();
+					return; // only one
+				}
+			}
 		}
 	};
 
@@ -364,7 +378,7 @@ export function init(rawProps, type, Obj, debug){
 				if(obj){
 					rc.updateGraph(obj, key);
 				}
-				checkDone(k);
+				checkDone(k,'all');
 			});
 		}else if(obj){
 			rc.updateGraph(obj, key);

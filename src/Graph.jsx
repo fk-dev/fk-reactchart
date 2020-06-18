@@ -52,11 +52,13 @@ export default class Graph extends React.Component {
 	changeOfMgrByRawProps(pr){
 		// we changed the props
 			// 1 - human friendly
-		if(!pr.__preprocessed){ // not sh, we update anyway
-			if(this.sh && this.sh.__preprocessed){
+		if(!pr.__preprocessed){ // not sh, we update if not both empty (might be an empty graph rerendering)
+
+			if(!this.sh || !this.sh.isEmpty(pr) || !this.sh.isEmpty()){
 				this.sh.kill(this.myKey); // no more in previous helper
+				this.sh = init(pr,this.type,{ key: this.myKey, obj: this, namespace: this.props.namespace}, this.props.debug);
 			}
-			this.sh = init(pr,this.type,{ key: this.myKey, obj: this, namespace: this.props.namespace}, this.props.debug);
+
 			// 2 - helpers
 		}else if(pr.__mgrId !== this.sh.__mgrId){
 			this.sh.kill(this.myKey); // no more in previous helper
