@@ -2,6 +2,15 @@ const { PI, sin, cos, max, min, abs } = Math;
 
 const offsetH = _theta => {
 	const theta = 2*PI - _theta;
+	if(theta < PI/2 || theta > 3*PI/2){
+		return 1 - cos(theta);
+	}else{
+		return 1 + cos(theta);
+	}
+};
+
+const offsetV = _theta => {
+	const theta = 2*PI - _theta;
 	if(theta < PI/2){
 		return 1 - sin(theta);
 	}else{
@@ -9,23 +18,14 @@ const offsetH = _theta => {
 	}
 };
 
-const offsetV = _theta => {
-	const theta = 2*PI - _theta;
-	if(theta < PI/2 || theta > 3/2*PI){
-		return 1 - cos(theta);
-	}else if(theta < 3/2*PI){
-		return 1 + cos(theta);
-	}
-};
-
 const hOM  = (r,{length, theta}) => length - r * offsetH(theta);
 const vOM  = (r,{length, theta}) => length - r * offsetV(theta);
 
 export function radius(width,height,labelLengthes){
-	const rightL  = labelLengthes.filter( ({theta}) => theta < PI/2);
-	const leftL   = labelLengthes.filter( ({theta}) => theta > PI/2);
-	const topL    = labelLengthes.filter( ({theta}) => theta < PI/2 || theta > 3/2*PI);
-	const bottomL = labelLengthes.filter( ({theta}) => theta > PI/2 && theta < 3/2*PI);
+	const rightL  = labelLengthes.filter( ({theta}) => theta <= PI/2 || theta >= 3/2*PI);
+	const leftL   = labelLengthes.filter( ({theta}) => theta >= PI/2 && theta <= 3/2*PI);
+	const topL    = labelLengthes.filter( ({theta}) => theta <= PI/2 || theta >= 3/2*PI);
+	const bottomL = labelLengthes.filter( ({theta}) => theta <= PI);
 
 	const right  = r => max.apply(null,  rightL.map( ({theta,labelLength}) => hOM(r,{theta, length: labelLength.width})));
 	const left   = r => max.apply(null,   leftL.map( ({theta,labelLength}) => hOM(r,{theta, length: labelLength.width})));
