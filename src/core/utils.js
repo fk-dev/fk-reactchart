@@ -219,7 +219,7 @@ export function measure(gid, debug){
 
 		const clN = Array.isArray(clNs) ? clNs[clNs.length - 1] : clNs;
 		const elt = `fkchartmeasurer-${gid}${clN ? `-${clN}` : '-text'}`;
-		let meas = hasDocument() ? null : document.getElementById(elt);
+		let meas = hasDocument() ? document.getElementById(elt) : null;
 		if(!meas){
 			const cc = Array.isArray(clNs) ? clNs : [clNs];
 			let father = document.getElementById(`fkchartmeasurer-${gid}`) || document.body;
