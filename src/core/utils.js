@@ -2,6 +2,9 @@ import * as date from './dateMgr.js';
 import * as nbr from './nbrMgr.js';
 import { renderTextOptions } from '../marks/label-text.jsx';
 
+const hasWindow   = () => typeof window !== 'undefined';
+const hasDocument = () => typeof document !== 'undefined';
+
 const isPeriod = function(v){
 	let out = false;
 	for(let t in {years: true, 	months: true, weeks: true, days: true}){
@@ -137,9 +140,9 @@ export function measure(gid, debug){
 
 	debug = debug || { log: () => null };
 
-	let active = typeof document !== 'undefined' && gid && document.getElementById(`fkchartmeasurer-${gid}`) ? true : false;
+	let active = hasDocument() && gid && document.getElementById(`fkchartmeasurer-${gid}`) ? true : false;
 
-	const factor = typeof window !== 'undefined' && window.nightmare && window.nightmare.corFactor ? window.nightmare.corFactor : 1;
+	const factor = hasWindow() && window.nightmare && window.nightmare.corFactor ? window.nightmare.corFactor : 1;
 
 	//debug.log(`window is ${typeof window !== 'undefined' ? window : 'undefined'}, window.nightmare is ${typeof window !== 'undefined' ? window.nightmare : 'undefined'}, factor is ${typeof window !== 'undefined' && window.nightmare ? window.nightmare.corFactor : 'undefined'}`);
 	debug.log(`factor is ${factor}`);
@@ -216,7 +219,7 @@ export function measure(gid, debug){
 
 		const clN = Array.isArray(clNs) ? clNs[clNs.length - 1] : clNs;
 		const elt = `fkchartmeasurer-${gid}${clN ? `-${clN}` : '-text'}`;
-		let meas = typeof document === 'undefined' ? null : document.getElementById(elt);
+		let meas = hasDocument() ? null : document.getElementById(elt);
 		if(!meas){
 			const cc = Array.isArray(clNs) ? clNs : [clNs];
 			let father = document.getElementById(`fkchartmeasurer-${gid}`) || document.body;
@@ -383,7 +386,7 @@ export const emptyState = {cadre: { width: 480, height: 270 }, background: {}, e
 
 export const reinitOn = (mgr,waitFor) => {
 
-	const defWaitFor = [document.fonts.ready.then(() => null)]; // nothing is passed to reinit
+	const defWaitFor = hasDocument() ? [document.fonts.ready.then(() => null)] : []; // nothing is passed to reinit
 
 	const waitForUs = waitFor ? defWaitFor.concat(waitFor) : defWaitFor;
 	for(let p = 0; p < waitForUs.length; p++){
