@@ -386,7 +386,7 @@ export const emptyState = {cadre: { width: 480, height: 270 }, background: {}, e
 
 export const reinitOn = (mgr,waitFor) => {
 
-	const defWaitFor = hasDocument() ? [document.fonts.ready.then(() => null)] : []; // nothing is passed to reinit
+	const defWaitFor = hasDocument() && document.fonts && document.fonts.ready ? [document.fonts.ready.then(() => null)] : []; // nothing is passed to reinit
 
 	const waitForUs = waitFor ? defWaitFor.concat(waitFor) : defWaitFor;
 	for(let p = 0; p < waitForUs.length; p++){
