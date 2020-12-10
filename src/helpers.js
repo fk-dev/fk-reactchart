@@ -40,7 +40,9 @@ export function init(rawProps, type, opts, debug){
 		_def: namespace || 'reactchart'
 	};
 
-	const onViewUpdate = (key,hk) => () => checkDone(key,hk);
+	const onViewUpdate = function(key,hk){
+		return () => checkDone(key,hk);
+	};
 
 	const allOutOfDate = () => {
 		/// views
@@ -66,6 +68,17 @@ export function init(rawProps, type, opts, debug){
 		}
 
 		return hookKey;
+	};
+
+	const lastHook = key => {
+		if(!_atDone[key] || !_atDone[key].hookKeys){
+			return;
+		}
+		for(let h in _atDone[key].hookKeys){
+			if(_atDone[key].hookKeys[h].done > -2 && _atDone[key].hookKeys[h].done < 2){
+				return h;
+			}
+		}
 	};
 
 	const deleteKey = (k,ik) => {
@@ -272,6 +285,10 @@ export function init(rawProps, type, opts, debug){
 		}
 	};
 
+	// {relative: true} bugs measuring, we go relative at the end
+	const toRelative = function(key){
+		return () => freezer[key].get().set('relative',true);
+	};
 
 	const addAMeasurer = key => {
 		// check for existence
@@ -331,19 +348,22 @@ export function init(rawProps, type, opts, debug){
 	};
 
 	const checkDone = (k,hk) => {
+
+		// one
 		if(_atDone[k] && hookToDo(_atDone[k],k)){ // main hook
-			_atDone[k].fct();
+			_atDone[k].fcts.forEach(f => f());
 		}else if(hk && _atDone[k] && _atDone[k].hookKeys && _atDone[k].hookKeys[hk] && hookToDo(_atDone[k].hookKeys[hk],k)){ // a reinitialized hook
-			_atDone[k].fct();
+			_atDone[k].fcts.forEach(f => f());
 		}else if(_atDone[k] && _atDone[k].hookKeys && hk === 'all'){ // view is updated independently, check if a hook is waiting
 			for(let hook in _atDone[k].hookKeys){ // hook at 0 is waiting to be fired
-				if(_atDone[k].hookKeys[hook].done === 0){
+				if(hookToDo(_atDone[k].hookKeys[hook],hook)){
 					_atDone[k].hookKeys[hook].done++;
-					_atDone[k].fct();
+					_atDone[k].fcts.forEach(f => f());
 					return; // only one
 				}
 			}
 		}
+
 	};
 
 	// id
@@ -423,10 +443,15 @@ export function init(rawProps, type, opts, debug){
 	};
 
 	rc.onGraphDone = (key,fct) => {
-		_atDone[key] = {
-			done: -1,
-			fct
-		};
+		key = key || '_def';
+		if(!_atDone[key]){
+			_atDone[key] = {
+				done: -1,
+				fcts: [fct]
+			};
+		}else{
+			_atDone[key].fcts.push(fct);
+		}
 	};
 
 	// utils
@@ -447,7 +472,7 @@ export function init(rawProps, type, opts, debug){
 			return;
 		}
 
-    obj.forceUpdate(onViewUpdate(key));
+    obj.forceUpdate(onViewUpdate(key,lastHook(key)));
 
 		if(!updatee[key]){
 			updatee[key] = obj;
@@ -532,7 +557,7 @@ export function init(rawProps, type, opts, debug){
 		},
 		add: {
 			curve: rc.addCurve,
-			mark: (cidx,midx, position) => manip.removeMark(cidx, midx, position,  {props, mgr: rc})
+			mark: (cidx, position) => manip.addMark(cidx, position,  {props, mgr: rc})
 		},
 		toggle: {
 			curve: (idx) => manip.toggle(idx, { props, mgr: rc}),
@@ -568,6 +593,9 @@ export function init(rawProps, type, opts, debug){
 	});
 
 	// init if needed
+	if(props.relative){
+		rc.onGraphDone(key,toRelative(key));
+	}
 	if(key){
 		if(onGraphDone){
 			rc.onGraphDone(key,onGraphDone);

@@ -779,7 +779,7 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 		unsetSelection: () => getNode().set('outSelect',null),
 		setUnselection: fct => getNode().set('outUnselect',fct),
 		unsetUnselection: () => getNode().set('outUnselect',null),
-		relative: props.relative,
+		relative: false,
 		width: props.width,
 		height: props.height,
 		axisOnTop: props.axisOnTop,
