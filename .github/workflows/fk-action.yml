@@ -1,0 +1,24 @@
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checks-out the repository under $GITHUB_WORKSPACE, so the job can access it
+    - name: Check out
+      uses: actions/checkout@v2
+
+    # Checks-out the private repository containing the action to run
+    - name: Checkout GitHub Action Repo
+      uses: actions/checkout@v2
+      with:
+        repository: fk-dev/fk-base-action
+        token: ${{secrets.FUNDKIS_GIT_HUB_TOKEN}}
+        path: .github/actions/fk-base-action
+    
+    # Now the fun part: run the actual action!
+    - name: Run FundKis base action
+      uses: ./.github/actions/fk-base-action
+      with:
+        fk-secrets: ${{secrets.FUNDKIS_GIT_HUB_ACTIONS_SECRETS}}
