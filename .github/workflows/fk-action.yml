@@ -8,6 +8,8 @@ jobs:
     # Checks-out the repository under $GITHUB_WORKSPACE, so the job can access it
     - name: Check out
       uses: actions/checkout@v2
+      with:
+        token: ${{secrets.FUNDKIS_GIT_HUB_TOKEN}}
 
     # Checks-out the private repository containing the action to run
     - name: Checkout GitHub Action Repo
