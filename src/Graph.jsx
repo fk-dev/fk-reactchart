@@ -208,7 +208,7 @@ class Legend extends React.Component {
 			return out;
 		};
 
-		return <table {...this.props}>
+		return <table>
 			<tbody>{gmap(this.sh.legend(this.myKey), (line,idx) => tabline(line,idx))}</tbody>
 		</table>;
 	}
@@ -232,7 +232,7 @@ class Legend extends React.Component {
 			</span>;
 		};
 
-		return <div {...this.props}>{(this.sh.legend(this.myKey) || []).map( (l, idx) => print(l,idx) )}</div>;
+		return <div>{(this.sh.legend(this.myKey) || []).map( (l, idx) => print(l,idx) )}</div>;
 	}
 
 	render(){
