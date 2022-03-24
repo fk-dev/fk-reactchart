@@ -458,6 +458,8 @@ export function equal(dop1,dop2){
 	return _equal(dop1,dop2,sd);
 }
 
+export function absolute(d){return d;};
+
 // managements
 export function getValue(dop){ return (dop instanceof Date) ? dop.getTime() : moment.duration(dop).asMilliseconds();}
 

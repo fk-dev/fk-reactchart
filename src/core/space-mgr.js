@@ -449,10 +449,10 @@ const _filter = (datas,dir, user) => {
 
 	/// min max minimum distance
 	/// absolute distance < eps || relative distance < eps
-	const minLength = mm.divide(min,10);
-	const eps = mm.smallestStep(); // double precision
+	const minLength = mm.absolute(mm.divide(min,10));
+	const eps = mm.smallestStep();
 	const absDist = mm.subtract(max,min);
-	const relDist = mm.divide(absDist,min);
+	const relDist = mm.absolute(mm.divide(absDist,min));
 	const doMinLength = mm.lowerThan(relDist,eps) || mm.lowerThan(absDist,eps);
 	if(doMinLength){
 		min = mm.subtract(min,minLength);

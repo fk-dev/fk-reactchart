@@ -155,8 +155,8 @@ export function orderMagValue (max,min){
 	if(min * max < 0){
 		return 0;
 	}
-	let absMin = max < 0 ? Math.abs(max) : min;
-	let absMax = max < 0 ? Math.abs(min) : max;
+	let absMin = max < 0 ? abs(max) : min;
+	let absMax = max < 0 ? abs(min) : max;
 	let fac = max < 0 ? -1 : 1;
 	return fac * roundMe(absMin,absMax);
 }
@@ -200,7 +200,7 @@ export function roundDown(r){
 // value methods
 export function closestRoundUp(ref,dist){
 
-	dist = Math.abs(dist);
+	dist = abs(dist);
 
 	if(ref < 0){
 		return - closestRoundDown(-ref,dist);
@@ -348,6 +348,8 @@ export function greaterThan(v1,v2){ return v1 > v2;}
 export function lowerThan(v1,v2){ return v1 < v2;}
 
 export function equal(v1,v2){ return v1 === v2;}
+
+export function absolute(v1){ return abs(v1);}
 
 // some management
 export function extraTicks(){ return [];}
