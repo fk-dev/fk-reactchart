@@ -446,6 +446,18 @@ const _filter = (datas,dir, user) => {
       });
     });
   }
+
+	/// min max minimum distance
+	/// absolute distance < eps || relative distance < eps
+	const minLength = mm.divide(min,10);
+	const eps = mm.smallestStep(); // double precision
+	const absDist = mm.subtract(max,min);
+	const relDist = mm.divide(absDist,min);
+	const doMinLength = mm.lowerThan(relDist,eps) || mm.lowerThan(absDist,eps);
+	if(doMinLength){
+		min = mm.subtract(min,minLength);
+		max = mm.add(max,minLength);
+	}
   
   return { min, max, forcedMin: !isNil(user.min), forcedMax: !isNil(user.max) };
 
