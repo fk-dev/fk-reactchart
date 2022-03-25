@@ -352,9 +352,18 @@ export function measure(gid, debug){
 		};
 	};
 
+	const checkMeasure = () => {
+		const { width, height } = _measureText('TEST TEXT',16);
+		return width !== 0 && height !== 0;
+	};
+
+	const ok = checkMeasure();
+
 	return {
 		text: measureText,
 		cadratin,
+		ok,
+		checkMeasure,
 		active,
 		setDebug: x => {debug = x;},
 		calibrate

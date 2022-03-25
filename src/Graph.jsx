@@ -8,6 +8,7 @@ export default class Graph extends React.Component {
 
 	constructor(props){
 		super(props);
+		this.myId = rndKey();
 		this.myKey = props.graphId || rndKey();
 		if(props.onGenerateKey){
 			props.onGenerateKey(this.myKey);
@@ -42,7 +43,7 @@ export default class Graph extends React.Component {
 			throw new Error('A Chart object is initialized without a manager!');
 		}
 
-		this.sh.addKey(this.myKey,this);
+		this.sh.addKey(this.myKey,this,this.myId);
 	}
 
 	shouldComponentUpdate(pr){

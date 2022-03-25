@@ -35,6 +35,7 @@ export function init(rawProps, type, opts, debug){
 	let vms = {};
 	let pointsTo = {};
 	let invPointsTo = {};
+  let viewCounter = {}; // react can create twice the same view, and delete the first after the second creation
 
 	namespace = {
 		_def: namespace || 'reactchart'
@@ -93,11 +94,13 @@ export function init(rawProps, type, opts, debug){
 
 		// direct delete: updatee, updated, keys, pointsTo, invPointsTo, freezer
 		_del(keys);
-		delete updatee[k];
-		delete updated[k];
-		delete pointsTo[k];
-		delete invPointsTo[k];
-		delete freezer[k];
+		updatee[k]     = null;
+		updated[k]     = null;
+		pointsTo[k]    = null;
+		invPointsTo[k] = null;
+		freezer[k]     = null;
+		viewCounter[k] = null;
+		measurer[k]    = null;
 		// indirect: invPointsTo
 		if(ik){
 			_del(invPointsTo[ik]);
@@ -264,7 +267,7 @@ export function init(rawProps, type, opts, debug){
 				if(m === '_def'){
 					continue;
 				}
-				if(pointsTo[m] === m && measurer[m].mgr.active && same(measurer[m].calibration, calibration)){
+				if(pointsTo[m] === m && measurer[m].mgr?.active && same(measurer[m].calibration, calibration)){
 					vmPointsTo(_key,m);
 					return {
 						pointTo: m
@@ -292,7 +295,7 @@ export function init(rawProps, type, opts, debug){
 
 	const addAMeasurer = key => {
 		// check for existence
-		if(measurer[key] && measurer[key].mgr && measurer[key].mgr.active){
+		if(measurer[key]?.mgr?.active && viewCounter[key] < 2){
 			return;
 		}
 		// 1 - get calibration data
@@ -370,12 +373,21 @@ export function init(rawProps, type, opts, debug){
 		// getter
 	rc.isUpdated = (key) => updated[key];
 		// setter
-	rc.addKey = (key,obj) => {
+	rc.addKey = (key,obj,viewId) => {
+
+		// init
+		if(isNil(viewCounter[key])){
+			viewCounter[key] = 0;
+		}
+
 		// beware if already there
 		if(keys.indexOf(key) === -1 && !isALegend(key)){
 			keys.push(key);
 		}else if(keys.indexOf(key) !== -1 && isALegend(key)){
 			keys.splice(keys.indexOf(key),1);
+		}
+		if(viewId){
+			viewCounter[key]++;
 		}
 
 		rc.setMeasurer(key);
@@ -385,7 +397,7 @@ export function init(rawProps, type, opts, debug){
 			updatee[key] = obj;
 			updated[key] = false;
 		}
-		if(!freezer[k] && k !== '_def' && keys.indexOf(key) !== -1){
+		if( (!freezer[k] || viewCounter[key] > 1 ) && k !== '_def' && keys.indexOf(key) !== -1){
 			_process(() => freezer[k].get(), props, rc.__mgrId, () => rc.getLengthes(k), (err, imVM) => {
 				if(obj && obj.props.onSelect){
 					imVM.outSelect = obj.props.onSelect;
@@ -413,7 +425,7 @@ export function init(rawProps, type, opts, debug){
 		// because most of the time, no ambiguity
 	const checkFreezer = () => {
 		for(let u in freezer){
-			if(u !== '_def'){
+			if(u !== '_def' && freezer[u]){
 				return freezer[u];
 			}
 		}
@@ -541,9 +553,40 @@ export function init(rawProps, type, opts, debug){
 		});
 	};
 
+	const _checkUpdate = key => {
+		if(!measurer[key]?.mgr?.active || measurer[key].mgr.ok){
+			return false;
+		}
+		const newOk = measurer[key]?.mgr?.checkMeasure();
+		if(newOk){
+			measurer[key].ok = newOk;
+			return true;
+		}
+		return false;
+	};
+
+	rc.checkUpdate = key => {
+		if(!key){
+			keys.map(rc.checkUpdate);
+		}else{
+			const redo = _checkUpdate(key);
+			if(redo){
+				_process(() => freezer[key].get(), props, rc.__mgrId, () => rc.getLengthes(key), (err, imVM) => {
+					freezer[key] = freeze(imVM);
+					freezer[key].on('update',() => updateDeps(key)); // last
+					updateDeps(key);
+					checkDone(key,'all');
+				});
+			}
+		}
+	};
+
 	rc.kill = key => {
-		const invkey = pointsTo[key];
-		deleteKey(key,invkey);
+		viewCounter[key]--;
+		if(viewCounter[key] === 0){
+			const invkey = pointsTo[key];
+			deleteKey(key,invkey);
+		}
 	};
 
 	// dyn graph

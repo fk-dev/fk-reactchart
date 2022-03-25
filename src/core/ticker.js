@@ -8,6 +8,15 @@ const nInterval = (length, height) => {
 
 const checkMajDist = (labels,ref,D,first,cv, getLength, mgr, starter, spaceFac) => {
 	const lls = labels.map(x => getLength(x.label)).filter(x => x);
+
+	if(lls.length === 0){ // may happen if hidden
+		return {
+			curValue: cv,
+			majDist: ref,
+			store: labels
+		};
+	}
+
 	const max = lls.reduce( (memo,v) => memo < v ?  v : memo, 0);
 	const d = D - max;
 
