@@ -168,6 +168,7 @@ export const Tick = {
 	labelOffset: {x:0, y:0 },
 	labelize: () => false, //utils.isNil(val) ? '' : val instanceof Date ? moment(val).format('YYYY') : val.toFixed(1);},
 	label: '',
+	labelCut: '\u2026',
 	rotate: 0,
 	labelFSize: 10,
 	labelColor: 'black'

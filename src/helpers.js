@@ -94,13 +94,13 @@ export function init(rawProps, type, opts, debug){
 
 		// direct delete: updatee, updated, keys, pointsTo, invPointsTo, freezer
 		_del(keys);
-		updatee[k]     = null;
-		updated[k]     = null;
-		pointsTo[k]    = null;
-		invPointsTo[k] = null;
-		freezer[k]     = null;
-		viewCounter[k] = null;
-		measurer[k]    = null;
+		delete updatee[k];
+		delete updated[k];
+		delete pointsTo[k];
+		delete invPointsTo[k];
+		delete freezer[k];
+		delete viewCounter[k];
+		delete measurer[k];
 		// indirect: invPointsTo
 		if(ik){
 			_del(invPointsTo[ik]);

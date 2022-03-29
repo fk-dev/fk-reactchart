@@ -162,6 +162,17 @@ export function vm({css, cs, measurer, ds, partner, bounds, dir, locProps, comFa
 	const prevTick = (idx) => idx > 0 ? tickers[idx - 1].position : null;
 	const nextTick = (idx) => idx < tickers.length - 1 ? tickers[idx + 1].position : null;
 
+	// in case we need to check user defined labels
+	const getMaxLabelLength = () => {
+		let max = -5;
+		for(let i = 0; i < tickers.length - 1; i++){
+			const loc = Math.abs(tickers[i + 1].position - tickers[i].position);
+			max = loc > max ? loc : max;
+		}
+		return max * ds[dir].d2c * ( 1 - 2 * spacingFactor );
+	};
+	const maxLabelLength = ticksLabel?.length ? getMaxLabelLength() : -1;
+
 	return locProps.empty ? [] : tickers.map( (tick,idx) => {
 /*
 		tick: {
@@ -223,6 +234,41 @@ export function vm({css, cs, measurer, ds, partner, bounds, dir, locProps, comFa
 */
 
 		// label
+
+		// if label is forced, then no guarantees
+		// it does not go over to the next label
+		const checkLengthLabel = (labPr) => {
+			let { label, FSize } = labPr;
+			let l = lengthOfText(label, FSize);
+			
+			if(maxLabelLength > 0 && l.width > maxLabelLength){
+
+				const { labelCut } = p;
+				const buildLabel = lr => lr + labelCut;
+
+				let cand = Math.ceil(label.length / 2);
+				const labelSrc = label;
+				let labelRoot = label;
+				let delta = labelRoot.length - labelRoot.substring(0,cand).length;
+				while(delta > 1){
+					const prevL = labelRoot.length;
+					label = buildLabel(labelRoot);
+					l = lengthOfText(label, FSize);
+					delta = Math.round(delta/2);
+					cand = l.width > maxLabelLength ? cand - delta : cand + delta;
+					labelRoot = labelSrc.substring(0,cand);
+				}
+				if(l.width > maxLabelLength){
+					labelRoot = labelRoot.substring(0,labelRoot.length - 1);
+					label = buildLabel(labelRoot);
+					l = lengthOfText(label, FSize);
+				}
+				labPr.title = labPr.label;
+				labPr.label = label;
+			}
+			return l;
+		};
+
 		let labelProps = {
 			css,
 			cs,
@@ -236,7 +282,7 @@ export function vm({css, cs, measurer, ds, partner, bounds, dir, locProps, comFa
 			show: isNil(tick.showLabel) ? ticksProps.show : tick.showLabel,
 			howToRotate: locProps.placement === 'top' ? -1 : locProps.placement === 'bottom' ? 1 : 0
 		};
-		const labelLenthes = lengthOfText(labelProps.label, labelProps.FSize);
+		const labelLenthes = checkLengthLabel(labelProps);
 		labelProps.dir = {};
 		labelProps.dir[dir] = locProps.placement === 'top' || locProps.placement === 'right' ? -1 : 1;
 		labelProps.dir[othdir] = 0;

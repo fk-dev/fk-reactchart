@@ -89,6 +89,7 @@ export default class Label extends React.Component {
 				textAnchor: rotateAnchor  > 0 ? 'start' : rotateAnchor < 0 ? 'end' : anchor,
 				fill: color,
 				fontSize: typeof FSize === 'number' ? `${FSize}pt` : FSize,
+				title: state.title,
 				key
 			};
 		};
