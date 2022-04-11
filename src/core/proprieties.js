@@ -89,9 +89,9 @@ graph.common = () => {
 	};
 };
 
-graph.Bars = graph.bars = (polar) => deepCp(graph.common(), {
+graph.Bars = graph.bars = ({ isPolar }) => deepCp(graph.common(), {
 	color: 'none',
-	width: polar ? 1 : 0,
+	width: isPolar ? 1 : 0,
 	dir: {
 		x: false,
 		y: true
@@ -114,11 +114,14 @@ graph.yBars = graph.ybars = (opt) => deepCp(graph.Bars(opt),{
 	},
 });
 
-graph.Pie = graph.pie = () => deepCp(graph.common(),{
-	pie: 'disc', // tore
+graph.Pie = graph.pie = ({pieType}) => deepCp(graph.common(),{
+	pie: pieType ? pieType : 'disc', // tore, gauge
 	pieOrigin: {x: 0, y:0}, // offset from center
 	pieRadius: null, // 2/3 of world
-	pieToreRadius: 0, // 0: no hole, 1 : no border!
+	pieToreRadius: pieType === 'disc' ? 0 : 0.5, // 0: no hole, 1 : no border!
+	pieNoStack: pieType === 'gauge', // 1D circular graph
+	gaugeMaxVal: 100,
+	gaugeColor: '#CFE1FC',
 	tag: {
 		css: null,
 		show: false, // show the tag
@@ -126,10 +129,10 @@ graph.Pie = graph.pie = () => deepCp(graph.common(),{
 		fontSize: 10,
 		pin: false, // show the pin
 		pinColor: 'black', // color or the pin
-		pinLength: 0.35, // 10 px as pin length
+		pinLength: pieType === 'gauge' ? 0.12 : 0.35, // 10 px as pin length
 		pinWidth: 1, // 1 px as pin width
 		pinAngle: 90, // direction of pin
-		pinRadius: 0.75, // 3/4 of pie size
+		pinRadius: pieType === 'gauge' ? 1 : 0.75, // 3/4 of pie size
 		pinHook: 10, // absolute length
 		color: 'black' // color of the tag
 	}

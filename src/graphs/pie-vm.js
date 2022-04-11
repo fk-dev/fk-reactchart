@@ -10,9 +10,11 @@ export const vm = {
 		const vm = get;
 
 		const sum	= reduce(serie, (memo, value) => memo + value.value, 0);
+		const angleMax = props.pie === 'gauge' ? 180 : 360;
+		const val = v => props.pieNoStack ? v/props.gaugeMaxVal : v/sum;
 		const positions = map(serie, (point,idx) => {
 			return {
-				value: Math.max(Math.min(point.value/sum * 360,360),0),
+				value: Math.max(Math.min(val(point.value) * angleMax,angleMax),0),
 				color: point.color || shader(idx)
 			};
 		});
@@ -44,7 +46,9 @@ export const vm = {
 			unselect: () => vm().set('selected',null),
 			isSelected: p => p === vm().selected,
 			ds,
-			fill: props.pie !== 'tore',
+			gaugeColor: props.gaugeColor,
+			type: props.pie,
+			fill: props.fill || props.pie === 'disc',
 			positions,
 			origin,
 			radius,

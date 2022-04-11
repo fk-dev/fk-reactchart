@@ -262,6 +262,15 @@ export function defaultTheProps(props){
 		fullprops.data[idx].coordSys = 'polar';
 	};
 
+		/// special case, Gauge is a pie
+	if(props.data?.find( data => data.type === 'Gauge')){
+		props.data.forEach( (d,idx) => {
+			if(d.type === 'Gauge'){
+				d.type = 'Pie';
+				props.graphProps[idx].pie = 'gauge';
+			}
+		});
+	}
 	if(props.data && props.data.find( data => data.type === 'Pie' || data.coordSys === 'polar')){
 		fullprops.axisProps.abs.forEach( ax => { ax.show = false; });
 		fullprops.axisProps.ord.forEach( ax => { ax.show = false; });
@@ -289,7 +298,7 @@ export function defaultTheProps(props){
 	// data & graphProps
 	let dataDef = gProps.defaults('data');
 	for(let ng = 0; ng < fullprops.data.length; ng++){
-		const gprops = gProps.defaults(props.data[ng].type || 'Plain',props.coordSys === 'polar');
+		const gprops = gProps.defaults(props.data[ng].type || 'Plain', { isPolar: props.coordSys === 'polar', pieType: props.graphProps[ng].pie });
 		fullprops.data[ng] = utils.deepCp(dataDef(props.data[ng].series, axis, {abs: props.data[ng].abs, ord: props.data[ng].ord}), props.data[ng]);
 		fullprops.graphProps[ng] = utils.deepCp(utils.deepCp({},gprops), props.graphProps[ng]);
 	}
