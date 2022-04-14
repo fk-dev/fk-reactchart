@@ -18,7 +18,7 @@ export default class Pie extends React.Component {
 	area(oldT,position,idx){
 		const {state: { path: { origin, radius, toreRadius, onClick, isSelected, fill }, css } } = this.props;
 
-		const color = fill || position.color;
+		const color = position.color || fill;
 		const theta = Math.min(position.value, 359.9640);// more than 99.99% is a circle (not supported by arc anyway)
 
 		const p1 = this.point(oldT,toreRadius,origin);
