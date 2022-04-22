@@ -43,12 +43,12 @@ export default class Pie extends React.Component {
 	}
 
 	gauge(position,idx){
-		const {state: { path: { origin, radius, toreRadius, onClick, isSelected }, css } } = this.props;
+		const {state: { path: { origin, radius, onClick, isSelected }, css } } = this.props;
 
 		const color = position.color;
 		const theta = Math.min(position.value, 359.9640);// more than 99.99% is a circle (not supported by arc anyway)
 
-		const x1 = origin.x
+		const x1 = origin.x;
 		const y1 = origin.y;
 		const p2 = this.point(theta - 1,radius,origin);
 		const x2 = p2.abs;
@@ -68,7 +68,7 @@ export default class Pie extends React.Component {
 		const { path, css } = state;
 		const { labels, positions, 
 			pinRadius, pinLength, pinHook, pinDraw, pinFontSize, 
-			origin, radius, toreRadius, type, gaugeColor, fill } = path;
+			origin, type, gaugeColor, fill } = path;
 
 		if(positions.length === 0){
 			return null;
@@ -81,8 +81,6 @@ export default class Pie extends React.Component {
 		if(type === 'gauge'){
 			out.push(this.area(0,{color: fill || gaugeColor, value: 180},-1));
 		}
-
-		const pieClass = p => `${css ? `mark mark-${p}` : ''}${state.path.isSelected(p) ? ' selected' : ''}`;
 
 		for(let p = 0; p < positions.length; p++){
 

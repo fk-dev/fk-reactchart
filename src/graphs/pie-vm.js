@@ -48,7 +48,7 @@ export const vm = {
 			ds,
 			gaugeColor: props.gaugeColor,
 			type: props.pie,
-			fill: props.fill || props.pie === 'disc',
+			fill: props.fill || props.pie === 'disc',
 			positions,
 			origin,
 			radius,
