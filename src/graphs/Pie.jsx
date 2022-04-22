@@ -68,7 +68,7 @@ export default class Pie extends React.Component {
 		const { path, css } = state;
 		const { labels, positions, 
 			pinRadius, pinLength, pinHook, pinDraw, pinFontSize, 
-			origin, radius, toreRadius, type, gaugeColor } = path;
+			origin, radius, toreRadius, type, gaugeColor, fill } = path;
 
 		if(positions.length === 0){
 			return null;
@@ -79,7 +79,7 @@ export default class Pie extends React.Component {
 		let out = [];
 
 		if(type === 'gauge'){
-			out.push(this.area(0,{color: gaugeColor, value: 180},-1));
+			out.push(this.area(0,{color: fill || gaugeColor, value: 180},-1));
 		}
 
 		const pieClass = p => `${css ? `mark mark-${p}` : ''}${state.path.isSelected(p) ? ' selected' : ''}`;
