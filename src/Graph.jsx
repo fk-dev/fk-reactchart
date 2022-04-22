@@ -227,8 +227,9 @@ class Legend extends React.Component {
 				}
 			};
 			const { icon, click, label } = l;
+			const iconStyle = { ...this.iconStyle(icon.props,'icon'), verticalAlign: 'sub'};
 			return <span key={idx} {...margin} onClick={() => click(this.sh, this.myKey)}>
-				<span style={this.iconStyle(icon.props,'icon')} verticalAlign='sub'>{icon.icon(icon.props)}</span>
+				<span style={iconStyle}>{icon.icon(icon.props)}</span>
 				<span style={this.iconStyle(icon.props)}>{label}</span>
 			</span>;
 		};
