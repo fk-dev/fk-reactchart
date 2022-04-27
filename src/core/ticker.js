@@ -53,7 +53,7 @@ const checkMajDist = (labels,ref,D,first,cv, getLength, mgr, starter, spaceFac) 
  * beware of distance (period) versus
  * values (date), see {date,nbr}Mgr.js
 */
-const computeTicks = function(first, last, step, { majAuto, majLabelize, spaceFac, forcedMajStep}, minor, mStep, { minAuto, minLabelize/*, forcedMinStep*/ }, fac, toPixel, height, square, outer){
+const computeTicks = function(first, last, step, { majAuto, majLabelize, spaceFac, forcedMajStep}, minor, mStep, { minAuto, minLabelize/*, forcedMinStep*/ }, fac, toPixel, height, square, outer,extra){
 
 	// mgr
 	const mgr = typeMgr(first);
@@ -284,10 +284,12 @@ const computeTicks = function(first, last, step, { majAuto, majLabelize, spaceFa
 
 	}
 
-	return out.concat(mgr.extraTicks(majDist,first,last, out));
+  // extra
+  const extraLabelize = position => mgr.label(position,majDist,fac);
+	return mgr.extraTicks({extra, extraLabelize},out,majDist,first,last).concat(out);
 };
 
-export function ticks(start, length, majStep, labels, majProps, minor, minStep, minProps, fac, toPixel, height, square, outer){
+export function ticks(start, length, majStep, labels, majProps, minor, minStep, minProps, fac, toPixel, height, square, outer,extra){
 	if(labels && labels.length > 0){
 		return labels.map( lab => {
 			return {
@@ -302,5 +304,5 @@ export function ticks(start, length, majStep, labels, majProps, minor, minStep, 
 		});
 	}
 
-	return computeTicks(start, length, majStep, majProps, minor, minStep, minProps, fac, toPixel, height, square, outer);
+	return computeTicks(start, length, majStep, majProps, minor, minStep, minProps, fac, toPixel, height, square, outer,extra);
 }

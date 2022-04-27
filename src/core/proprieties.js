@@ -181,6 +181,7 @@ export const Tick = {
 const axe = () => {
 	return {
 		ticks: {
+			extra: [],
 			major: Tick,
 			minor: deepCp(deepCp({},Tick),{
 				show: false,
@@ -191,6 +192,7 @@ const axe = () => {
 			})
 		},
 		grid: {
+			extra: [],
 			major: Grid,
 			minor: deepCp(deepCp({},Grid),{
 				width: 0.3

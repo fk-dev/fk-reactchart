@@ -154,10 +154,15 @@ export function vm({css, cs, measurer, ds, partner, bounds, dir, locProps, comFa
 	// spacing factor
 	const { spacingFactor } = majProps;
 
+  const extra = {
+    grid: locProps.grid.extra,
+    ticks: locProps.ticks.extra
+  };
+
 	const tickers = ticks(min, max, 
 		majStep, ticksLabel, {majAuto: majProps.autoOffset, majLabelize, spaceFac: spacingFactor, forcedMajStep: majProps.forcedStep }, 
 		minor, minStep, { minAuto: minProps.autoOffset, minLabelize, forcedMinStep: minProps.forcedStep}, 
-		comFac, toPixel, height, labelSquare, outerMargins);
+		comFac, toPixel, height, labelSquare, outerMargins,extra);
 
 	const prevTick = (idx) => idx > 0 ? tickers[idx - 1].position : null;
 	const nextTick = (idx) => idx < tickers.length - 1 ? tickers[idx + 1].position : null;
@@ -273,11 +278,11 @@ export function vm({css, cs, measurer, ds, partner, bounds, dir, locProps, comFa
 			css,
 			cs,
 			ds: ds,
-			label:	p.labelize(tick.position, prevTick(idx), nextTick(idx)) === false ? tick.label : p.labelize(tick.position, prevTick(idx), nextTick(idx)),
-			FSize:	p.labelFSize,
-			color:	p.labelColor,
-			rotate: false,
-			angle:	p.rotate,
+			label:	tick.label,
+			FSize:	tick.labelFSize || p.labelFSize,
+			color:	tick.labelColor || p.labelColor,
+			rotate: tick.rotate || false,
+			angle:	tick.rotate || p.rotate,
 			transform: true,
 			show: isNil(tick.showLabel) ? ticksProps.show : tick.showLabel,
 			howToRotate: locProps.placement === 'top' ? -1 : locProps.placement === 'bottom' ? 1 : 0

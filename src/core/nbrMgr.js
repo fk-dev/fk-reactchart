@@ -7,7 +7,7 @@ const suffixes = {
 	9: 'G',  // giga
 	6: 'M',  // mega
 	3: 'k',  // kilo
-  0: '',   // unit
+	0: '',	 // unit
 	'-3': 'm', // milli
 	'-6': '\u03BC', // micro
 	'-9': 'n', // nano
@@ -36,7 +36,7 @@ const lastDigitOrder = nbr => {
 };
 
 const firstDigit = function(r,n){
-  n = n || 1;
+	n = n || 1;
 	let res = r * pow(10,-orderMag(r));
 	let str = '' + res;
 	let out = str[0] || 0;
@@ -214,7 +214,7 @@ export function closestRoundUp(ref,dist){
 		upperBound /= 2;
 	}
 	let start = pow(10,refOm) * firstDigit(ref);
-	const or = orderMag(ref - start)  - orderMag(dist);
+	const or = orderMag(ref - start)	- orderMag(dist);
 	if(or > 2){
 		start = pow(10,refOm) * firstDigit(ref,or - 2);
 	}
@@ -352,7 +352,53 @@ export function equal(v1,v2){ return v1 === v2;}
 export function absolute(v1){ return abs(v1);}
 
 // some management
-export function extraTicks(){ return [];}
+export function extraTicks({extra, extraLabelize},already,step,start,end){
+
+	let out = [];
+
+	// custom extra
+	// 1 - grid
+	for(let g = 0; g < extra.grid.length; g++){
+		const { position, color, width } = extra.grid[g];
+		const idx = already.findIndex( a => equal(a.position,position));
+		if(idx !== -1){
+			already[idx].grid = { color, width, show: true };
+			continue;
+		}
+		out.push({
+			type: 'major',
+			position,
+			offset: {
+				along: 0,
+				perp: 0
+			},
+			label: '',
+			show: false,
+			extra: true,
+			grid: {
+				show: true,
+				color,
+				width: width || 0.5
+			}
+		});
+	}
+
+	// 2 - tick
+	for(let t = 0; t < extra.ticks.length; t++){
+		let { position, label } = extra.ticks[t];
+		label = label || extraLabelize(position);
+		const idx = already.findIndex( a => equal(a.position,position));
+		if(idx !== -1){
+			already[idx] = { ...already[idx], ...extra.ticks[t], label};
+			continue;
+		}
+		// defaulted on non extra ticks
+		out.push({ ...already[0], ...extra.ticks[t], label});
+	}
+
+	return out;
+
+}
 
 export function getValue(v){ return v;}
 export function value(v){ return getValue(v);}
@@ -373,19 +419,19 @@ export const labelF = 0.75;
 export function isZero(v){ return v < 1e-15;}
 
 export function autoFactor(ma,mi){
-  let orMax = orderMag(ma);
-  let orMin = orderMag(mi);
-  let a = Math.min(orMax, orMin);
-  let b = Math.max(orMax, orMin);
-  
-  return b - a < 3 ? pow(10,a) : pow(10,b);
+	let orMax = orderMag(ma);
+	let orMin = orderMag(mi);
+	let a = Math.min(orMax, orMin);
+	let b = Math.max(orMax, orMin);
+	
+	return b - a < 3 ? pow(10,a) : pow(10,b);
 }
 
 export function emptyBounds(){
-  return { 
-    min: 0,
-    max: 4
-  };
+	return { 
+		min: 0,
+		max: 4
+	};
 }
 
 export const type = 'number';

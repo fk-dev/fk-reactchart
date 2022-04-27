@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { map, findIndex } from 'underscore';
+import { map } from 'underscore';
 let im = {
 	isImm: p => typeof p === 'object' ? Object.isFrozen(p) : false
 };
@@ -463,14 +463,17 @@ export function absolute(d){return d;};
 // managements
 export function getValue(dop){ return (dop instanceof Date) ? dop.getTime() : moment.duration(dop).asMilliseconds();}
 
-export function extraTicks(step,start,end, already){
+export function extraTicks({extra, extraLabelize},already,step,start,end){
 	let out = [];
+
+
+		// auto extra
 	let startYear = start.getUTCFullYear();
 	let lastYear = end.getUTCFullYear();
 	// every year, whatever happens
 	for(let ye = startYear; ye <= lastYear; ye++){
 		let dat = utc(new Date(ye,0,0));
-		let idx = findIndex(already,(a) => equal(a.position,dat));
+		let idx = already.findIndex( a => equal(a.position,dat));
 		if(idx !== -1){
 			already[idx].grid = {};
 			already[idx].grid.show = true;
@@ -495,6 +498,47 @@ export function extraTicks(step,start,end, already){
 			});
 		}
 	}
+
+	// custom extra
+	// 1 - grid
+	for(let g = 0; g < extra.grid.length; g++){
+		const { position, color, width } = extra.grid[g];
+		const idx = already.findIndex( a => equal(a.position,position));
+		if(idx !== -1){
+			already[idx].grid = { color, width, show: true };
+			continue;
+		}
+		out.push({
+			type: 'major',
+			position,
+			offset: {
+				along: 0,
+				perp: 0
+			},
+			label: '',
+			show: false,
+			extra: true,
+			grid: {
+				show: true,
+				color,
+				width: width || 0.5
+			}
+		});
+	}
+
+	// 2 - tick
+	for(let t = 0; t < extra.ticks.length; t++){
+		let { position, label} = extra.grid[g];
+		label = label || extraLabelize(position);
+		const idx = already.findIndex( a => equal(a.position,position));
+		if(idx !== -1){
+			already[idx].grid = { color, width, show: true };
+			continue;
+		}
+		// defaulted on non extra ticks
+		out.push({ ...already[0], ...extra.ticks[t]});
+	}
+
 	return out;
 }
 
