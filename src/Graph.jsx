@@ -9,7 +9,7 @@ export default class Graph extends React.Component {
 	constructor(props){
 		super(props);
 		this.myId = rndKey();
-		this.myKey = props.graphId || rndKey();
+		this.myKey = props.graphId || props.chartId || rndKey();
 		if(props.onGenerateKey){
 			props.onGenerateKey(this.myKey);
 		}
