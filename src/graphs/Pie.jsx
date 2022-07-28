@@ -15,7 +15,7 @@ export default class Pie extends React.Component {
 		};
 	}
 
-	area(oldT,position,idx){
+	area(oldT,position,idx,stroke,strokeWidth){
 		const {state: { path: { origin, radius, toreRadius, onClick, isSelected, fill }, css } } = this.props;
 
 		const color = position.color || fill;
@@ -39,7 +39,9 @@ export default class Pie extends React.Component {
 		// large-arc-flag, true if theta > 180
 		const laf = theta > 180 ? 1 : 0;
 		const path = `M${x4},${y4} L${x3},${y3} A${radius},${radius} 0 ${laf},0 ${x2},${y2} L ${x1},${y1} A${toreRadius},${toreRadius} 0 ${laf},1 ${x4},${y4}`;
-		return <path className={pieClass(idx)} onClick={() => idx < 0 ? null : onClick(idx)} key={idx} fill={color} stroke='none' strokeWidth='0' d={path}/>;
+		stroke = strokeWidth ? ( stroke ? stroke : 'white' ) : 'none';
+		strokeWidth = strokeWidth || '0';
+		return <path className={pieClass(idx)} onClick={() => idx < 0 ? null : onClick(idx)} key={idx} fill={color} stroke={stroke} strokeWidth={strokeWidth} d={path}/>;
 	}
 
 	gauge(position,idx){
@@ -68,7 +70,7 @@ export default class Pie extends React.Component {
 		const { path, css } = state;
 		const { labels, positions, 
 			pinRadius, pinLength, pinHook, pinDraw, pinFontSize, 
-			origin, type, gaugeColor, fill } = path;
+			origin, type, gaugeColor, fill, pieSep, pieSepColor } = path;
 
 		if(positions.length === 0){
 			return null;
@@ -79,13 +81,13 @@ export default class Pie extends React.Component {
 		let out = [];
 
 		if(type === 'gauge'){
-			out.push(this.area(0,{color: fill || gaugeColor, value: 180},-1));
+			out.push(this.area(0,{color: fill || gaugeColor, value: 180},-1, pieSepColor, pieSep));
 		}
 
 		for(let p = 0; p < positions.length; p++){
 
 			// path of point
-			out.push( type ==='gauge' ? this.gauge(positions[p],p) : this.area(oldT,positions[p],p));
+			out.push( type ==='gauge' ? this.gauge(positions[p],p) : this.area(oldT,positions[p],p,pieSepColor, pieSep));
 
 			const theta = Math.min(positions[p].value, 359.9640);// more than 99.99% is a circle (not supported by arc anyway)
 

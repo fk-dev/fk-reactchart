@@ -59,6 +59,8 @@ export const vm = {
 			pinHook: props.tag.pinHook,
 			pinDraw: props.tag.pin,
 			pinFontSize: props.tag.fontSize,
+			pieSep: props.pieSep,
+			pieSepColor: props.pieSepColor,
 			onClick
 		};
 	}

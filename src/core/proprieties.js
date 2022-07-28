@@ -122,6 +122,8 @@ graph.Pie = graph.pie = ({pieType}) => deepCp(graph.common(),{
 	pieNoStack: pieType === 'gauge', // 1D circular graph
 	gaugeMaxVal: 100,
 	gaugeColor: '#CFE1FC',
+	pieSep: null,
+	pieSepColor: null,
 	tag: {
 		css: null,
 		show: false, // show the tag
