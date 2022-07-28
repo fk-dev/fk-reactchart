@@ -308,7 +308,7 @@ export function init(rawProps, type, opts, debug){
 			if(!getMeasurer(k)){
 				addAMeasurer(k);
 			}else{
-				if(!getMeasurer(k).mgr.active){
+				if(!getMeasurer(k).mgr?.active){
 					measurer[k] = initMeasurer(measure(k, debug),k);
 				}
 			}
