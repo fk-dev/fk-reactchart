@@ -8,7 +8,7 @@ import { clear as clearGradient } from './core/gradient-mgr.js';
 export function init(rawProps, type, opts, debug){
 
 	opts = opts || {};
-	let { key, obj, namespace, onGraphDone, onGraphStart, printOnly, waitFor } = opts;
+	let { key, obj, namespace, onGraphDone, onGraphStart, onPropsReady, printOnly, waitFor } = opts;
 
 	if(obj && !key){
 		key = rndKey();
@@ -633,6 +633,9 @@ export function init(rawProps, type, opts, debug){
 		freezer._def = freeze(imVM);
 		_ready = true;
 		updateDeps();
+		if(onPropsReady){
+			onPropsReady();
+		}
 	});
 
 	// init if needed
