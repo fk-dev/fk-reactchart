@@ -1,4 +1,3 @@
-import { map, reduce } from 'underscore';
 import { toC, toCwidth} from '../core/space-transf.js';
 import { isNil } from '../core/utils.js';
 import { shader } from '../core/colorMgr.js';
@@ -9,10 +8,10 @@ export const vm = {
 
 		const vm = get;
 
-		const sum	= reduce(serie, (memo, value) => memo + value.value, 0);
+		const sum	= serie.reduce( (memo, value) => memo + value.value, 0);
 		const angleMax = props.pie === 'gauge' ? 180 : 360;
 		const val = v => props.pieNoStack ? v/props.gaugeMaxVal : v/sum;
-		const positions = map(serie, (point,idx) => {
+		const positions = serie.map( (point,idx) => {
 			return {
 				value: Math.max(Math.min(val(point.value) * angleMax,angleMax),0),
 				color: point.color || shader(idx)
@@ -26,7 +25,7 @@ export const vm = {
 
 		let labels = [];
 		if(props.tag.show){
-			labels = map(serie, (val) => props.tag.print(val));
+			labels = serie.map( val => ({text: props.tag.print(val), color:  val.tagColor || props.tag?.color}) );
 		}
 
 		const maxR = Math.min( toCwidth(ds.x,ds.x.d.max - ds.x.d.min) / 2, toCwidth(ds.y,ds.y.d.max - ds.y.d.min) / 2);
@@ -51,6 +50,7 @@ export const vm = {
 			fill: props.fill || props.pie === 'disc',
 			positions,
 			origin,
+			startAngle: props.pieStartAngle || 0,
 			radius,
 			toreRadius: props.pieToreRadius * radius,
 			labels,

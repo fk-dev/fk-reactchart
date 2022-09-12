@@ -38,7 +38,7 @@ export default class Pie extends React.Component {
 
 		// large-arc-flag, true if theta > 180
 		const laf = theta > 180 ? 1 : 0;
-		const path = `M${x4},${y4} L${x3},${y3} A${radius},${radius} 0 ${laf},0 ${x2},${y2} L ${x1},${y1} A${toreRadius},${toreRadius} 0 ${laf},1 ${x4},${y4}`;
+		const path = `M${x4},${y4} L${x3},${y3} A${radius},${radius} 0 ${laf},0 ${x2},${y2} L ${x1},${y1} A${toreRadius},${toreRadius} 0 ${laf},1 ${x4},${y4} Z`;
 		stroke = strokeWidth ? ( stroke ? stroke : 'white' ) : 'none';
 		strokeWidth = strokeWidth || '0';
 		return <path className={pieClass(idx)} onClick={() => idx < 0 ? null : onClick(idx)} key={idx} fill={color} stroke={stroke} strokeWidth={strokeWidth} d={path}/>;
@@ -70,14 +70,15 @@ export default class Pie extends React.Component {
 		const { path, css } = state;
 		const { labels, positions, 
 			pinRadius, pinLength, pinHook, pinDraw, pinFontSize, 
-			origin, type, gaugeColor, fill, pieSep, pieSepColor } = path;
+			origin, type, gaugeColor, fill, pieSep, pieSepColor,
+			startAngle } = path;
 
 		if(positions.length === 0){
 			return null;
 		}
 
 
-		let oldT = 0;
+		let oldT = startAngle;
 		let out = [];
 
 		if(type === 'gauge'){
@@ -116,7 +117,7 @@ export default class Pie extends React.Component {
 					const lpath = `M${xc1},${yc1} L${xc2},${yc2} L${xc3},${yc3}`;
 					out.push(<path key={`${p}.ll`} strokeWidth='1' stroke='black' fill='none' d={lpath}/>);
 				}
-				out.push(<text fontSize={pinFontSize} key={`${p}.l`} x={xc} y={yc} textAnchor={textAnchor}>{label}</text>);
+				out.push(<text fill={label.color} fontSize={pinFontSize} key={`${p}.l`} x={xc} y={yc} textAnchor={textAnchor}>{label.text}</text>);
 			}
 			//x = x2;
 			//y = y2;
