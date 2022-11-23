@@ -14,7 +14,13 @@ export const vm = {
 		const positions = serie.map( (point,idx) => {
 			return {
 				value: Math.max(Math.min(val(point.value) * angleMax,angleMax),0),
-				color: point.color || shader(idx)
+				color: point.color || shader(idx),
+				pinOffset: point.pinOffset,
+				pinLength: point.pinLength,
+				pinRadius: point.pinRadius,
+				pinFontSize: point.pinFontSize,
+				pinDraw: point.pinDraw,
+				textAnchor: point.textAnchor
 			};
 		});
 
@@ -25,7 +31,7 @@ export const vm = {
 
 		let labels = [];
 		if(props.tag.show){
-			labels = serie.map( val => ({text: props.tag.print(val), color:  val.tagColor || props.tag?.color}) );
+			labels = serie.map( val => ({text: props.tag.print(val), color:  val.tagColor ?? props.tag?.color}) );
 		}
 
 		const maxR = Math.min( toCwidth(ds.x,ds.x.d.max - ds.x.d.min) / 2, toCwidth(ds.y,ds.y.d.max - ds.y.d.min) / 2);
@@ -59,6 +65,7 @@ export const vm = {
 			pinHook: props.tag.pinHook,
 			pinDraw: props.tag.pin,
 			pinFontSize: props.tag.fontSize,
+			pinOffset: props.tag.pinOffset,
 			pieSep: props.pieSep,
 			pieSepColor: props.pieSepColor,
 			onClick
