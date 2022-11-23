@@ -105,11 +105,11 @@ export default class Pie extends React.Component {
 				const isEq = (a,b) => a < b + 1 && a > b - 1; // 1 deg
 				const curAng = type === 'gauge' ? theta : theta / 2 + oldT;
 
-        const pR  = !isNil(positions[p].pinRadius) ? positions[p].pinRadius * radius : pinRadius;
-        const pL  = !isNil(positions[p].pinLength) ? positions[p].pinLength * radius : pinLength;
-        const pO  = positions[p].pinOffset   ?? pinOffset;
-        const pFS = positions[p].pinFontSize ?? pinFontSize;
-        const pD  = positions[p].pinDraw     ?? pinDraw;
+				const pR	= !isNil(positions[p].pinRadius) ? positions[p].pinRadius * radius : pinRadius;
+				const pL	= !isNil(positions[p].pinLength) ? positions[p].pinLength * radius : pinLength;
+				const pO	= positions[p].pinOffset	 ?? pinOffset;
+				const pFS = positions[p].pinFontSize ?? pinFontSize;
+				const pD	= positions[p].pinDraw		 ?? pinDraw;
 				const textAnchor = positions[p].textAnchor ?? ( isEq(curAng,90) || isEq(curAng,270) ? 'middle' :
 							curAng > 90 && curAng < 270 ? 'start' : 'end' );
 
