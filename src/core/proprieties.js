@@ -84,6 +84,7 @@ graph.common = () => {
 			pinWidth: 1, // 1 px as pin width
 			pinAngle: 90, // direction of pin
 			pinHook: 0, // no hook
+			pinOffset: {x: 0, y:0},
 			color: 'black' // color of the tag
 		}
 	};
@@ -136,6 +137,7 @@ graph.Pie = graph.pie = ({pieType}) => deepCp(graph.common(),{
 		pinWidth: 1, // 1 px as pin width
 		pinAngle: 90, // direction of pin
 		pinRadius: pieType === 'gauge' ? 1 : 0.75, // 3/4 of pie size
+		pinOffset: {x: 0, y:0},
 		pinHook: 10, // absolute length
 		color: 'black' // color of the tag
 	}
