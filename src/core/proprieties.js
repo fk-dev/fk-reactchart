@@ -118,7 +118,8 @@ graph.yBars = graph.ybars = (opt) => deepCp(graph.Bars(opt),{
 graph.Pie = graph.pie = ({pieType}) => deepCp(graph.common(),{
 	pie: pieType ? pieType : 'disc', // tore, gauge
 	pieOrigin: {x: 0, y:0}, // offset from center
-	pieRadius: null, // 2/3 of world
+	pieRadius: null, // optim 
+	noOptim :  false, // force no optim, use pieRadius
 	pieStartAngle: 0,
 	pieToreRadius: pieType === 'disc' ? 0 : 0.5, // 0: no hole, 1 : no border!
 	pieNoStack: pieType === 'gauge', // 1D circular graph

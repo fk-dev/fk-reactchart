@@ -588,7 +588,63 @@ const _spaces = (universe, datas, axis, borders, titleProps, showTags, lengthMgr
 
 };
 
-const _polarSpace = (universe, datas, axis, borders, titleProps, lengthMgr) => {
+const polarTags = (tagsProps,datas,maxAngles,lengthMgr) => {
+
+	let maxRadius = tagsProps.reduce( (memo,x) => memo > x.radius ? memo : x.radius,-1);
+
+	if(maxRadius < 0 || !maxRadius){
+		maxRadius = 1;
+	}
+
+	return tagsProps.reduce( (tags,tagProps,i) => {
+		const { series } = datas[i];
+		if(!tagProps){
+			return tags;
+		}
+
+		const maxAngle = maxAngles[i];
+	
+		const toRad = a => a * Math.PI / 180;
+	
+		const total = isNil(series[0].theta) ? series.reduce( (memo,x) => memo + x.value,0) : null;
+		let curValue = 0;
+		const _tags = series.map(point => {
+			const {hor, vert} = measureTags(tagProps, {x:0, y:0}, point.tag, lengthMgr);
+			let offset = point.pinOffset ?? tagProps.pinOffset;
+			offset = {x: 0, y: 0, ...offset};
+			offset.r = ( offset.r ?? 0 );
+			const hook = point.pinHook ?? tagProps.pinHook;
+			const theta = point.theta ?? (curValue + point.value)/total * maxAngle;
+			curValue += point.value;
+			const isEq = (a,b) => a < b + 1 && a > b - 1;
+			offset.x += isEq(theta,90) || isEq(theta,270) ? 0 :
+						theta > 90 && theta < 270 ? hook + tagProps.fontSize / 3 : - hook - tagProps.fontSize / 3;
+			return {
+				height: Math.abs(vert.max - vert.min),
+				width: Math.abs(hor.max - hor.min),
+				theta: toRad(theta) + toRad(tagProps.startAngle) + (offset.alpha ?? 0),
+				toRadius: (point.pinRadius ?? tagProps.pinRadius) + (point.pinLength ?? tagProps.pinLength),
+				radiusFactor: tagProps.radius/maxRadius || 1,
+				forcedRadius: maxRadius,
+				offset
+			};
+			
+		});
+		return tags.concat(_tags);
+		
+	},[]);
+};
+
+const _polarSpace = (universe, datas, axis, graphProps, borders, titleProps, showTags, lengthMgr) => {
+
+	const checkOptim = () => {
+		const noOptim = graphProps.reduce( (memo,v) => memo || v.noOptim, false);
+		if(noOptim){
+			return graphProps.reduce((memo,g) => memo > g.pieRadius ? memo : g.pieRadius,-1);
+		}
+	};
+
+	const forcedRadius = checkOptim();
 
 	const axisBounds = axis.polar.reduce( (memo,ax) => {
 		const max = isNil(ax.max) || ( !isNil(memo.max) && memo.max > ax.max ) ? memo.max : ax.max;
@@ -606,7 +662,9 @@ const _polarSpace = (universe, datas, axis, borders, titleProps, lengthMgr) => {
 	}, {});
 
 	const { cadMar, title, labelLengthes } = computeOuterMargin('r', {min: 0, max }, axis.polar[0], lengthMgr, titleProps );
-	const sol = radius(universe.width - 2 * (cadMar + axis.polar[0].marginOff), universe.height - 2 * (cadMar + axis.polar[0].marginOff) - title,labelLengthes);
+	const polarTag = polarTags(showTags,datas,graphProps.map(x => x.pie === 'gauge' ? 180 : 360), lengthMgr);
+	const sol = radius(universe.width - 2 * (cadMar + axis.polar[0].marginOff), universe.height - 2 * (cadMar + axis.polar[0].marginOff) - title,labelLengthes,polarTag, forcedRadius);
+
 	const marginsO = {
 		left:   sol.outerMargins.left   + cadMar,
 		right:  sol.outerMargins.right  + cadMar,
@@ -632,6 +690,13 @@ const _polarSpace = (universe, datas, axis, borders, titleProps, lengthMgr) => {
 
 	// delta d / delta c
 	const fromCtoD = (dWorld.max - dWorld.min) / cWorld.max;
+
+	// to props
+	const maxPropsRadius = graphProps.reduce( (memo,gp) => memo > gp.pieRadius || !gp.pieRadius ? memo : gp.pieRadius, -1);
+	const factor = graphProps.map(x => x.pieRadius/maxPropsRadius);
+	graphProps.forEach( (x,i) => {
+		x.pieRadius = isNil(x.pieRadius) ? sol.r : factor[i] * sol.r;
+	});
 
 	return {
 		r: {
@@ -660,8 +725,8 @@ const _polarSpace = (universe, datas, axis, borders, titleProps, lengthMgr) => {
 
 };
 
-export function spaces(cs, universe, datas, axis, borders, titleProps, showTags, lengthMgr){
+export function spaces(cs, universe, datas, axis, graphProps, borders, titleProps, showTags, lengthMgr){
 
-	return cs === 'polar' ? _polarSpace(universe, datas, axis, borders, titleProps, lengthMgr) : _spaces(universe, datas, axis, borders, titleProps, showTags, lengthMgr);
+	return cs === 'polar' ? _polarSpace(universe, datas, axis, graphProps, borders, titleProps, showTags, lengthMgr) : _spaces(universe, datas, axis, borders, titleProps, showTags, lengthMgr);
 
 }

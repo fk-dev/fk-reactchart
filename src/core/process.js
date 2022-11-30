@@ -11,12 +11,12 @@ const preprocessAxis = function(props){
   const { css } = props;
 	let axis;
 
-	if(props.coordSys === 'polar'){
+	if(props.coordSys === 'polar' || ( !props.coordSys && props.data?.reduce( (memo,v) => memo && ( v.coordSys === 'polar' || ['radar','Pie','Gauge'].indexOf(v.type) !== -1), true ) ) ){
 		/// labels give the axis
 		let labels = [];
 		(props.data || []).forEach( d => {
 			const dir = d.type === 'radar' || d.type === 'Bars' ? 'x' : 'y'; // want angles (label || indexes)
-			labels = labels.concat( d.series.map(p => p.label && p.label[dir] ? p.label[dir] : p[dir]));
+			labels = labels.concat( d.series.map(p => p.label && p.label[dir] ? p.label[dir] : p[dir])).filter(x => x);
 			for(let i = 0; i < labels.length - 1; i++){
 				for(let j = i + 1; j < labels.length; j++){
 					if(labels[j] === labels[i]){
@@ -31,9 +31,9 @@ const preprocessAxis = function(props){
 		(props.data || []).forEach( d => {
 			const dir = d.type === 'radar' || d.type === 'Bars' ? 'y' : 'x'; // want values
 			const tdir = d.type === 'radar' || d.type === 'Bars' ? 'x' : 'y'; // want idxs
-				d.series.forEach(p => {
+			d.series.forEach(p => {
 				const lab = p.label && p.label[tdir] ? p.label[tdir] : p[tdir];
-				p.theta = utils.isNil(p.theta) ? ( (labels.indexOf(lab) * 4 /dim + 3)%4 * Math.PI/2) : p.theta;
+				p.theta = utils.isNil(p.theta) ? dim ? ( (labels.indexOf(lab) * 4 /dim + 3)%4 * Math.PI/2) : null : p.theta;
 				p.r = p[dir];
 			});
 		});
@@ -48,6 +48,7 @@ const preprocessAxis = function(props){
 				}),
 				placement: 'r',
 				min: 0,
+				max: Math.min(props.width,props.height)/2,
 				label: '',
 				grid: { major: { dim, show: true } },
 				ticks: { major: { length: 0 } }
@@ -271,7 +272,7 @@ export function defaultTheProps(props){
 			}
 		});
 	}
-	if(props.data && props.data.find( data => data.type === 'Pie' || data.coordSys === 'polar')){
+	if(props.data && props.data?.find( data => data.type === 'Pie' || data.coordSys === 'polar')){
 		fullprops.axisProps.abs.forEach( ax => { ax.show = false; });
 		fullprops.axisProps.ord.forEach( ax => { ax.show = false; });
 		props.data.forEach( (d,idx) => {
@@ -293,7 +294,15 @@ export function defaultTheProps(props){
 				});
 			}
 		});
+		if(!props.coordSys && fullprops.data.reduce( (memo,v) => memo && v.coordSys === 'polar', true)){
+			fullprops.coordSys = 'polar';
+			if(props.data.reduce( (memo,x) => memo && x.type === 'Pie',true)){ // full Pie is axis-less
+				fullprops.axisProps.polar.forEach( ax => {ax.show = false;});
+			}
+		}
 	}
+
+	// if not forced && polar by design
 
 	// data & graphProps
 	let dataDef = gProps.defaults('data');
@@ -716,13 +725,21 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 	const tags = acti.map( i => {
 		const x = props.graphProps[i];
 		let out = false;
-		if(x.tag.show && props.data[i].type.indexOf('Bar') !== -1){
+		if(!x.tag.show){
+			return out;
+		}
+		if(props.data[i].type.indexOf('Bar') !== -1){
 			out = x.tag;
 			out.dir = props.data[i].type.startsWith('y') ? 'y' : 'x';
+		}else if(props.coordSys === 'polar'){
+			out = x.tag;
+			out.radius = x.pieRadius;
+			out.startAngle = x.pieStartAngle;
 		}
 		return out;
 	});
-	state.spaces = spaces(props.coordSys, {width: props.width, height: props.height}, data, {abs, ord, polar}, borders, props.titleProps, tags, getMeasurer());
+
+	state.spaces = spaces(props.coordSys, { width: props.width, height: props.height }, data, {abs, ord, polar}, props.graphProps, borders, props.titleProps, tags, getMeasurer());
 
 	// defaut drops for those that don't have them
 	state.series = state.series.map( (serie,idx) => {

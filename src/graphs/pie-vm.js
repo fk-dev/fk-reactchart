@@ -1,4 +1,4 @@
-import { toC, toCwidth} from '../core/space-transf.js';
+import { toC } from '../core/space-transf.js';
 import { isNil } from '../core/utils.js';
 import { shader } from '../core/colorMgr.js';
 
@@ -24,19 +24,20 @@ export const vm = {
 			};
 		});
 
-		const origin = {
+		const origin = ds.r ? {
+			x: ds.r.c.origin.x + props.pieOrigin.x,
+			y: ds.r.c.origin.y + props.pieOrigin.y
+		} : {
 			x: toC(ds.x, props.pieOrigin.x + (ds.x.d.max + ds.x.d.min)/2),
 			y: toC(ds.y, props.pieOrigin.y + (ds.y.d.max + ds.y.d.min)/2)
 		};
 
 		let labels = [];
 		if(props.tag.show){
-			labels = serie.map( val => ({text: props.tag.print(val), color:  val.tagColor ?? props.tag?.color}) );
+			labels = serie.map( val => ({text: props.tag.print(val), color:  val.tagColor ?? props.tag?.color, position: val.label}) );
 		}
 
-		const maxR = Math.min( toCwidth(ds.x,ds.x.d.max - ds.x.d.min) / 2, toCwidth(ds.y,ds.y.d.max - ds.y.d.min) / 2);
-
-		const radius = isNil(props.pieRadius) ? maxR : Math.min(maxR,props.pieRadius);
+		const radius = props.pieRadius;
 
 		const onClick = (p) => {
 			vm().set('selected',p === vm().selected ? null : p);
