@@ -18,8 +18,8 @@ const offsetV = _theta => {
 	}
 };
 
-const hOM  = (r,{length, theta}) => length - r * offsetH(theta);
-const vOM  = (r,{length, theta}) => length - r * offsetV(theta);
+const hOM  = (r,{length, theta}) => max(0,length - r * offsetH(theta));
+const vOM  = (r,{length, theta}) => max(0,length - r * offsetV(theta));
 
 const hTag = (r,d,{length, theta}) => max(0,d * abs(cos(theta)) + length - r);
 const vTag = (r,d,{length, theta}) => max(0,d * abs(sin(theta)) + length - r);
