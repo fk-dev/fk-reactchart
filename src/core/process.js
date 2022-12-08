@@ -28,12 +28,30 @@ const preprocessAxis = function(props){
 		});
 
 		const dim = labels.length;
-		(props.data || []).forEach( d => {
+		(props.data || []).forEach( (d,i) => {
 			const dir = d.type === 'radar' || d.type === 'Bars' ? 'y' : 'x'; // want values
 			const tdir = d.type === 'radar' || d.type === 'Bars' ? 'x' : 'y'; // want idxs
-			d.series.forEach(p => {
+			const startAngle = props.graphProps[i].pieStartAngle ?? 0;
+			const sum = d.series.reduce( (memo,v) => memo + v.value,0);
+			let curValue = startAngle;
+			const valThetas = d.series.map( v => {
+					const locAngle = v.value / sum * 360;
+					const t = curValue + locAngle/2;
+					curValue += locAngle;
+					return t;
+			});
+			d.series.forEach( (p,ip) => {
 				const lab = p.label && p.label[tdir] ? p.label[tdir] : p[tdir];
-				p.theta = utils.isNil(p.theta) ? dim ? ( (labels.indexOf(lab) * 4 /dim + 3)%4 * Math.PI/2) : null : p.theta;
+				/// p.theta  (in degree):
+				/// 1 - defined
+				/// 2 - value (sum defined and not 0)
+				/// 3 - label
+				/// 4 - null
+				curValue += p.value;
+				p.theta = p.theta ?? ( sum ? valThetas[ip] : 
+						dim ?  (labels.indexOf(lab) * 4 /dim + 3)%4 * 90 :
+							null
+					);
 				p.r = p[dir];
 			});
 		});
@@ -108,6 +126,10 @@ const preprocessAxis = function(props){
 									axe.empty = true;
 								}
 						}
+					}
+					// force no grid, even for time
+					if(axe.grid?.major?.show === false){
+						axe.grid.major.forceNoShow = true;
 					}
 				}
 			}

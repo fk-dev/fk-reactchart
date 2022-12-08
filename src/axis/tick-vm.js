@@ -160,12 +160,12 @@ export function vm({css, cs, measurer, ds, partner, bounds, dir, locProps, comFa
   };
 
 	const tickers = ticks(min, max, 
-		majStep, ticksLabel, {majAuto: majProps.autoOffset, majLabelize, spaceFac: spacingFactor, forcedMajStep: majProps.forcedStep }, 
-		minor, minStep, { minAuto: minProps.autoOffset, minLabelize, forcedMinStep: minProps.forcedStep}, 
+		majStep, ticksLabel, {majAuto: majProps.autoOffset, majLabelOffset: majProps.labelOffset, majLabelize, spaceFac: spacingFactor, forcedMajStep: majProps.forcedStep }, 
+		minor, minStep, { minAuto: minProps.autoOffset, minLabelOffset: minProps.labelOffset, minLabelize, forcedMinStep: minProps.forcedStep}, 
 		comFac, toPixel, height, labelSquare, outerMargins,extra);
 
-	const prevTick = (idx) => idx > 0 ? tickers[idx - 1].position : null;
-	const nextTick = (idx) => idx < tickers.length - 1 ? tickers[idx + 1].position : null;
+	//const prevTick = (idx) => idx > 0 ? tickers[idx - 1].position : null;
+	//const nextTick = (idx) => idx < tickers.length - 1 ? tickers[idx + 1].position : null;
 
 	// in case we need to check user defined labels
 	const getMaxLabelLength = () => {
@@ -256,7 +256,7 @@ export function vm({css, cs, measurer, ds, partner, bounds, dir, locProps, comFa
 				let labelRoot = label;
 				let delta = labelRoot.length - labelRoot.substring(0,cand).length;
 				while(delta > 1){
-					const prevL = labelRoot.length;
+					//const prevL = labelRoot.length;
 					label = buildLabel(labelRoot);
 					l = lengthOfText(label, FSize);
 					delta = Math.round(delta/2);
@@ -395,8 +395,8 @@ export function vm({css, cs, measurer, ds, partner, bounds, dir, locProps, comFa
 */
 		let gridProps = {css};
 		const pg = tick.extra ? tick.grid : tick.minor ? minGrid : majGrid;
+		const userForceNoShow = tick.minor ? minGrid.forceNoShow : majGrid.forceNoShow;
 		tmp = {
-			show: true,
 			color: true,
 			width: true,
 			circle: true,
@@ -405,8 +405,10 @@ export function vm({css, cs, measurer, ds, partner, bounds, dir, locProps, comFa
 
 		const cus = tick.grid || {};
 		for(let u in tmp){
-			gridProps[u] = isNil(cus[u]) ? pg[u] : cus[u];
+			gridProps[u] = cus[u] ?? pg[u];
 		}
+		// show can be forced disabled
+		gridProps.show = userForceNoShow ? false : (cus.show ?? pg.show);
 		gridProps.length = partner.length;
 		gridProps.show = tick.type.startsWith('borders-') && isNil(ticksProps.position.r) ? false : gridProps.show;
 

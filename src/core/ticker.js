@@ -53,7 +53,7 @@ const checkMajDist = (labels,ref,D,first,cv, getLength, mgr, starter, spaceFac) 
  * beware of distance (period) versus
  * values (date), see {date,nbr}Mgr.js
 */
-const computeTicks = function(first, last, step, { majAuto, majLabelize, spaceFac, forcedMajStep}, minor, mStep, { minAuto, minLabelize/*, forcedMinStep*/ }, fac, toPixel, height, square, outer,extra){
+const computeTicks = function(first, last, step, { majAuto, majLabelOffset, majLabelize, spaceFac, forcedMajStep}, minor, mStep, { minAuto, minLabelOffset, minLabelize/*, forcedMinStep*/ }, fac, toPixel, height, square, outer,extra){
 
 	// mgr
 	const mgr = typeMgr(first);
@@ -204,9 +204,9 @@ const computeTicks = function(first, last, step, { majAuto, majLabelize, spaceFa
 	});
 
 	const checkBorder = (datum,dist, comp) => {
-		const { position, offset, label } = datum;
+		const { position, offset, label, minor } = datum;
 		const fl = square(label);
-		const labelPos = mgr.add(position,offset.along);
+		const labelPos = mgr.add(mgr.add(position,offset.along), ( minor ? minLabelOffset.along : majLabelOffset.along ) ?? 0 ) ;
 		const d = dist(labelPos);
 		return comp(d,fl);
 	};

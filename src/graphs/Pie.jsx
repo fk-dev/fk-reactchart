@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { isEqual } from '../core/im-utils.js';
-import { isNil } from '../core/utils.js';
+import { isNil, isString } from '../core/utils.js';
 
 export default class Pie extends React.Component {
 
@@ -125,7 +125,7 @@ export default class Pie extends React.Component {
 				const yc3 = yc2;
 				const pl  = this.point(curAng + (pO.alpha ?? 0), pR + pL, origin);
 				const xc = label.position?.x ?? pl.abs + ( pO.x ?? 0 ) + hO;
-				const yc = label.position?.y ?? pl.ord + ( pO.y ?? 0 );
+				const yc = isString(label.position?.y) || isNil(label.position?.y) ? pl.ord + ( pO.y ?? 0 ) : label.position.y;
 
 				if(pD){
 					const lpath = `M${xc1},${yc1} L${xc2},${yc2}${xc3 !== xc2 ? ` L${xc3},${yc3}` : ''}`;

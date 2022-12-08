@@ -26,8 +26,8 @@ const vTag = (r,d,{length, theta}) => max(0,d * abs(sin(theta)) + length - r);
 
 export function radius(width,height,labelLengthes, tags, forced){
 
-	const filterRight  = l => l.filter( ({theta}) => theta%(2*PI) <= PI/2 || theta%(2*PI) >= 3/2*PI);
-	const filterLeft   = l => l.filter( ({theta}) => theta%(2*PI) >= PI/2 && theta%(2*PI) <= 3/2*PI);
+	const filterLeft   = l => l.filter( ({theta}) => theta%(2*PI) <= PI/2 || theta%(2*PI) >= 3/2*PI);
+	const filterRight  = l => l.filter( ({theta}) => theta%(2*PI) >= PI/2 && theta%(2*PI) <= 3/2*PI);
 	const filterTop    = l => l.filter( ({theta}) => theta%(2*PI) <= PI);
 	const filterBottom = l => l.filter( ({theta}) => theta%(2*PI) >= PI);
 

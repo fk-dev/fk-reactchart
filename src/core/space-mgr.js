@@ -209,8 +209,6 @@ const space = function(where, universe, margins, bounds, tags, type){
 			let maxC = maxActive ? doMax(tags.max) : 0;
 			let loop = 0;
 
-			// vertical is reversed
-
 			while( checkBounds(minC,maxC) && loop < 5){
 				margins.minI += minActive ? updateMin(minC) : 0;
 				margins.maxI += maxActive ? updateMax(maxC) : 0;
@@ -295,7 +293,7 @@ const computeOuterMargin = (where, limits, axis, measure, title ) => {
       return tickers.map( (tick,idx) => labelize(tick, prevTick(idx), nextTick(idx)) === false ? mgr.label(tick,step,1) : labelize(tick, prevTick(idx), nextTick(idx)));
     };
 
-    const labels = axis.empty ? [] : tickLabels && tickLabels.length ? tickLabels.map(x => x.label) : computeLabels();
+    const labels = axis.empty || !axis.show ? [] : tickLabels && tickLabels.length ? tickLabels.map(x => x.label) : computeLabels();
 
     if(labels.length){
 			// this is the axises label
@@ -344,7 +342,16 @@ const computeOuterMargin = (where, limits, axis, measure, title ) => {
     labelLength = computeSquare(angle,width,height).height + cadratin.axisLabel[where] / 3;
   }
 
-  return tickLength + cadMar + tickLabelLength + labelLength + ( titleLength ? cadratin.tickLabel[where] / 2 + titleLength : 0 );
+	if(dir === 'r'){
+		axis.marginOff = Math.max(cadMar , defMargins.outer.min);
+		return {
+			cadMar,
+			title: titleLength ? cadratin.tickLabel[where] / 2 + titleLength : 0,
+			labelLengthes: []
+		};
+	}else{
+		return tickLength + cadMar + tickLabelLength + labelLength + ( titleLength ? cadratin.tickLabel[where] / 2 + titleLength : 0 );
+	}
 
 };
 
@@ -563,7 +570,7 @@ const _spaces = (universe, datas, axis, borders, titleProps, showTags, lengthMgr
 		}
 		const hor  = datas[i].abs.axis;
 		const vert = datas[i].ord.axis;
-		const tags = datas[i].series.map( p => measureTags(showTags[i],p, p.tag, lengthMgr)).filter(x => x);
+		const tags = datas[i].series.map( p => measureTags(showTags[i],p, showTags[i].print(p), lengthMgr)).filter(x => x);
 		tag[hor]  = {
 			min: isNil(borders.marginsI.left)  ? tag[hor].min.concat(tags.map(t => t.hor))  : [], 
 			max: isNil(borders.marginsI.right) ? tag[hor].max.concat(tags.map(t => t.hor))  : [],
@@ -609,7 +616,7 @@ const polarTags = (tagsProps,datas,maxAngles,lengthMgr) => {
 		const total = isNil(series[0].theta) ? series.reduce( (memo,x) => memo + x.value,0) : null;
 		let curValue = 0;
 		const _tags = series.map(point => {
-			const {hor, vert} = measureTags(tagProps, {x:0, y:0}, point.tag, lengthMgr);
+			const {hor, vert} = measureTags(tagProps, {x:0, y:0}, tagProps.print(point), lengthMgr);
 			let offset = point.pinOffset ?? tagProps.pinOffset;
 			offset = {x: 0, y: 0, ...offset};
 			offset.r = ( offset.r ?? 0 );
