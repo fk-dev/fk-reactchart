@@ -83,8 +83,8 @@ export default class Tick extends React.Component {
 			}else{
 				let xs = [];
 				let ys = [];
-				for(let i = 0; i < dim; i++){
-					const theta = (i * 2 * Math.PI/dim - Math.PI/2)%(2*Math.PI);
+				for(let i = 0; i < dim.length; i++){
+					const theta = dim[i].theta;
 					xs.push(r * Math.cos(theta) + ds.r.c.origin.x);
 					ys.push(r * Math.sin(theta) + ds.r.c.origin.y);
 				}
@@ -123,8 +123,8 @@ export default class Tick extends React.Component {
 			const r = toC(ds.r,position.r);
 			const { dim } = this.props.state.grid;
 
-			for(let i = 1; i < dim; i++){
-				const theta = (i * 2 * Math.PI/dim - Math.PI/2)%(2*Math.PI);
+			for(let i = 1; i < dim.length; i++){
+				const theta = dim[i].theta;
 				const x = r * Math.cos(theta);
 				const y = r * Math.sin(theta);
 				const x1 = x - length * out * Math.cos(theta);

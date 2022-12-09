@@ -1,33 +1,15 @@
 const { PI, sin, cos, max, min, abs } = Math;
 
-const offsetH = _theta => {
-	const theta = 2*PI - _theta;
-	if(theta < PI/2 || theta > 3*PI/2){
-		return 1 - cos(theta);
-	}else{
-		return 1 + cos(theta);
-	}
-};
-
-const offsetV = _theta => {
-	const theta = 2*PI - _theta;
-	if(theta < PI/2){
-		return 1 - sin(theta);
-	}else{
-		return 1 + sin(theta);
-	}
-};
-
-const hOM  = (r,{length, theta}) => max(0,length - r * offsetH(theta));
-const vOM  = (r,{length, theta}) => max(0,length - r * offsetV(theta));
+const hOM = (r,{length, theta}) => max(0, ( r + length) * abs(cos(theta)) - r);
+const vOM = (r,{length, theta}) => max(0, ( r + length) * abs(sin(theta)) - r);
 
 const hTag = (r,d,{length, theta}) => max(0,d * abs(cos(theta)) + length - r);
 const vTag = (r,d,{length, theta}) => max(0,d * abs(sin(theta)) + length - r);
 
 export function radius(width,height,labelLengthes, tags, forced){
 
-	const filterLeft   = l => l.filter( ({theta}) => theta%(2*PI) <= PI/2 || theta%(2*PI) >= 3/2*PI);
-	const filterRight  = l => l.filter( ({theta}) => theta%(2*PI) >= PI/2 && theta%(2*PI) <= 3/2*PI);
+	const filterRight  = l => l.filter( ({theta}) => theta%(2*PI) <= PI/2 || theta%(2*PI) >= 3/2*PI);
+	const filterLeft   = l => l.filter( ({theta}) => theta%(2*PI) >= PI/2 && theta%(2*PI) <= 3/2*PI);
 	const filterTop    = l => l.filter( ({theta}) => theta%(2*PI) <= PI);
 	const filterBottom = l => l.filter( ({theta}) => theta%(2*PI) >= PI);
 

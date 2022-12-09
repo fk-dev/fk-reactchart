@@ -170,7 +170,8 @@ export function vm(ds,cs, props,partnerDs,dir, motherCss, measurer){
 		}
 	};
 
-	const placerPolar = theta => {
+	const placerPolar = _theta => {
+		const theta = _theta%(2 * Math.PI);
 		const rad = a => a / 180 * Math.PI;
 		const bot = theta > rad(1.9*45) && theta < rad(2.1*45);
 		const top = theta > rad(5.9*45) && theta < rad(6.1*45);
@@ -195,7 +196,8 @@ export function vm(ds,cs, props,partnerDs,dir, motherCss, measurer){
 		}
 	};
 
-	const placeTheta = t => {
+	const placeTheta = _t => {
+		const t = _t%(2 * Math.PI);
 		const rad = a => a / 180 * Math.PI;
 		const places = {
 			right:  { inf: 0,           sup: rad(1.9 * 45), infS: rad(6.1*45)},

@@ -13,9 +13,71 @@ const preprocessAxis = function(props){
 
 	if(props.coordSys === 'polar' || ( !props.coordSys && props.data?.reduce( (memo,v) => memo && ( v.coordSys === 'polar' || ['radar','Pie','Gauge'].indexOf(v.type) !== -1), true ) ) ){
 		/// labels give the axis
+		const isRadar = d => ["radar","Bars","yBars"].indexOf(d.type) !== -1;
+		const oneRAxe = () => ({
+			cycle: true,
+			dim: [],
+			placement: 'r',
+			min: 0,
+			max: Math.min(props.width,props.height)/2,
+			label: '',
+			grid: { major: { show: true } },
+			ticks: { major: { length: 0 } }
+		});
+		axis = {polar: []};
+
+		(props.data || []).forEach( (rData,rIdx) => {
+			let curAxe = oneRAxe();
+			if(isRadar(rData)){
+				// we need to define the different dimensions
+				/// we have data points as (dimension name, value)
+				/// by default we have (legend, value)
+				/// but we can use (x,y)
+				/// if radar || Bars => (legend,value) || (x,y)
+				/// if yBars         => (legend,value) || (y,x)
+				const getLabel = p => p.legend ?? ( rData.type === 'yBars' ? p.y : p.x );
+				const getValue = p => p.value  ?? ( rData.type === 'yBars' ? p.x : p.y );
+				const thetaStep = 360 / rData.series.length;
+				const startAngle = props.graphProps[rIdx].pieStartAngle ?? 0;
+				curAxe.dim = rData.series.map( (p,i) => ({
+						label: getLabel(p),
+						theta: (i * thetaStep + startAngle) * Math.PI / 180
+					}));
+				curAxe.grid.major.dim = curAxe.dim;
+				rData.series.forEach( (p,i) => {
+					/// r contains the value
+					/// legend contains the dimension name
+					p.r      = getValue(p);
+					p.legend = getLabel(p);
+					p.theta  = curAxe.dim[i].theta;
+				});
+				
+			}else{
+				const startAngle = props.graphProps[rIdx].pieStartAngle ?? 0;
+				const sum = rData.series.reduce( (memo,v) => memo + v.value,0);
+				let curValue = startAngle;
+				const valThetas = rData.series.map( v => {
+						const locAngle = ( v.value ?? v.x ) / sum * 360;
+						const t = curValue + locAngle/2;
+						curValue += locAngle;
+						return t;
+				});
+				rData.series.forEach( (p,ip) => {
+				/// p.theta  (in degree):
+				/// 1 - defined
+				/// 2 - value (sum defined and not 0)
+				/// 3 - null
+					p.theta = p.theta ?? ( sum ? valThetas[ip] : null	);
+				});
+			}
+			axis.polar.push(curAxe);
+		});
+
+/*
+
 		let labels = [];
 		(props.data || []).forEach( d => {
-			const dir = d.type === 'radar' || d.type === 'Bars' ? 'x' : 'y'; // want angles (label || indexes)
+			const dir = isRadar(d) ? 'x' : 'y'; // want angles (label || indexes)
 			labels = labels.concat( d.series.map(p => p.label && p.label[dir] ? p.label[dir] : p[dir])).filter(x => x);
 			for(let i = 0; i < labels.length - 1; i++){
 				for(let j = i + 1; j < labels.length; j++){
@@ -29,8 +91,8 @@ const preprocessAxis = function(props){
 
 		const dim = labels.length;
 		(props.data || []).forEach( (d,i) => {
-			const dir = d.type === 'radar' || d.type === 'Bars' ? 'y' : 'x'; // want values
-			const tdir = d.type === 'radar' || d.type === 'Bars' ? 'x' : 'y'; // want idxs
+			const dir  = isRadar(d) ? 'y' : 'x'; // want values
+			const tdir = isRadar(d) ? 'x' : 'y'; // want idxs
 			const startAngle = props.graphProps[i].pieStartAngle ?? 0;
 			const sum = d.series.reduce( (memo,v) => memo + v.value,0);
 			let curValue = startAngle;
@@ -47,8 +109,9 @@ const preprocessAxis = function(props){
 				/// 2 - value (sum defined and not 0)
 				/// 3 - label
 				/// 4 - null
+				/// radar => axis label, not point tag
 				curValue += p.value;
-				p.theta = p.theta ?? ( sum ? valThetas[ip] : 
+				p.theta = p.theta ?? ( sum && !isRadar ? valThetas[ip] : 
 						dim ?  (labels.indexOf(lab) * 4 /dim + 3)%4 * 90 :
 							null
 					);
@@ -71,7 +134,7 @@ const preprocessAxis = function(props){
 				grid: { major: { dim, show: true } },
 				ticks: { major: { length: 0 } }
 			}]
-		};
+		};*/
 
 		/// axisProps gives the axis
 		if(props.axisProps && props.axisProps.polar){
@@ -80,6 +143,7 @@ const preprocessAxis = function(props){
 				axis.polar[0][u] = axPol[u];
 			}
 		}
+
 	}else{
 
 		let def = {abs : 'bottom', ord: 'left'};
@@ -704,7 +768,7 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 			const mm = utils.mgr(ser[0]);
 			for(let p = 0; p < ser.length; p++){
 				const point = ser[p];
-				if(point.label[u] && locAxis.tickLabels.findIndex( l => mm.equal(l.coord,point[u]) && l.label === point.label[u]) === -1 ){
+				if(point.label[u] && locAxis.tickLabels?.findIndex( l => mm.equal(l.coord,point[u]) && l.label === point.label[u]) === -1 ){
 					locAxis.tickLabels.push({coord: point[u], label: point.label[u], type: isTick(u,dat.type)});
 				}
 			}
