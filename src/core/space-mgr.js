@@ -6,7 +6,8 @@
 import { isNil, mgr as mgrU, isString, isArray, computeSquare } from './utils.js';
 import { defMargins } from './proprieties.js';
 import { errorMgr }   from './errorMgr.js';
-import { radius }     from './polar-search.js';
+import { radius, offsetOfLabel,
+    offsetOfHook }    from './polar-utils.js';
 import { toC }        from './space-transf.js';
 import { precompute } from '../marks/pin.js';
 
@@ -617,19 +618,30 @@ const polarTags = (tagsProps,datas,maxAngles,lengthMgr) => {
 		let curValue = 0;
 		const _tags = series.map(point => {
 			const {hor, vert} = measureTags(tagProps, {x:0, y:0}, tagProps.print(point), lengthMgr);
-			let offset = point.pinOffset ?? tagProps.pinOffset;
-			offset = {x: 0, y: 0, ...offset};
-			offset.r = ( offset.r ?? 0 );
-			const hook = point.pinHook ?? tagProps.pinHook;
+			const height = Math.abs(vert.max - vert.min);
+			const width  = Math.abs(hor.max - hor.min);
+			const size = {width, height};
 			const theta = point.theta ?? (curValue + point.value)/total * maxAngle;
-			curValue += point.value;
-			const isEq = (a,b) => a < b + 1 && a > b - 1;
-			offset.x += isEq(theta,90) || isEq(theta,270) ? 0 :
-						theta > 90 && theta < 270 ? hook + tagProps.fontSize / 3 : - hook - tagProps.fontSize / 3;
+
+			const pinOffset   = point.pinOffset ?? tagProps.pinOffset;
+			const pinLength   = point.pinLength ?? tagProps.pinLength;
+			const pinHook     = point.pinHook   ?? tagProps.pinHook;
+			const pinFontSize = point.fontSize  ?? tagProps.fontSize;
+			const hookOffset  = offsetOfHook({pinOffset, pinLength, pinHook, theta},size);
+			const labelOffset = offsetOfLabel({pinOffset, pinFontSize, pinLength, theta},size);
+
+
+			const offset = {
+				r: pinOffset.r ?? 0,
+				x: hookOffset.x + labelOffset.x,
+				y: hookOffset.y + labelOffset.y
+			};
+			point.labelHeight = height;
+
 			return {
-				height: Math.abs(vert.max - vert.min),
-				width: Math.abs(hor.max - hor.min),
-				theta: toRad(theta) + toRad(tagProps.startAngle) + (offset.alpha ?? 0),
+				height,
+				width,
+				theta: toRad(theta + tagProps.startAngle + ( offset.alpha ?? 0) ),
 				toRadius: (point.pinRadius ?? tagProps.pinRadius) + (point.pinLength ?? tagProps.pinLength),
 				radiusFactor: tagProps.radius/maxRadius || 1,
 				forcedRadius: maxRadius,

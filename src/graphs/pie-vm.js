@@ -20,7 +20,8 @@ export const vm = {
 				pinRadius: point.pinRadius,
 				pinFontSize: point.pinFontSize,
 				pinDraw: point.pinDraw,
-				textAnchor: point.textAnchor
+				textAnchor: point.textAnchor,
+				labelHeight: point.labelHeight
 			};
 		});
 

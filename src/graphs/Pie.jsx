@@ -2,6 +2,7 @@ import React from 'react';
 
 import { isEqual } from '../core/im-utils.js';
 import { isNil, isString } from '../core/utils.js';
+import { offsetOfHook, offsetOfLabel, anchorOfLabel, isDown } from '../core/polar-utils.js';
 
 export default class Pie extends React.Component {
 
@@ -101,7 +102,6 @@ export default class Pie extends React.Component {
 			if(label){
 
 				const theta = Math.min(positions[p].value, 359.9640);// more than 99.99% is a circle (not supported by arc anyway)
-				const isEq = (a,b) => a < b + 1 && a > b - 1; // 1 deg
 				const curAng = type === 'gauge' ? theta : theta / 2 + oldT;
 
 				const pR   = !isNil(positions[p].pinRadius) ? positions[p].pinRadius * radius : pinRadius;
@@ -110,25 +110,27 @@ export default class Pie extends React.Component {
 				const pFS  = positions[p].pinFontSize ?? pinFontSize;
 				const pD   = positions[p].pinDraw     ?? pinDraw;
 				const hook = positions[p].pinHook     ?? pinHook;
-				const hO   = isEq(curAng,90) || isEq(curAng,270) ? 0 :
-					curAng > 90 && curAng < 270 ? hook + pFS/3 : - hook - pFS/3;
-				const textAnchor = positions[p].textAnchor ?? ( isEq(curAng,90) || isEq(curAng,270) ? 'middle' :
-							curAng > 90 && curAng < 270 ? 'start' : 'end' );
+				const textAnchor = anchorOfLabel({pinOffset: pO, theta: curAng});
+				const isD = isDown({pinOffset: pO, theta: curAng});
 
 				const pc1 = this.point(curAng, pR, origin);
 				const xc1 = pc1.abs;
 				const yc1 = pc1.ord;
-				const pc2 = this.point(curAng + (pO.alpha ?? 0), pR + pL, origin);
+				const pc2 = this.point(curAng - (pO.alpha ?? 0), pR + pL, origin);
 				const xc2 = pc2.abs + ( pO.x ?? 0 );
 				const yc2 = pc2.ord + ( pO.y ?? 0 );
-				const xc3 = xc2 + hO;
-				const yc3 = yc2;
-				const pl  = this.point(curAng + (pO.alpha ?? 0), pR + pL, origin);
-				const xc = label.position?.x ?? pl.abs + ( pO.x ?? 0 ) + hO;
-				const yc = isString(label.position?.y) || isNil(label.position?.y) ? pl.ord + ( pO.y ?? 0 ) : label.position.y;
+
+				const hO = offsetOfHook({ pinOffset: pO, pinLength: pL, pinHook: hook, theta: curAng });
+				const xc3 = xc2 + hO.x;
+				const yc3 = yc2 + hO.y;
+
+				const lO = offsetOfLabel({ pinOffset: pO, pinFontSize: pFS, pinLength: pL, theta: curAng },{width: 0, height: 0});
+				const pl  = this.point(curAng - (pO.alpha ?? 0), pR + pL, origin);
+				const xc = label.position?.x ?? pl.abs + ( pO.x ?? 0 ) + hO.x + lO.x;
+				const yc = ( isString(label.position?.y) || isNil(label.position?.y) ? pl.ord + ( pO.y ?? 0 ) : label.position.y ) + lO.y + ( isD ? position[p].labelHeight : 0 );
 
 				if(pD){
-					const lpath = `M${xc1},${yc1} L${xc2},${yc2}${xc3 !== xc2 ? ` L${xc3},${yc3}` : ''}`;
+					const lpath = `M${xc1},${yc1} L${xc2},${yc2}${xc3 !== xc2 ? ` ${hook ? 'L' : 'M'}${xc3},${yc3}` : ''}`;
 					out.push(<path key={`${p}.ll`} strokeWidth='1' stroke='black' fill='none' d={lpath}/>);
 				}
 

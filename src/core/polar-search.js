@@ -6,12 +6,14 @@ const vOM = (r,{length, theta}) => max(0, ( r + length) * abs(sin(theta)) - r);
 const hTag = (r,d,{length, theta}) => max(0,d * abs(cos(theta)) + length - r);
 const vTag = (r,d,{length, theta}) => max(0,d * abs(sin(theta)) + length - r);
 
+const SVGAngleCorrection = a => a - PI/2;
+
 export function radius(width,height,labelLengthes, tags, forced){
 
-	const filterRight  = l => l.filter( ({theta}) => theta%(2*PI) <= PI/2 || theta%(2*PI) >= 3/2*PI);
-	const filterLeft   = l => l.filter( ({theta}) => theta%(2*PI) >= PI/2 && theta%(2*PI) <= 3/2*PI);
-	const filterTop    = l => l.filter( ({theta}) => theta%(2*PI) <= PI);
-	const filterBottom = l => l.filter( ({theta}) => theta%(2*PI) >= PI);
+	const filterRight  = l => l.filter( ({theta}) => SVGAngleCorrection(theta)%(2*PI) <= PI/2 || SVGAngleCorrection(theta)%(2*PI) >= 3/2*PI).map(x => ({...x, theta: SVGAngleCorrection(x.theta)}));
+	const filterLeft   = l => l.filter( ({theta}) => SVGAngleCorrection(theta)%(2*PI) >= PI/2 && SVGAngleCorrection(theta)%(2*PI) <= 3/2*PI).map(x => ({...x, theta: SVGAngleCorrection(x.theta)}));
+	const filterTop    = l => l.filter( ({theta}) => SVGAngleCorrection(theta)%(2*PI) <= PI).map(x => ({...x, theta: SVGAngleCorrection(x.theta)}));
+	const filterBottom = l => l.filter( ({theta}) => SVGAngleCorrection(theta)%(2*PI) >= PI).map(x => ({...x, theta: SVGAngleCorrection(x.theta)}));
 
 	const _rightL  = filterRight(labelLengthes);
 	const _leftL   = filterLeft(labelLengthes);
@@ -67,7 +69,6 @@ export function radius(width,height,labelLengthes, tags, forced){
 			loop++;
 		}
 	}
-
 	return {
 		r: cur,
 		outerMargins: {
