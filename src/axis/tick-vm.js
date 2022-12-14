@@ -395,7 +395,7 @@ export function vm({css, cs, measurer, ds, partner, bounds, dir, locProps, comFa
 */
 		let gridProps = {css};
 		const pg = tick.extra ? tick.grid : tick.minor ? minGrid : majGrid;
-		const userForceNoShow = tick.minor ? minGrid.forceNoShow : majGrid.forceNoShow;
+		const userForceNoShow = tick.extra ? false : ( tick.minor ? minGrid.forceNoShow : majGrid.forceNoShow );
 		tmp = {
 			color: true,
 			width: true,

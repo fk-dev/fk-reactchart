@@ -4,7 +4,7 @@ let im = {
 	isImm: p => typeof p === 'object' ? Object.isFrozen(p) : false
 };
 
-let { pow, floor, log, abs, LN10 } = Math;
+let { pow, floor, log, abs, LN10, round } = Math;
 
 const _period = {years: true, months: true, weeks: true, days: true};
 const _period_type = ['years','months','weeks','days'];
@@ -18,7 +18,31 @@ let utc = (d) => moment.utc(d).toDate();
 //	days : ,
 //	total: *nb days*
 // }
-let processPeriod = function(per, fac){
+const noFraction = (per) => {
+
+	const fromTo = (value,from,to) => {
+		const d = {[from]: value};
+		const as = x => `as${x[0].toUpperCase()}${x.substring(1)}`;
+		return moment.duration(d)[as(to)]();
+	};
+
+	const _d = ['years','months','weeks','days','hours','minutes','seconds','milliseconds'];
+	_d.forEach( (d,i) => {
+		if( i === _d.length - 1){
+			per[_d[i]] = round(per[_d[i]] ?? 0);
+			return;
+		}
+		const toRound = per[d] - floor(per[d]);
+		if(toRound){
+			per[_d[i]] -= toRound;
+			per[_d[i + 1]] = per[_d[i + 1]] ?? 0;
+			per[_d[i + 1]] += fromTo(toRound,_d[i],_d[i+1]);
+		}
+	});
+
+	return per;
+};
+const processPeriod = function(per, fac){
 	fac = fac || 1;
 
 	// don't touch immutable
@@ -49,6 +73,8 @@ let processPeriod = function(per, fac){
 	if(period.months > 0 && ( period.offset === null || period.offset === undefined ) ){
 		period.offset = true;
 	}
+
+	noFraction(period);
 
 	return period;
 };
@@ -458,7 +484,7 @@ export function equal(dop1,dop2){
 	return _equal(dop1,dop2,sd);
 }
 
-export function absolute(d){return d;};
+export function absolute(d){return d;}
 
 // managements
 export function getValue(dop){ return (dop instanceof Date) ? dop.getTime() : moment.duration(dop).asMilliseconds();}
@@ -528,11 +554,11 @@ export function extraTicks({extra, extraLabelize},already,step,start,end){
 
 	// 2 - tick
 	for(let t = 0; t < extra.ticks.length; t++){
-		let { position, label} = extra.grid[g];
+		let { position, label, color, width } = extra.grid[t];
 		label = label || extraLabelize(position);
 		const idx = already.findIndex( a => equal(a.position,position));
 		if(idx !== -1){
-			already[idx].grid = { color, width, show: true };
+			already[idx].grid = {...already[idx].grid, color, width, show: true };
 			continue;
 		}
 		// defaulted on non extra ticks

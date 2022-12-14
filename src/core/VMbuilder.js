@@ -83,7 +83,7 @@ const curve = function(get, { cs, spaces, serie, data, gprops, idx, css, mgrId, 
 				const offx = isNil(point.offset.x) ? 0 : point.offset.x;
 				const offy = isNil(point.offset.y) ? 0 : point.offset.y;
 
-				let out = {
+				const out = {
 					x: isNil(point.x) ? null : mgr.x.add(point.x,offx),
 					y: isNil(point.y) ? null : mgr.y.add(point.y,offy),
 					drop: {
