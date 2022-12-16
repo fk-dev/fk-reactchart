@@ -10,9 +10,12 @@ export default class Foreground extends React.Component {
 	}
 
 	renderOne(state,ds,i){
-		if(isNil(state.content)){
+		if(isNil(state.content ?? state.text)){
 			return null;
 		}
+
+		const print = () => state.content ? state.content() : <text>{state.text}</text>;
+
 		const wxc = isNil(state.x) ? isNil(state.ix) ? (state.cx - state.width / 2)  + this.props.pWidth / 2 : //pixels
 			fromPic(ds.x, state.ix) : // implicit system
 				toC(ds.x, state.x); // data space
@@ -20,7 +23,7 @@ export default class Foreground extends React.Component {
 			fromPic(ds.y, state.iy) : // implicit
 				toC(ds.y, state.y);
 		const trans = 'translate(' + wxc + ',' + wyc + ')';
-		return <g key={`fore.${i}`} transform={trans}>{state.content()}</g>;
+		return <g key={`fore.${i}`} transform={trans}>{print()}</g>;
 	}
 
 	render(){

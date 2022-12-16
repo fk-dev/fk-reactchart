@@ -238,7 +238,7 @@ export function measure(gid, debug){
 		if(clN){
 			meas.style.fontSize = "";
 		}else{
-			meas.style.fontSize = typeof fontSize === 'number' ? `${fontSize}pt` : fontSize;
+			meas.style.fontSize = typeof fontSize === 'number' ? `${fontSize}px` : fontSize;
 		}
 
 		const texts = renderTextOptions({fontSize},str);
