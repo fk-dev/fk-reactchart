@@ -6,14 +6,21 @@ const vOM = (r,{length, theta}) => max(0, ( r + length) * abs(sin(theta)) - r);
 const hTag = (r,d,{length, theta}) => max(0,d * abs(cos(theta)) + length - r);
 const vTag = (r,d,{length, theta}) => max(0,d * abs(sin(theta)) + length - r);
 
-const SVGAngleCorrection = a => a - PI/2;
+const SVGAngleCorrection = a => PI - a;
+const SVGAngle = t => {
+  let angle = SVGAngleCorrection(t)%(2*PI);
+  if(angle < 0){
+    angle += 2 * PI;
+  }
+  return angle;
+};
 
 export function radius(width,height,labelLengthes, tags, forced){
 
-	const filterRight  = l => l.filter( ({theta}) => SVGAngleCorrection(theta)%(2*PI) <= PI/2 || SVGAngleCorrection(theta)%(2*PI) >= 3/2*PI).map(x => ({...x, theta: SVGAngleCorrection(x.theta)}));
-	const filterLeft   = l => l.filter( ({theta}) => SVGAngleCorrection(theta)%(2*PI) >= PI/2 && SVGAngleCorrection(theta)%(2*PI) <= 3/2*PI).map(x => ({...x, theta: SVGAngleCorrection(x.theta)}));
-	const filterTop    = l => l.filter( ({theta}) => SVGAngleCorrection(theta)%(2*PI) <= PI).map(x => ({...x, theta: SVGAngleCorrection(x.theta)}));
-	const filterBottom = l => l.filter( ({theta}) => SVGAngleCorrection(theta)%(2*PI) >= PI).map(x => ({...x, theta: SVGAngleCorrection(x.theta)}));
+	const filterRight  = l => l.filter( ({theta}) => SVGAngle(theta)%(2*PI) <= PI/2 || SVGAngle(theta)%(2*PI) >= 3/2*PI).map(x => ({...x, theta: SVGAngle(x.theta)}));
+	const filterLeft   = l => l.filter( ({theta}) => SVGAngle(theta)%(2*PI) >= PI/2 && SVGAngle(theta)%(2*PI) <= 3/2*PI).map(x => ({...x, theta: SVGAngle(x.theta)}));
+	const filterTop    = l => l.filter( ({theta}) => SVGAngle(theta)%(2*PI) <= PI).map(x => ({...x, theta: SVGAngle(x.theta)}));
+	const filterBottom = l => l.filter( ({theta}) => SVGAngle(theta)%(2*PI) >= PI).map(x => ({...x, theta: SVGAngle(x.theta)}));
 
 	const _rightL  = filterRight(labelLengthes);
 	const _leftL   = filterLeft(labelLengthes);
@@ -57,7 +64,7 @@ export function radius(width,height,labelLengthes, tags, forced){
 	let dir = 1;
 	const eps = 1; // in px
 	if(!forced){
-		while( ( delta > 0 || abs(delta) > eps ) && loop < 100 ){
+		while( ( delta < 0 || abs(delta) > eps ) && loop < 100 ){
 			cur += step;
 			const rWidth  = hLength(cur);
 			const rHeight = vLength(cur);

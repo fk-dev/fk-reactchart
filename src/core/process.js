@@ -14,6 +14,7 @@ const preprocessAxis = function(props){
 	if(props.coordSys === 'polar' || ( !props.coordSys && props.data?.reduce( (memo,v) => memo && ( v.coordSys === 'polar' || ['radar','Pie','Gauge'].indexOf(v.type) !== -1), true ) ) ){
 		/// labels give the axis
 		const isRadar = d => ["radar","Bars","yBars"].indexOf(d.type) !== -1;
+		const isGauge = d => d.type === 'Gauge';
 		const oneRAxe = () => ({
 			cycle: true,
 			dim: [],
@@ -53,13 +54,15 @@ const preprocessAxis = function(props){
 				});
 				
 			}else{
+				const gauge = isGauge(rData);
 				const startAngle = props.graphProps[rIdx].pieStartAngle ?? 0;
-				const sum = rData.series.reduce( (memo,v) => memo + v.value,0);
+				const maxVal = gauge ? ( props.graphProps[rIdx].gaugeMaxVal ?? 100 ) : rData.series.reduce( (memo,v) => memo + v.value,0);
+				const angleMax = gauge ? 180 : 360;
 				let curValue = startAngle;
 				const valThetas = rData.series.map( v => {
-						const locAngle = ( v.value ?? v.x ) / sum * 360;
-						const t = curValue + locAngle/2;
-						curValue += locAngle;
+						const locAngle = ( v.value ?? v.x ) / maxVal * angleMax;
+						const t = curValue + locAngle/( gauge ? 1 : 2 );
+						curValue += gauge ? 0 : locAngle;
 						return t;
 				});
 				rData.series.forEach( (p,ip) => {
@@ -67,7 +70,7 @@ const preprocessAxis = function(props){
 				/// 1 - defined
 				/// 2 - value (sum defined and not 0)
 				/// 3 - null
-					p.theta = p.theta ?? ( sum ? valThetas[ip] : null	);
+					p.theta = p.theta ?? ( maxVal ? valThetas[ip] : null	);
 				});
 			}
 			axis.polar.push(curAxe);
