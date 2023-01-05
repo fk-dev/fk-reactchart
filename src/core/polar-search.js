@@ -17,10 +17,10 @@ const SVGAngle = t => {
 
 export function radius(width,height,labelLengthes, tags, forced){
 
-	const filterRight  = l => l.filter( ({theta}) => SVGAngle(theta)%(2*PI) <= PI/2 || SVGAngle(theta)%(2*PI) >= 3/2*PI).map(x => ({...x, theta: SVGAngle(x.theta)}));
-	const filterLeft   = l => l.filter( ({theta}) => SVGAngle(theta)%(2*PI) >= PI/2 && SVGAngle(theta)%(2*PI) <= 3/2*PI).map(x => ({...x, theta: SVGAngle(x.theta)}));
-	const filterTop    = l => l.filter( ({theta}) => SVGAngle(theta)%(2*PI) <= PI).map(x => ({...x, theta: SVGAngle(x.theta)}));
-	const filterBottom = l => l.filter( ({theta}) => SVGAngle(theta)%(2*PI) >= PI).map(x => ({...x, theta: SVGAngle(x.theta)}));
+	const filterRight  = l => l.filter( ({theta}) => SVGAngle(theta) <= PI/2 || SVGAngle(theta) >= 3/2*PI).map(x => ({...x, theta: SVGAngle(x.theta)}));
+	const filterLeft   = l => l.filter( ({theta}) => SVGAngle(theta) >= PI/2 && SVGAngle(theta) <= 3/2*PI).map(x => ({...x, theta: SVGAngle(x.theta)}));
+	const filterTop    = l => l.filter( ({theta}) => SVGAngle(theta) <= PI).map(x => ({...x, theta: SVGAngle(x.theta)}));
+	const filterBottom = l => l.filter( ({theta}) => SVGAngle(theta) >= PI).map(x => ({...x, theta: SVGAngle(x.theta)}));
 
 	const _rightL  = filterRight(labelLengthes);
 	const _leftL   = filterLeft(labelLengthes);
