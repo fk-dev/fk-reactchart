@@ -1,3 +1,4 @@
+/* global document*/
 import * as date from './dateMgr.js';
 import * as nbr from './nbrMgr.js';
 import { renderTextOptions } from '../marks/label-text.jsx';

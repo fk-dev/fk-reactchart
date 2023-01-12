@@ -13,23 +13,23 @@ export default class Mark extends React.Component {
 		return !isEqual(props.state,this.props.state);
 	}
 
-	mark(state){
-		const { css, gIdx, type, index } = this.props;
+	render(){
+		const { css, gIdx, type, index, state: { mark } } = this.props;
 		const opts = {css, gIdx, index };
 		switch(type){
 			case 'square':
 			case 'Square':
 			case 'opensquare':
 			case 'OpenSquare':
-				return <Square {...opts} state={state} />;
+				return <Square {...opts} state={mark} />;
 			case 'dot':
 			case 'Dot':
 			case 'opendot':
 			case 'OpenDot':
-				return <Dot {...opts} state={state} />;
+				return <Dot {...opts} state={mark} />;
 			case 'bar':
 			case 'Bar':
-				return <Bar {...opts} state={state} />;
+				return <Bar {...opts} state={mark} />;
 			default:
 				throw new Error(`unrecognized mark type: "${this.props.type}"`);
 		}
@@ -62,7 +62,7 @@ export default class Mark extends React.Component {
 		renderText(textProps,pinS.label,anc);
 	}
 
-	render(){
+	_render(){
 		return this.props.state.pin ? <g>
 			{this.mark(this.props.state.mark)}
 			{this.pin(this.props.state.pin)}

@@ -583,12 +583,14 @@ const makeSpan = function(series,data,rev){
 			if(utils.isNil(serie.offset[othdir])){
 				serie.offset[othdir] = othmgr.step(0);
 			}
-			each(series[s], (point) => {
+			series[s].forEach( (point) => {
 				point.span = point.span || {};
 				point.span[dir] = serie.span;
-				point.offset = point.offset || {};
-				point.offset[dir] = serie.offset[dir];
-				point.offset[othdir] = serie.offset[othdir];
+				if(!data[s].stacked){
+					point.offset = point.offset || {};
+					point.offset[dir] = serie.offset[dir];
+					point.offset[othdir] = serie.offset[othdir];
+				}
 			});
 		};
 
@@ -604,7 +606,7 @@ const makeSpan = function(series,data,rev){
 		let n = 0;
 		let out = [];
 		let oidx = [];
-		each(series, (serie,idx) => {
+		series.forEach( (serie,idx) => {
 			if(data[idx].type === barType){
 				out[idx] = serie.length ? spanify(serie, data[idx]) : {};
 				oidx[idx] = n;
@@ -612,7 +614,7 @@ const makeSpan = function(series,data,rev){
 			}
 		});
 
-		each(out, (serie,idx) => serie ? spanDiv(serie,n,idx,rev ? n - oidx[idx] - 1 : oidx[idx]) : null );
+		out.forEach( (serie,idx) => serie ? spanDiv(serie,n,idx,rev ? n - oidx[idx] - 1 : oidx[idx]) : null );
 	};
 
 	spanSer('Bars');
@@ -709,7 +711,7 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 			// offset from stacked
 		addOffset(state.series, props.data.map( ser => ser.stacked ));
 			// span and offset from Bars || yBars
-		makeSpan(state.series, props.data.map( (ser,idx) => ({type: ser.type, span: props.graphProps[idx].span})), props.drawing === 'reverse');
+		makeSpan(state.series, props.data.map( (ser,idx) => ({type: ser.type, span: props.graphProps[idx].span, stacked: ser.stacked})), props.drawing === 'reverse');
 			// offset from Stairs
 		lOffset = props.data.map( (p,idx) => p.type === 'Stairs' ? offStairs(state.series[idx],props.graphProps[idx]) : null);
 

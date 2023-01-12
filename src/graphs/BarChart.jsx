@@ -1,6 +1,7 @@
 import React from 'react';
 import Path  from './Path.jsx';
 import Mark from '../marks/Mark.jsx';
+import Pin  from '../marks/Pin.jsx';
 import { isEqual } from '../core/im-utils.js';
 
 /*
@@ -28,6 +29,7 @@ export default class BarChart extends React.Component {
 		return <g className={ css ? 'barchart' : null }>
 			<Path {...opts} state={path}/>
 			{marks.map( (bar,i) => <Mark {...opts} index={i} key={bar.key} state={bar} type='bar'/>)}
+			{marks.map( (bar,i) => <Pin {...opts} index={i} key={`${bar.key}.pin`} state={bar.pin} type='bar'/>)}
 		</g>;
 	}
 }

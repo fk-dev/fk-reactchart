@@ -1,4 +1,4 @@
-import { toC } from '../core/space-transf.js';
+import { toC, coordTrans } from '../core/space-transf.js';
 import { isNil, coord } from '../core/utils.js';
 
 const _angle = (deg) => {
@@ -116,7 +116,7 @@ const pin = (get, { pos, tag, ds, motherCss, dir }) => {
 
 	const css = isNil(tag.css) ? motherCss : tag.css;
 
-	// mark
+	// mark + offset
 	let mpos;
 	if(dir === 'r'){
 		const ra = toC(ds.r,pos.r);
@@ -127,17 +127,17 @@ const pin = (get, { pos, tag, ds, motherCss, dir }) => {
 		};
 	}else{
 		mpos = {
-			x: toC(ds.x,pos.x),
-			y: toC(ds.y,pos.y)
+			x: toC(ds.x,pos.x + (tag.pinOffset.dx ?? 0) ),
+			y: toC(ds.y,pos.y + (tag.pinOffset.dy ?? 0) )
 		};
 	}
-	// position = mark + length + hook
+
+	// position = mark + offset + length + hook
 	const lpos = {
 		x: mpos.x + pl.x + ph.x,
 		y: mpos.y - pl.y + ph.y 
 	};
 
-		//y: lpos.y + ( anchor.top ? 0.9 * height : anchor.bottom ? - 0.25 * height : 0.25 * height )
 	const lAnc = {
 		x: lpos.x + ( anchor.left ? 3 : -3 ),
 		y: lpos.y + ( anchor.top ? 3 : anchor.bottom ? -3 : 0 )
