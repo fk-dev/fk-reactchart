@@ -190,8 +190,8 @@ export function measure(gid, debug){
 				let tickLabel = {};
 				for(let u in places){
 					if(props.axisProps[places[u]] && props.axisProps[places[u]].length){
-						axisLabel[u] = ( props.axisProps[places[u]].find(x => x.placement === u) || {labelFSize: 0}).labelFSize;
-						tickLabel[u] = ( props.axisProps[places[u]].find(x => x.placement === u) || {ticks: { major: {labelFSize: 0} } }).ticks.major.labelFSize;
+						axisLabel[u] = ( props.axisProps[places[u]].find(x => x.placement === u)?.labelFSize || 0 );
+						tickLabel[u] = ( props.axisProps[places[u]].find(x => x.placement === u)?.ticks?.major?.labelFSize || 0 );
 					}
 				}
 				const cad = {
@@ -236,7 +236,7 @@ export function measure(gid, debug){
 				father = meas;
 			}
 		}
-		if(clN){
+		if(clN || !fontSize){
 			meas.style.fontSize = "";
 		}else{
 			meas.style.fontSize = typeof fontSize === 'number' ? `${fontSize}px` : fontSize;
@@ -306,14 +306,14 @@ export function measure(gid, debug){
 		let axisLabel = {};
 		let tickLabel = {};
 		for(let u in places){
-			axisLabel[u] = getCadratin( ( props.axisProps[places[u]].find(x => x.placement === u) || {labelFSize: 0}).labelFSize, `axis-label-${u}`);
-			tickLabel[u] = getCadratin( ( props.axisProps[places[u]].find(x => x.placement === u) || {ticks: { major: {labelFSize: 0} } }).ticks.major.labelFSize, `label-major-${u}`);
+			axisLabel[u] = getCadratin( ( props.axisProps[places[u]].find(x => x.placement === u)?.labelFSize || 0 ), `axis-label-${u}`);
+			tickLabel[u] = getCadratin( ( props.axisProps[places[u]].find(x => x.placement === u)?.ticks?.major?.labelFSize || 0 ), `label-major-${u}`);
 		}
 
 		const cad = {
 			title: getCadratin(titleFSize),
 			axisLabel,
-			tickLabel
+			tickLabel	
 		};
 		debug.log(`Actual Measurements: cadratin measurements: ${JSON.stringify(cad)}`);
 
@@ -341,8 +341,8 @@ export function measure(gid, debug){
 			};
 			const { major, minor } = ax.ticks;
 			ticks[placement] = {
-				major: _measureText(`${placement} major ticks`,major.labelFSize, css ? 'label-major' : ''),
-				minor: _measureText(`${placement} minor ticks`,minor.labelFSize, css ? 'label-minor' : '')
+				major: _measureText(`${placement} major ticks`,major?.labelFSize, css ? 'label-major' : ''),
+				minor: _measureText(`${placement} minor ticks`,minor?.labelFSize, css ? 'label-minor' : '')
 			};
 		}));
 
