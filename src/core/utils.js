@@ -339,7 +339,7 @@ export function measure(gid, debug){
 				factor: _measureText(`${placement} factor`,factorFSize,css ? 'axis-factor' : ''),
 				label: _measureText(`${placement} label`,labelFSize,css ? 'axis-factor' : ''),
 			};
-			const { major, minor } = ax.ticks;
+			const { major, minor } = ax?.ticks || {};
 			ticks[placement] = {
 				major: _measureText(`${placement} major ticks`,major?.labelFSize, css ? 'label-major' : ''),
 				minor: _measureText(`${placement} minor ticks`,minor?.labelFSize, css ? 'label-minor' : '')
