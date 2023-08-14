@@ -14,14 +14,14 @@ import { homothe, isNil, toValue } from './utils.js';
  * ds is { c : {min, max}, d: {min,max}, c2d , d2c}
  */
 
-export function toC(ds, data, offset){ return homothe(ds.d.min,ds.c.min,ds.d2c,data) + (offset ?? 0);}
+export function toC(ds, data, offset){ return ds? homothe(ds.d.min,ds.c.min,ds.d2c,data) + (offset ?? 0):null;}
 
 export function toCwidth(ds, dist){
 	let d = isNil(dist) ? 1 : toValue(dist);
-	return Math.abs(ds.d2c * d);
+	return ds? Math.abs(ds.d2c * d):null;
 }
 
-export function toD(ds, coord){ return homothe(ds.c.min,ds.d.min,ds.c2d,coord);}
+export function toD(ds, coord){ return ds? homothe(ds.c.min,ds.d.min,ds.c2d,coord):null;}
 
 export function toDwidth(ds, dist){
 	let d = isNil(dist) ? 1 : toValue(dist);

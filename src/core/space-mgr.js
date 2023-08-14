@@ -246,7 +246,7 @@ const computeOuterMargin = (where, limits, axis, measure, title ) => {
     return titleLength;
   };
 
-  if(!axis){
+  if(!axis || !axis.ticks){
     return titleMeasure();
   }
   const titleLength = titleMeasure();

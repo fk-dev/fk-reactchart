@@ -29,16 +29,16 @@ import { isEqual } from '../core/im-utils.js';
 */
 
 export default class Path extends React.Component {
-
+constructor(props){
+	super(props);
+	this.state = {};
+}
 	shouldComponentUpdate(props) {
 		return !isEqual(props.state,this.props.state);
 	}
-
-
 	compute(){
 
-		const { state } = this.props;
-
+		const { state,interactive } = this.props;
 		if(state.positions.length === 0){
 			return null;
 		}
@@ -89,20 +89,34 @@ export default class Path extends React.Component {
 				return <path key={key} d={path} stroke={color} strokeWidth={width} opacity={shade}/>;
 			});
 		}
-
 		const props = {
 			strokeWidth: width,
 			stroke: color,
 			opacity: shade,
 		};
-
+		const pathLength = /* this['pathRef'+color]?.getTotalLength() || */ 50000;
+		// console.log("path length:"+JSON.stringify({pathLength,color}));
 		return <g className={css ? this.props.className : ''}>
 			{state.close.y || state.close.x ? <path
 				d={filling} 
 				strokeWidth={0}
 				opacity={shade}
 				fill={fill}/> : null }
-			<path className={css ? 'curve' : ''} {...props} fill='none' d={points}/>
+			<path key={color}  className={css ? 'curve' : ''} {...props} fill='none' d={points} style={interactive ? {
+				animation: 'draw 2s linear',
+				strokeDasharray:`${pathLength}px`,
+				strokeLinejoin: "round",
+				strokeLinecap:"round"
+			}:{}} ref={ref => { this['pathRef'+color] = ref; }}>
+				<style>
+			{`
+            @keyframes draw {
+                 0% { stroke-dashoffset:${-pathLength}px; }
+                 100% { stroke-dashoffset:0; }
+            }
+        `}
+			</style>
+			</path>
 				{dropLines}
 			</g>;
 	}

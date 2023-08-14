@@ -5,7 +5,7 @@ import { shader } from '../core/colorMgr.js';
 export const vm = {
 
 	create: function(get, { serie, props, ds, onSelect, unSelect }){
-
+		// console.log("pie-vm : "+JSON.stringify(props));
 		const vm = get;
 
 		const sum	= serie.reduce( (memo, value) => memo + value.value, 0);
@@ -29,7 +29,7 @@ export const vm = {
 			x: ds.r.c.origin.x + props.pieOrigin.x,
 			y: ds.r.c.origin.y + props.pieOrigin.y
 		} : {
-			x: toC(ds.x, props.pieOrigin.x + (ds.x.d.max + ds.x.d.min)/2),
+			x: toC(ds.x, new Date(props.pieOrigin.x + (ds.x.d.max.getTime() + ds.x.d.min.getTime())/2)),
 			y: toC(ds.y, props.pieOrigin.y + (ds.y.d.max + ds.y.d.min)/2)
 		};
 

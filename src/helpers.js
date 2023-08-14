@@ -590,7 +590,9 @@ export function init(rawProps, type, opts, debug){
 	};
 
 	// dyn graph
-	rc.delCurve = (idx) => manip.remove(idx, { props, mgr: rc });
+	rc.delCurve = (idx) => {
+		manip.remove(idx, { props, mgr: rc });
+	};
 	rc.addCurve = (data, graphp) => manip.add({data,graphp}, {props, mgr: rc});
 
 	rc.dynamic = {
@@ -613,6 +615,9 @@ export function init(rawProps, type, opts, debug){
 		show: {
 			curve: (idx) => manip.show(idx, { props, mgr: rc}),
 			mark:  (cidx,midx) => manip.showMark(cidx, midx, {props, mgr: rc}) 
+		},
+		filter:{
+			curve:({from,to}) => manip.filter({from,to},{props,mgr:rc})
 		}
 	};
 

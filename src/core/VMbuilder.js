@@ -22,6 +22,8 @@ import { vm as barVM }     from '../marks/bar-vm.js';
 // pin
 import { vm as pinVM } from '../marks/pin.js';
 
+// import { binding } from 'fk-react-base';
+// let { defInputVM } = binding;
 // graph
 const graphVM = {
 	PLAIN:   plainVM,
@@ -212,7 +214,7 @@ const axis = function(props,state,measurer,axe,dir, motherCss){
 		const { margins } = state.spaces;
 
 		const ticksOpts = {
-			css: { major: axisProps.ticks.major.css, minor: axisProps.ticks.minor.css }, 
+			css: { major: axisProps.ticks?.major.css, minor: axisProps.ticks?.minor.css }, 
 			cs: props.coordSys,
 			measurer, 
 			ds: DS, 

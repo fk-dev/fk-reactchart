@@ -54,7 +54,7 @@ graph.common = () => {
 	return {
 		css: null,
 		color: 'black',
-		width: 1,
+		width: 1,//2,
 		fill: 'none',
 		shade: 1,
 		show: true,

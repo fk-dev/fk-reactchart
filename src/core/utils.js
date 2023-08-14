@@ -306,8 +306,8 @@ export function measure(gid, debug){
 		let axisLabel = {};
 		let tickLabel = {};
 		for(let u in places){
-			axisLabel[u] = getCadratin( ( props.axisProps[places[u]].find(x => x.placement === u)?.labelFSize || 0 ), `axis-label-${u}`);
-			tickLabel[u] = getCadratin( ( props.axisProps[places[u]].find(x => x.placement === u)?.ticks?.major?.labelFSize || 0 ), `label-major-${u}`);
+			axisLabel[u] = getCadratin( ( props.axisProps[places[u]]?.find(x => x.placement === u)?.labelFSize || 0 ), `axis-label-${u}`);
+			tickLabel[u] = getCadratin( ( props.axisProps[places[u]]?.find(x => x.placement === u)?.ticks?.major?.labelFSize || 0 ), `label-major-${u}`);
 		}
 
 		const cad = {
