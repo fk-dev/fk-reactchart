@@ -147,19 +147,21 @@ export const vm = {
         remove(mgrId, grad.id);
       }
     }
-    const handleHover = (event) => {
-      event.target.setAttribute(
+    let rectRef={};
+    const handleHover = (index) => {
+      console.log("ref:",rectRef[index]);
+      rectRef[index].setAttribute(
         "style",
         "fill: #cfcfcf; box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);"
       );
     };
 
-    const handleMouseLeave = (event) => {
-      event.target.setAttribute("style", "fill: #f7f7f7; box-shadow: none;");
+    const handleMouseLeave = (index) => {
+      rectRef[index].setAttribute("style", "fill: #f7f7f7; box-shadow: none;");
     };
     let res = flatten(leg);
     const dateFilters = filterEvents.map(
-      ({event,label,interval}) => {
+      ({event,label,interval},index) => {
 				if(['from','to'].includes(interval)){
 					return {
 						icon: {
@@ -174,7 +176,7 @@ export const vm = {
 										e.target.type = "text";
 									}}
 									onChange = {pr.change}
-									style={{ width: 100 }}
+									style={{ width: 100,marginLeft:interval === "from"? 100:10 }}
 								/>
 							),
 							props: {
@@ -198,25 +200,26 @@ export const vm = {
 								<svg
 									width={pr.width}
 									height={pr.height}
-									style={{marginRight: 5}}
+									style={{marginRight: 5,marginLeft:index === 0 ? 50:0}}
 								>
+                  <g onMouseOver={()=>handleHover(index)}
+									onMouseLeave={()=>handleMouseLeave(index)}>
 									<rect
-									onMouseOver={handleHover}
-									onMouseLeave={handleMouseLeave}
+									ref={ref =>{rectRef[index] = ref;}}
 									style={{
-										
 										fill: "#f7f7f7",
 										transition: "fill 0.3s",
 										cursor: "pointer",
 									}}
 										width={40}
 										height={25}
-										rx={2}
-										ry={2}
+										rx={3}
+										ry={3}
 									/>
-									<text fill="black" x={3} y={20}>
+									<text fill="black" x={3} y={18}>
 										{label}
 									</text>
+                  </g>
 								</svg>
 							),
 							props: {

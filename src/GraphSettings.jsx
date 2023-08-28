@@ -19,7 +19,7 @@ import React, { useState } from "react";
  * control the graph props, calls reinit to impact the graph
  * @param {*} props contains the graph props
  */
-export default function GraphSettings(props) {
+export default function GraphSettings({props,toggleSettings}) {
   const rawProps = bson.clone(props.rawProps());
   const initialGraphTypes = { ...rawProps.data.map((d) => d.type) }; //{0:Plain,1:Bars}
   const initialColors = { ...rawProps.graphProps.map((gp) => gp.color) };
@@ -116,6 +116,7 @@ export default function GraphSettings(props) {
     // console.log("will apply these props:" + JSON.stringify(rawProps));
     rawProps.__defaulted = false;
     props.reinit(rawProps);
+    toggleSettings();
   };
   // console.log("new props:" + JSON.stringify(props.rawProps()));
   return (

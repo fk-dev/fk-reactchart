@@ -150,7 +150,7 @@ export default class Graph extends React.Component {
 		return <foreignObject width="100%" height="100%">
 			{/* <button type='button' onClick={()=>this.toggleSetttings()}>Settings</button> */}
 			<ToggleSettings/>
-		{this.state.settings ? <GraphSettings  {...this.props}/> : 
+		{this.state.settings ? <GraphSettings  props={this.props} toggleSettings={()=>this.toggleSetttings()}/> : 
 		<>
 			{isFilterOn? <div className='row'>
 			<Legend {...this.props	} onlyFilter={true}/>
