@@ -158,7 +158,7 @@ export const vm = {
     const handleClick = (index) => {
       // console.log("onClick - ref:",rectRef[index]);
       Object.keys(rectRef).forEach(index=>{
-        rectRef[index].setAttribute("style", "fill: #f7f7f7; box-shadow: none;");
+        rectRef[index].setAttribute("style", "fill: #f7f7f7; box-shadow: none; font-size:500");
         rectRef[index].clicked = false;
       });
       rectRef[index].clicked = true;
@@ -224,7 +224,7 @@ export const vm = {
 									<rect
 									ref={ref =>{rectRef[index] = ref;}}
 									style={{
-										fill: "#f7f7f7",
+										fill: interval ==="ALL" ? "#cfcfcf": "#f7f7f7",
 										transition: "fill 0.3s",
 										cursor: "pointer",
 									}}
@@ -233,7 +233,7 @@ export const vm = {
 										rx={3}
 										ry={3}
 									/>
-									<text fill="black" x={3} y={18}>
+									<text fill="black" fontWeight={300} x={3} y={18} fontFamily="Lucida Grande, Lucida Sans Unicode, Arial, Helvetica, sans-serif">
 										{label}
 									</text>
                   </g>

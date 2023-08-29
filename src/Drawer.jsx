@@ -55,8 +55,19 @@ function hoverLabelData(curve,mouseX){
 function capitalizeFirstLetter(string) {
 	return string.charAt(0).toUpperCase() + string.slice(1);
 }
-const Tooltip = ({labelX,labelY,data,dataX})=>{
+const Tooltip = ({labelX,labelY,data,dataX,bounds,originalX,outOfGraph})=>{
 	// console.log("data:"+JSON.stringify(data));
+	// console.log("labelX,bounds,originalX"+JSON.stringify({bounds,originalX}));
+	const boundLeft = bounds.x;
+	const boundRight = bounds.right;
+	//adjust labelX
+	if(originalX-100 <= boundLeft){
+		labelX += 100;
+	}
+	if(originalX+100 >= boundRight){
+		labelX -= 100;
+	}
+	let display = outOfGraph;
 	labelX = isNaN(labelX) ? 0:labelX; 
 	const tooltipStyle = {
     // fill: 'transparent',
@@ -81,7 +92,7 @@ const Tooltip = ({labelX,labelY,data,dataX})=>{
 		return null;
 	}
 	return (
-		<svg xmlns="http://www.w3.org/2000/svg" version="1.1">
+		<svg xmlns="http://www.w3.org/2000/svg" version="1.1" style={{opacity:display? 0:1,transition: "opacity 0.3s ease"}}>
   <g>
 	<filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
     <feDropShadow dx="3" dy="3" stdDeviation="4" floodColor="#000000" floodOpacity="0.5" />
@@ -146,11 +157,22 @@ export default class Drawer extends React.Component {
 		// const firstC = this.props.state.curves[0];
 		// const {labelX,labelY,data} = hoverLabelData(firstC,x);
 		// console.log("label data:"+JSON.stringify({labelX,labelY,data}));
-		this.setState({ x,y });
+		this.setState({ x,y,originalX:pt.x });
+	}
+	handleMouseOut = () =>{
+		this.setState({ outOfGraph:true });
+	}
+	handleMouseIn = ()=>{
+		this.setState({ outOfGraph:false });
 	}
 	componentDidMount(){
 		// console.log("will add mousemove listener");
 		window.document.addEventListener('mousemove', this.handleMouseMove);
+		if(this.graphRef){
+			this.graphRef.addEventListener('mouseout',this.handleMouseOut);
+			this.graphRef.addEventListener('mouseover',this.handleMouseIn);
+		}
+
 	}
 	componentWillUnmount(){
 		// console.log("will remove mousemove listener");
@@ -204,13 +226,19 @@ export default class Drawer extends React.Component {
 		const size = relative ? relative.width || relative.height ? {width: relative.width || relative.height, height: relative.height || relative.width, viewBox} : 
 			{width: '100%', height: '100%', viewBox} : 
 				{width: width, height: height};
+		
+		let bounds;
+		const parentElement = this.graphRef;
+		if(parentElement){
+			bounds = parentElement.getBoundingClientRect();
+		}
 		return(
 		<svg {...size} id={this.props.id}  data={this.props.mgrId} className={`${this.props.className}${state.selected ? ' selected' : ''}`} style={style} ref={ref =>{this.graphRef = ref}}>
 		{!interactive ? null:<line x1={this.state.x} y1='0' x2={this.state.x} y2={height} stroke="#cccccc" ></line>}
 		{
 			labelsInfo?.length ?
 			<>
-			<Tooltip {...{labelX:this.state.x - 150,labelY:height/3 - 50,data:labelsInfo,dataX:labelsInfo[0].x}}/>
+			<Tooltip {...{labelX:this.state.x - 150,labelY:height/3 - 50,data:labelsInfo,dataX:labelsInfo[0].x,bounds,originalX:this.state.originalX,outOfGraph:this.state.outOfGraph}}/>
 			{labelsInfo.map(({labelX,labelY,color},index)=><svg key={color}>
 			<circle key={index+color} cx={labelX} cy={labelY} r={10} fill={color} opacity={0.3}/>
 			<circle key={index+1+color} cx={labelX} cy={labelY} r={3} fill={color}/>
