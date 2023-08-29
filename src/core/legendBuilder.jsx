@@ -149,14 +149,29 @@ export const vm = {
     }
     let rectRef={};
     const handleHover = (index) => {
-      console.log("ref:",rectRef[index]);
+      // console.log("on hover  - ref:",rectRef[index]);
       rectRef[index].setAttribute(
         "style",
         "fill: #cfcfcf; box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);"
       );
     };
-
+    const handleClick = (index) => {
+      // console.log("onClick - ref:",rectRef[index]);
+      Object.keys(rectRef).forEach(index=>{
+        rectRef[index].setAttribute("style", "fill: #f7f7f7; box-shadow: none;");
+        rectRef[index].clicked = false;
+      });
+      rectRef[index].clicked = true;
+      
+      rectRef[index].setAttribute(
+        "style",
+        "fill: #cfcfcf; box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);"
+      );
+    };
     const handleMouseLeave = (index) => {
+      if(rectRef[index].clicked){
+        return;
+      }
       rectRef[index].setAttribute("style", "fill: #f7f7f7; box-shadow: none;");
     };
     let res = flatten(leg);
@@ -203,7 +218,9 @@ export const vm = {
 									style={{marginRight: 5,marginLeft:index === 0 ? 50:0}}
 								>
                   <g onMouseOver={()=>handleHover(index)}
-									onMouseLeave={()=>handleMouseLeave(index)}>
+									onMouseLeave={()=>handleMouseLeave(index)}
+                  onClick={()=>handleClick(index)}
+                  >
 									<rect
 									ref={ref =>{rectRef[index] = ref;}}
 									style={{
