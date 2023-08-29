@@ -58,8 +58,9 @@ function capitalizeFirstLetter(string) {
 const Tooltip = ({labelX,labelY,data,dataX,bounds,originalX,outOfGraph})=>{
 	// console.log("data:"+JSON.stringify(data));
 	// console.log("labelX,bounds,originalX"+JSON.stringify({bounds,originalX}));
-	const boundLeft = bounds.x;
-	const boundRight = bounds.right;
+
+	const boundLeft = bounds?.x;
+	const boundRight = bounds?.right;
 	//adjust labelX
 	if(originalX-100 <= boundLeft){
 		labelX += 100;
