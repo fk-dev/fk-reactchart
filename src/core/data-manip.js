@@ -91,7 +91,15 @@ export function filter({from,to},{props,mgr}){
 		}else{
 			//filter using from,to
 			// console.log("final filter using :"+JSON.stringify({from,to,series:data.originalSeries}));
-			data.series = data.originalSeries.filter(point => {
+			data.series.dateFilter = data.series.dateFilter || {from,to};
+			let filterSeries = data.series;
+			// console.log("filters:"+JSON.stringify({from,to,dateFilters:data.series.dateFilter}));
+			if((from && from<data.series.dateFilter.from) || (to && to>data.series.dateFilter.to)){
+				filterSeries = data.originalSeries;
+			}
+			if(!from && data.series.dateFilter.from){from = data.series.dateFilter.from;}
+			if(!to && data.series.dateFilter.to){to = data.series.dateFilter.to;}
+			data.series = filterSeries.filter(point => {
 				let satFrom = true;
 				let satTo = true;
 				if(from){
@@ -102,6 +110,7 @@ export function filter({from,to},{props,mgr}){
 				}
 				return satFrom && satTo;
 			});
+			data.series.dateFilter = {from,to};
 		}
 	
 		if(data.rebaseType){
