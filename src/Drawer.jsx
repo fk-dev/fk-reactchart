@@ -140,12 +140,18 @@ const ToolTipContent = ({label,yData,xPos,color})=>{
 export default class Drawer extends React.Component {
 	constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+			outOfGraph: true
+		};
   }
 	// shouldComponentUpdate(props){
 	// 	return !isEqual(props.state,this.props.state) || props.className !== this.props.className;
 	// }
 	handleMouseMove = (event)=>{
+
+		if(this.state.outOfGraph){
+			return;
+		}
 	
 		const parentElement = this.graphRef;
 		let pt = parentElement.createSVGPoint();
