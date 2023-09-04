@@ -147,7 +147,7 @@ export default class Graph extends React.Component {
 		</ul>
 		</div>;
 		// const GraphContent = () =><Drawer id={this.myKey} mgrId={mgrId} state={state} className={cn} overflow={this.props.overflow} debug={this.showIds()}/>;
-		return <foreignObject width="100%" height="100%">
+		return <div width="100%" height="100%">
 			{/* <button type='button' onClick={()=>this.toggleSetttings()}>Settings</button> */}
 			<ToggleSettings/>
 		{this.state.settings ? <GraphSettings  props={this.props} toggleSettings={()=>this.toggleSetttings()}/> : 
@@ -187,7 +187,7 @@ export default class Graph extends React.Component {
 		</div>
 		</>
 		}
-		</foreignObject>
+		</div>
 		;
 	}
 }
