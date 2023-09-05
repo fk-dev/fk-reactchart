@@ -1,5 +1,6 @@
 import React from 'react';
 
+let fct = () => null;
 export default class Waiting extends React.Component {
 
 	constructor(props){
@@ -13,17 +14,19 @@ export default class Waiting extends React.Component {
 			r,
 			where
 		};
+    fct = () => {
+			const w = this.state.where.map(w => (w + 1)%12);
+			this.setState({where: w});
+		};
 	}
 
 	componentWillUnmount(){
+    fct = () => null;
 		clearTimeout(this.timeMeOut);
 	}
 
 	componentDidUpdate(){
-		this.timeMeOut = setTimeout(() => {
-			const w = this.state.where.map(w => (w + 1)%12);
-			this.setState({where: w});
-		}, 100);
+		this.timeMeOut = setTimeout(() => fct(),100);
 	}
 
 	position(h){
