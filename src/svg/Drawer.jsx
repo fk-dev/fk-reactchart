@@ -25,7 +25,7 @@ import { toC,toD } from './core/space-transf.js';
 	}
 */
 function hoverLabelData(curve,mouseX){
-		let curveParams = curve.type === 'Plain' ? curve.path : curve.type === 'Bars' ? curve.marks[0]?.mark:null;
+		let curveParams = curve.type === 'Plain' ? curve.path : curve.type === 'Bars' ? curve.marks[0]?.mark : null;
 		if(!curveParams){
 			return null;
 		}
@@ -196,6 +196,28 @@ export default class Drawer extends React.Component {
 		// console.log("will remove mousemove listener");
 		window.document.removeEventListener('mousemove',this.handleMouseMove);
 	}
+
+	componentDidUpdate(){
+		/// we keep track of world dimensions
+		if(this.props.interactive){
+			const cu = this.props.state.curves.find(x =>  ['Bars','Plain'].indexOf(x.type) !== -1);
+			const { ds } = cu.type === 'Plain' ? cu.path : ( cu.marks[0]?.mark ?? {} );
+			if(ds){
+				const world = {
+					ymin: ds.y.c.min,
+					ymax: ds.y.c.max,
+					xmin: ds.x.c.min,
+					xmax: ds.x.c.max
+				};
+				/// React ne fait pas de deep compare
+				const update = ['ymin','ymax','xmin','xmax'].reduce( (memo,v) => memo || this.state.world?.[v] !== world[v] , false);
+				if(update){
+					this.setState({world});
+				}
+			}
+		}
+	}
+
 	orderAG(){
 		const { state,interactive } = this.props;
 		const { order } = state;
@@ -227,17 +249,14 @@ export default class Drawer extends React.Component {
 	}
 
 	render(){
-		const { state,interactive } = this.props; 
+		const { state, interactive, overflow } = this.props; 
 
-		const style = this.props.overflow ? {overflow: 'visible'} : null;
-		const { relative, width, height,curves,legend } = state;
+		const style = overflow ? {overflow: 'visible'} : null;
+		const { relative, width, height, curves, legend } = state;
 		//label
 		let labelsInfo;
 		if(interactive && curves && legend){
-			// console.log("legend:"+JSON.stringify(legend));
-			// console.log("curves:"+JSON.stringify(curves));
 			labelsInfo = curves.filter(c=> c.show && ['Bars','Plain'].includes(c.type)).map((c,i) => ({ ...this.state.dataPoints[i], color:c.path.color || c.path.gaugeColor, label: legend.filter(l => !l.icon.props.faded)[i].label}) );
-			// console.log("check labelsInfo:"+JSON.stringify(labelsInfo));
 		}
 		// console.log("check labelsInfo:"+JSON.stringify(labelsInfo));
 		const viewBox=`0 0 ${width} ${height}`;
@@ -258,7 +277,7 @@ export default class Drawer extends React.Component {
 			{ state.title && state.title.title.length ? <Title className='title' state={state.title} /> : null }
 			{ state.axis || state.curves ? this.orderAG() : null}
 			{ state.foreground ? <Foreground className='foreground' state={state.foreground} pWidth={state.width} pHeight={state.height}/> : null }
-			{!interactive ? null:<line x1={this.state.x} y1='0' x2={this.state.x} y2={height} stroke="#cccccc" ></line>}
+			{ interactive ? <line x1={this.state.x} y1={this.state?.world?.ymin ?? 0} x2={this.state.x} y2={this.state?.world?.ymax ?? height} stroke="#cccccc" ></line> : null}
 			{
 				labelsInfo?.length ?
 				<>
