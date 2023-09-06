@@ -1,10 +1,11 @@
 import React, { forwardRef } from 'react';
-import Drawer from './svg/Drawer.jsx';
-import GraphSettings from './interactive/GraphSettings.jsx';
 import { init }   from './helpers.js';
-import { rndKey, emptyState } from './svg/core/utils.js';
-import { toJS,http,csv } from 'fk-helpers';
-const { downloadData } = http;
+import { Drawer, utils } from './svg';
+//import Drawer from './svg/Drawer.jsx';
+//import { rndKey, emptyState } from './svg/core/utils.js';
+import { GraphSettings, ToggleMenu } from './interactive';
+
+const { rndKey, emptyState } = utils;
 
 export default class Graph extends React.Component {
 
@@ -16,7 +17,7 @@ export default class Graph extends React.Component {
 			props.onGenerateKey(this.myKey);
 		}
 		this.type = 'graph';
-		this.state = {settings:false,showmenu:false};
+		this.state = { settings: false, showMenu: false };
 		this.init();
 	}
 
@@ -50,8 +51,8 @@ export default class Graph extends React.Component {
 	}
 
 	shouldComponentUpdate(pr){
-		const prInteractive  = pr.rawProps         ? pr.rawProps().interactive         : false;
-		const thisInteactive = this.props.rawProps ? this.props.rawProps().interactive : false;
+		const prInteractive  = pr.rawProps          ? pr.rawProps()?.interactive         : false;
+		const thisInteractive = this.props.rawProps ? this.props.rawProps()?.interactive : false;
 		this.changeOfMgrByRawProps(pr); // update in manager
 		return prInteractive || thisInteractive || pr.namespace !== this.props.namespace;
 	}
@@ -100,34 +101,6 @@ export default class Graph extends React.Component {
 		}
 	}
 
-	toggleSetttings(){
-		this.setState(old=>({...old,settings:!old.settings,showmenu:!old.showmenu}));
-	}
-
-	exportData(){
-		const data = this.props.rawProps()?.data||[];
-		let formatted = [];
-		let fields =[];
-		data.forEach(d=>{
-			let data = d.series.map(s=>{
-				const keyAbs = d.abs.type === 'date' ? 'date':"x";
-				const keyOrd = d.ord.label || "y";
-				const valueAbs = s.x;
-				return ({[keyAbs]:valueAbs,[keyOrd]:s.y});
-			});
-			fields.push(Object.keys(data[0]).map(k=>({name:k,key:k,format: {type: k ==='date'? 'date':'number'}})));
-			formatted.push(data);
-		}); //[[{date,Base 100}],[{date,Valeur}]]
-		formatted.forEach((f,i)=>{
-			const fileContent = csv.toCsv(f,fields[i],{sep: ','});
-			const fileName =fields[i].find(f=>f.key !=='date').name + '.csv';
-			downloadData({ content:fileContent, contentType: 'text/csv', fileName: fileName });
-		});
-		
-	}
-	toggleMenu(){
-		this.setState(old=>({...old,showmenu:!old.showmenu}));
-	}
 	render(){
 		const state = this.sh && this.sh.ready() ? this.sh.get(this.myKey) : emptyState;
 
@@ -142,51 +115,48 @@ export default class Graph extends React.Component {
 
 		const LegendGraph = () => showLegend ? <Legend {...this.props	} onlyLegend={true}/> : null;
 
+		const { settings, showMenu } = this.state;
+
 		return interactive ? <div width="100%" height="100%">{/*interactive means we are NOT in an encapsulating SVG*/}
-			{/*Toggle menu*/}
-			<div className="btn-group navbar-right" style={{margin:0,height:0,opacity:0.8,zIndex:99}}>
-				<a className="btn btn-default dropdown-toggle" onClick={()=>this.toggleMenu()}><i className="glyphicon glyphicon-menu-hamburger"></i></a>
-				<ul className="dropdown-menu navbar-right text-right" style={this.state.showmenu ? {"display": "block"} : {"display": "none"}}>
-					<li><a className='btn btn-default' onClick={()=>this.toggleSetttings()}>{this.state.settings ? 'Graph':'Settings'}</a></li>
-					<li><a className='btn btn-default' onClick={()=>this.exportData()}>{'Export'}</a></li>
-					<li><a className='btn btn-default' onClick={()=>this.toggleMenu()}>{'X'}</a></li>
-				</ul>
-			</div>
+			<ToggleMenu toggleSettings={() => this.setState({settings : !this.state.settings})} 
+				toggleMenu={() => this.setState({showMenu: !this.state.showMenu})} settings={settings} showMenu={showMenu} 
+				getData={() => this.props.rawProps()?.data ?? []}/>
 		{
-			this.state.settings ? <GraphSettings props={this.props} toggleSettings={()=>this.toggleSetttings()}/> : <>
-			{
-				isFilterOn ? <div className='row'>
-					<Legend {...this.props	} onlyFilter={true}/>
-				</div> : null
-			}
-			<div className='row'>
-			{
-				legendPosition === 'right' ? <>{/* legend right*/}
-					<div className='col-sm-10' >
-						<Drawer id={this.myKey} mgrId={mgrId} state={state} className={cn} overflow={this.props.overflow} debug={this.showIds()} interactive/>
-					</div>
-					<div className='col-sm-2'>
-						<LegendGraph/>
-					</div>
-				</> :
-				legendPosition === 'left' ? <>{/* legend left*/}
-					<div className='col-sm-2'>
-						<LegendGraph/>
-					</div>
-					<div className='col-sm-10' >
-						<Drawer id={this.myKey} mgrId={mgrId} state={state} className={cn} overflow={this.props.overflow} debug={this.showIds()} interactive/>
-					</div>
-				</> : <>
-					<div className='col-sm-12' >{/* legend below*/}
-						<Drawer id={this.myKey} mgrId={mgrId} state={state} className={cn} overflow={this.props.overflow} debug={this.showIds()} interactive/>
-					</div>
-					<div className='col-sm-2'>
-						<LegendGraph/>
-					</div>
-				</>
-			}
-			</div>
-		</>
+			settings ? <GraphSettings props={this.props} toggleSettings={() => this.setState({settings: !this.state.settings})}/> : 
+			<>
+				{
+					isFilterOn ? <div className='row'>
+						<Legend {...this.props	} onlyFilter={true}/>
+					</div> : null
+				}
+				<div className='row'>
+				{
+					legendPosition === 'right' ? <>{/* legend right*/}
+						<div className='col-sm-10' >
+							<Drawer id={this.myKey} mgrId={mgrId} state={state} className={cn} overflow={this.props.overflow} debug={this.showIds()} interactive/>
+						</div>
+						<div className='col-sm-2'>
+							<LegendGraph/>
+						</div>
+					</> :
+					legendPosition === 'left' ? <>{/* legend left*/}
+						<div className='col-sm-2'>
+							<LegendGraph/>
+						</div>
+						<div className='col-sm-10' >
+							<Drawer id={this.myKey} mgrId={mgrId} state={state} className={cn} overflow={this.props.overflow} debug={this.showIds()} interactive/>
+						</div>
+					</> : <>
+						<div className='col-sm-12' >{/* legend below*/}
+							<Drawer id={this.myKey} mgrId={mgrId} state={state} className={cn} overflow={this.props.overflow} debug={this.showIds()} interactive/>
+						</div>
+						<div className='col-sm-2'>
+							<LegendGraph/>
+						</div>
+					</>
+				}
+				</div>
+			</>
 		}
 		</div> :
 		<Drawer id={this.myKey} mgrId={mgrId} state={state} className={cn} overflow={this.props.overflow} debug={this.showIds()}/>
