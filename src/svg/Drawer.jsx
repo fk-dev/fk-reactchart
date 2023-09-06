@@ -10,7 +10,6 @@ import Gradienter from './Gradienter.jsx';
 import Waiting from './Waiting.jsx';
 
 import { isEqual } from './core/im-utils.js';
-import { toJS } from 'fk-helpers';
 import { toC,toD } from './core/space-transf.js';
 
 /*
@@ -40,9 +39,11 @@ function hoverLabelData(curve,mouseX){
 		if(!positions.length){
 			return null;
 		}
-		const data = positions.reduce(function(prev, curr) {
-			return (Math.abs(curr.x - dataX) < Math.abs(prev.x - dataX) ? curr : prev);
+		const data = positions.reduce(function(prev, curr, i) {
+			return Math.abs(curr.x - dataX) < Math.abs(prev.x - dataX) ? {x: curr.x, y: curr.y, ii: i} : {x: prev.x, y: prev.y, ii: prev.ii ?? 0};
 		});
+		data.cx = toC(dsx,data.x);
+		data.cy = toC(dsy,data.y);
 		//curvedata to y => label in x,y position
 		// const axes = this.props.state.axes;
 		const labelX = mouseX;
@@ -50,14 +51,13 @@ function hoverLabelData(curve,mouseX){
 	
 		labelY = toC(dsy,data.y);
 		
-	return {labelX,labelY,...data};
+	return {labelX,labelY, ...data};
 }
 function capitalizeFirstLetter(string) {
 	return string.charAt(0).toUpperCase() + string.slice(1);
 }
+// see https://stackoverflow.com/questions/55334402/how-to-have-a-drop-shadow-on-a-transparent-rect-svg
 const Tooltip = ({labelX,labelY,data,dataX,bounds,originalX,outOfGraph})=>{
-	// console.log("data:"+JSON.stringify(data));
-	// console.log("labelX,bounds,originalX"+JSON.stringify({bounds,originalX}));
 
 	const boundLeft = bounds?.x;
 	const boundRight = bounds?.right;
@@ -69,18 +69,12 @@ const Tooltip = ({labelX,labelY,data,dataX,bounds,originalX,outOfGraph})=>{
 		labelX -= 100;
 	}
 	let display = outOfGraph;
-	labelX = isNaN(labelX) ? 0:labelX; 
+	labelX = isNaN(labelX) ? 0 : labelX; 
 	const tooltipStyle = {
-    // fill: 'transparent',
-    // stroke: '#000',
-    // strokeWidth: '1px',
-		// fillOpacity:0.2,
-		// rx:"5",
-		// ry:"5"
-			fill:"white" ,//"#f8f8f8",
+			fill:"white" ,
+			fillOpacity: '70%',
       stroke: "#cccccc",
       strokeWidth: 1,
-      filter:" drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3))",
       PointerEvent: "none"
   };
 	const tooltipTextStyle = {
@@ -92,34 +86,39 @@ const Tooltip = ({labelX,labelY,data,dataX,bounds,originalX,outOfGraph})=>{
 	if(!data.length){
 		return null;
 	}
-	return (
-		<svg xmlns="http://www.w3.org/2000/svg" version="1.1" style={{opacity:display? 0:1,transition: "opacity 0.3s ease"}}>
-  <g>
-	<filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-    <feDropShadow dx="3" dy="3" stdDeviation="4" floodColor="#000000" floodOpacity="0.5" />
-  </filter>
-	<rect x={labelX} y={labelY} width="300" height={20+40*data.length} style={{fill:'transparent'}} />
-    <rect x={labelX} y={labelY} width="300" height={20+40*data.length} style={tooltipStyle} filter="url(#shadow)">
-		</rect>
-    <text x={labelX+100} y={labelY+5} dy="1em" textAnchor="middle" style={tooltipTextStyle} >
-			<>
+	const height = 20 + 40*data.length;
+	const width = 300;
+	const dl = 3;
+	const xx = labelX - 150;
+	return <g style={{opacity:display? 0:1,transition: "opacity 0.3s ease"}}>
+		<defs>
+			<filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+    		<feDropShadow dx="3" dy="3" stdDeviation="4" floodColor="#000000" floodOpacity="0.5" />
+ 			</filter>
+  		<filter id="trans-shadow">
+  			<feColorMatrix type="matrix" values="1 0 0 0 0 
+        			                               0 1 0 0 0 
+              			                         0 0 1 0 0 
+                    			                   0 0 0 100 0"
+                          			             result="boostedInput"/>
+                                       
+    		<feDropShadow dx="3" dy="3" stdDeviation="4" floodColor="#000000" floodOpacity="0.5" />
+				<feComposite operator="out" in2="boostedInput"/>
+			</filter>
+		</defs>
+		<rect x={labelX} y={labelY} width="300" height={20+40*data.length} fillOpacity="0.01" filter="url(#trans-shadow)"/>
+		<rect x={labelX} y={labelY} width={width} height={height} style={tooltipStyle}/>
+		<text x={labelX+100} y={labelY+5} dy="1em" textAnchor="middle" style={tooltipTextStyle} >
 			<tspan fontFamily='Palatino' dy="1.2em" x={labelX+150}>
 				{dataX instanceof Date ? capitalizeFirstLetter(dataX.toLocaleDateString(undefined,{ weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })):dataX}
 			</tspan>
 			<tspan dy="1.5em"> </tspan>
-			</>
-			{//data:[{x,y,label,color}]
+			{
 				data.map((d,i)=>
 				<ToolTipContent key={i} {...{xData:d.x,yData:d.y,xPos:labelX+150,color:d.color,label:d.label}}/>)
 			}
-			
 		</text>
-		{/* <text x={labelX+150} y={labelY+5} dy="1em" textAnchor="middle">
-		{JSON.stringify(data)}
-		</text> */}
-  </g>
-</svg>
-	);
+	</g>;
 };
 const ToolTipContent = ({label,yData,xPos,color})=>{
 	if(!yData){
@@ -138,18 +137,22 @@ const ToolTipContent = ({label,yData,xPos,color})=>{
 	);
 };
 export default class Drawer extends React.Component {
+
 	constructor(props) {
     super(props);
     this.state = {
-			outOfGraph: true
+			outOfGraph: true,
+			dataPoints: []
 		};
   }
-	// shouldComponentUpdate(props){
-	// 	return !isEqual(props.state,this.props.state) || props.className !== this.props.className;
-	// }
-	handleMouseMove = (event)=>{
 
-		if(this.state.outOfGraph){
+	shouldComponentUpdate(props){
+		return props.interactive || !isEqual(props.state,this.props.state) || props.className !== this.props.className;
+	}
+
+	handleMouseMove = (event) => {
+
+		if(!this.props.interactive || this.state.outOfGraph){
 			return;
 		}
 	
@@ -164,19 +167,27 @@ export default class Drawer extends React.Component {
 		// const firstC = this.props.state.curves[0];
 		// const {labelX,labelY,data} = hoverLabelData(firstC,x);
 		// console.log("label data:"+JSON.stringify({labelX,labelY,data}));
-		this.setState({ x,y,originalX:pt.x });
+		const dataPoints = this.props.state.curves.map(c => hoverLabelData(c,x));
+		this.setState({ x, y, originalX: pt.x, dataPoints });
 	}
-	handleMouseOut = () =>{
-		this.setState({ outOfGraph:true });
+
+	handleMouseOut = () => {
+		if(this.props.interactive){
+			this.setState({ outOfGraph:true });
+		}
 	}
-	handleMouseIn = ()=>{
-		this.setState({ outOfGraph:false });
+
+	handleMouseIn = () => {
+		if(this.props.interactive){
+			this.setState({ outOfGraph:false });
+		}
 	}
+
 	componentDidMount(){
 		// console.log("will add mousemove listener");
-		window.document.addEventListener('mousemove', this.handleMouseMove);
+		window.document.addEventListener('mousemove',this.handleMouseMove);
 		if(this.graphRef){
-			this.graphRef.addEventListener('mouseout',this.handleMouseOut);
+			this.graphRef.addEventListener('mouseout', this.handleMouseOut);
 			this.graphRef.addEventListener('mouseover',this.handleMouseIn);
 		}
 
@@ -225,7 +236,7 @@ export default class Drawer extends React.Component {
 		if(interactive && curves && legend){
 			// console.log("legend:"+JSON.stringify(legend));
 			// console.log("curves:"+JSON.stringify(curves));
-			labelsInfo = curves.filter(c=>c.show && ['Bars','Plain'].includes(c.type)).map((c,i) => ({...hoverLabelData(c,this.state.x),color:c.path.color||c.path.gaugeColor,label:legend.filter(l=>!l.icon.props.faded)[i].label}) );
+			labelsInfo = curves.filter(c=> c.show && ['Bars','Plain'].includes(c.type)).map((c,i) => ({ ...this.state.dataPoints[i], color:c.path.color || c.path.gaugeColor, label: legend.filter(l => !l.icon.props.faded)[i].label}) );
 			// console.log("check labelsInfo:"+JSON.stringify(labelsInfo));
 		}
 		// console.log("check labelsInfo:"+JSON.stringify(labelsInfo));
@@ -241,24 +252,23 @@ export default class Drawer extends React.Component {
 		}
 		return(
 		<svg {...size} id={this.props.id}  data={this.props.mgrId} className={`${this.props.className}${state.selected ? ' selected' : ''}`} style={style} ref={ref =>{this.graphRef = ref}}>
-		{!interactive ? null:<line x1={this.state.x} y1='0' x2={this.state.x} y2={height} stroke="#cccccc" ></line>}
-		{
-			labelsInfo?.length ?
-			<>
-			<Tooltip {...{labelX:this.state.x - 150,labelY:height/3 - 50,data:labelsInfo,dataX:labelsInfo[0].x,bounds,originalX:this.state.originalX,outOfGraph:this.state.outOfGraph}}/>
-			{labelsInfo.map(({labelX,labelY,color},index)=><svg key={color}>
-			<circle key={index+color} cx={labelX} cy={labelY} r={10} fill={color} opacity={0.3}/>
-			<circle key={index+1+color} cx={labelX} cy={labelY} r={3} fill={color}/>
-			</svg>
-			)}
-			</>:null
-		}
 			{ state.gradient ? <defs>{state.gradient.print( (x,id) => <Gradienter key={`grad.${id}`} state={x}/>)}</defs> : null}
 			{ state.cadre.show ? <Cadre state={state.cadre} width={state.width} height={state.height}/> : null }
 			{ state.background.show ? <Background className='background' state={state.background}/>  : null }
 			{ state.title && state.title.title.length ? <Title className='title' state={state.title} /> : null }
 			{ state.axis || state.curves ? this.orderAG() : null}
 			{ state.foreground ? <Foreground className='foreground' state={state.foreground} pWidth={state.width} pHeight={state.height}/> : null }
+			{!interactive ? null:<line x1={this.state.x} y1='0' x2={this.state.x} y2={height} stroke="#cccccc" ></line>}
+			{
+				labelsInfo?.length ?
+				<>
+					{labelsInfo.map(({cx,cy,color},index) => <g key={color}>
+						<circle key={index+color} cx={cx} cy={cy} r={10} fill={color} opacity={0.3}/>
+						<circle key={index+1+color} cx={cx} cy={cy} r={3} fill={color}/>
+					</g>)}
+					<Tooltip {...{labelX: this.state.x - 150, labelY:height/3 - 50, data: labelsInfo, dataX: labelsInfo[0].x, bounds, originalX: this.state.originalX, outOfGraph: this.state.outOfGraph}}/>
+				</> : null
+			}
 			{ this.props.debug ? this.showMe() : null}
 			{ this.empty(state) }
 			<Measurer id={this.props.id}/>
