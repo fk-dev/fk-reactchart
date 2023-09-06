@@ -1,9 +1,9 @@
-import { process, defaultTheProps, processLegend } from './core/process.js';
-import { freeze } from './core/im-utils.js';
-import { deepCp, isNil, measure, rndKey, emptyState, reinitOn } from './core/utils.js';
-import { toC } from './core/space-transf.js';
-import * as manip from './core/data-manip.js';
-import { clear as clearGradient } from './core/gradient-mgr.js';
+import { process, defaultTheProps, processLegend } from './svg/core/process.js';
+import { freeze } from './svg/core/im-utils.js';
+import { deepCp, isNil, measure, rndKey, emptyState, reinitOn } from './svg/core/utils.js';
+import { toC } from './svg/core/space-transf.js';
+import * as manip from './svg/core/data-manip.js';
+import { clear as clearGradient } from './svg/core/gradient-mgr.js';
 
 export function init(rawProps, type, opts, debug){
 
