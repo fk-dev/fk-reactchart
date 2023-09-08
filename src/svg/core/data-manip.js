@@ -1,6 +1,11 @@
 import { bson } from "fk-helpers";
 //// hide/show
 const setShowValue = (idx, val, { props, mgr }) => {
+
+	// last curve cannot disappear
+	if(!val && props.graphProps.reduce( (memo,v,i) => i !== idx ? memo || v.show : memo, false) === false){
+		return false;
+	}
 	// raw
 	props.graphProps[idx].show = val;
 	// freezer
@@ -16,10 +21,13 @@ const setShowMarkValue = (cidx, midx, val, { props, mgr } ) => {
 
 export function toggle(idx, { props, mgr }){
 	// raw
-	let val = !props.graphProps[idx].show;
-	setShowValue(idx, val, { props, mgr });
+	const val = !props.graphProps[idx].show;
+	const update = setShowValue(idx, val, { props, mgr });
+	if(!update){
+		return {update, val: !val};
+	}
 	mgr.reinit(props);
-	return val;
+	return {update, val};
 }
 
 export function hide(idx, { props, mgr }){

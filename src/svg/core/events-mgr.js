@@ -4,7 +4,10 @@ const clickers = {
 	fade: (mgr,lId, idx) => {
 		const faded = !mgr.props(lId).curves[idx].show;
 		// curve
-		mgr.dynamic.toggle.curve(idx);
+		const { update /*, val */} = mgr.dynamic.toggle.curve(idx);
+		if(!update){
+			return;
+		}
 
 		// legend
 		mgr.legend(lId)[idx].icon.props.set('faded', !faded);
