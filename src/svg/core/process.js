@@ -934,7 +934,7 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 	imVM.curves = curvesVM.create(() => getNode().curves, { props, state, mgrId, onSelect, unSelect } );
 
 	// 7 - legend
-	imVM.legend = legendVM.create(() => getNode().legend, { props, mgrId } );
+	imVM.legend = legendVM.create(() => getNode().legend, { props, mgrId, keys: imVM.curves.map(x => x.key) } );
 
 	// 8 - gradients
 	imVM.gradient = gradientMgr.getGradientsPrinter(mgrId);

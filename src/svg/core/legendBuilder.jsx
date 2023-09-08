@@ -47,7 +47,7 @@ const filterDateEvents = {
 	}
 };
 export const vm = {
-  create: function (get, { props, mgrId }) {
+  create: function (get, { props, mgrId, keys }) {
     const events = evMgr.create(props.legend.events);
 		const filterDates = props.dateFilters||[];/*[{ interval: "1M", label: "1m" },{ interval: "date" }, ]*/
     const filterEvents = filterDates.map(
@@ -66,7 +66,7 @@ export const vm = {
     const ichm = props.legend.iconHMargin;
     const icvm = props.legend.iconVMargin;
 
-    const getALegend = (data, gprops, idx, grad) => {
+    const getALegend = (data, gprops, idx, grad, key) => {
       let icc = gprops.color;
       const sha = extend({}, gprops.shader);
       // will use css inline style
@@ -112,6 +112,7 @@ export const vm = {
               },
               label: point.legend || "data #" + idx,
               click: events.onClick(idx),
+							key: `${key}.${p}`
             });
           }
         }
@@ -134,6 +135,7 @@ export const vm = {
               ),
               props: iconProps,
             },
+						key,
             label: gprops.name || "graph #" + idx,
             click: events.onClick(idx),
           };
@@ -142,7 +144,7 @@ export const vm = {
     let leg = [];
     for (let i = 0; i < props.data.length; i++) {
       let grad = {};
-      leg.push(getALegend(props.data[i], props.graphProps[i], i, grad));
+      leg.push(getALegend(props.data[i], props.graphProps[i], i, grad, keys[i]));
       if (grad.id) {
         remove(mgrId, grad.id);
       }

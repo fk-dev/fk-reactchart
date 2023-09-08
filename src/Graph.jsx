@@ -212,8 +212,9 @@ class Legend extends React.Component {
 
 	iconStyle(props,type){
 
+		const last = this.props.props().curves.reduce( (memo,v) => memo + (v.show ? 1 : 0),0) === 1;
 		const o = props.faded ? 0.2 : 1;
-		const c = props.clickable ? "pointer" : null;
+		const c = props.clickable && ( !last || props.faded ) ? "pointer" : null;
 
 		let sty = {
 			opacity: o,
@@ -313,7 +314,6 @@ class Legend extends React.Component {
 		return <>
 		{this.sh ? this.props.line ? this.line() : this.table() : null}
 		{/* add date filter input from, to */}
-	
 		</>;
 	}
 }

@@ -166,7 +166,7 @@ export default class Drawer extends React.Component {
 		// const firstC = this.props.state.curves[0];
 		// const {labelX,labelY,data} = hoverLabelData(firstC,x);
 		// console.log("label data:"+JSON.stringify({labelX,labelY,data}));
-		const dataPoints = this.props.state.curves.map(c => hoverLabelData(c,x));
+		const dataPoints = this.props.state.curves.filter(c => c.show && ['Bars','Plain'].includes(c.type)).map(c => hoverLabelData(c,x));
 		this.setState({ x, y, originalX: pt.x, dataPoints });
 	}
 
@@ -255,7 +255,12 @@ export default class Drawer extends React.Component {
 		//label
 		let labelsInfo;
 		if(interactive && curves && legend){
-			labelsInfo = curves.filter(c=> c.show && ['Bars','Plain'].includes(c.type)).map((c,i) => ({ ...this.state.dataPoints[i], color:c.path.color || c.path.gaugeColor, label: legend.filter(l => !l.icon.props.faded)[i].label}) );
+			labelsInfo = curves.filter(c => c.show && ['Bars','Plain'].includes(c.type))
+				.map( (c,i) => ({ ...this.state.dataPoints[i], 
+						color: c.path.color || c.path.gaugeColor, 
+						label: (legend.find(l => l.key === c.key) ?? {}).label
+				})
+			);
 		}
 		// console.log("check labelsInfo:"+JSON.stringify(labelsInfo));
 		const viewBox=`0 0 ${width} ${height}`;

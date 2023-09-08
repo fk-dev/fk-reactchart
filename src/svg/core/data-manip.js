@@ -10,6 +10,8 @@ const setShowValue = (idx, val, { props, mgr }) => {
 	props.graphProps[idx].show = val;
 	// freezer
 	mgr.manipAllVMs( vm => vm().curves[idx].set('show',val) );
+
+	return true;
 };
 
 const setShowMarkValue = (cidx, midx, val, { props, mgr } ) => {
