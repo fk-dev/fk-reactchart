@@ -1,5 +1,5 @@
 import { toC, coordTrans } from '../core/space-transf.js';
-import { isNil, coord } from '../core/utils.js';
+import { isNil, coord, arOp } from '../core/utils.js';
 
 const _angle = (deg) => {
 
@@ -127,8 +127,8 @@ const pin = (get, { pos, tag, ds, motherCss, dir }) => {
 		};
 	}else{
 		mpos = {
-			x: toC(ds.x,pos.x + (tag.pinOffset.dx ?? 0) ),
-			y: toC(ds.y,pos.y + (tag.pinOffset.dy ?? 0) )
+			x: toC(ds.x,arOp.add(pos.x, (tag.pinOffset.dx ?? 0)) ),
+			y: toC(ds.y,arOp.add(pos.y, (tag.pinOffset.dy ?? 0)) )
 		};
 	}
 

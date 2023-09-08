@@ -403,3 +403,15 @@ export const reinitOn = (mgr,waitFor) => {
 		waitForUs[p].then((newProps) => mgr.reinit(newProps));
 	}
 };
+
+function doOpe(a,b,ope){
+	const _mgr = mgr(a);
+	return _mgr[ope](a,b);
+}
+
+export const arOp = {
+	add:      (a,b) => doOpe(a,b,'add'), 
+	subtract: (a,b) => doOpe(a,b,'subtract'), 
+	multiply: (a,b) => doOpe(a,b,'multiply'), 
+	divide:   (a,b) => doOpe(a,b,'divide')
+};
