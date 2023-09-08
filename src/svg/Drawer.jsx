@@ -29,7 +29,7 @@ function hoverLabelData(curve,mouseX){
 		if(!curveParams){
 			return null;
 		}
-		const dsx = curveParams.ds.x;
+		const dsx = curveParams.ds?.x;
 		const dsy = curveParams.ds?.y;
 		// console.log("dsx:,x"+JSON.stringify({dsx,mouseX}));
 		const dataX =  toD(dsx,mouseX);
@@ -61,6 +61,7 @@ const Tooltip = ({labelX,labelY,data,dataX,bounds,originalX,outOfGraph})=>{
 
 	const boundLeft = bounds?.x;
 	const boundRight = bounds?.right;
+labelX+=150;
 	//adjust labelX
 	if(originalX-100 <= boundLeft){
 		labelX += 100;
@@ -89,7 +90,6 @@ const Tooltip = ({labelX,labelY,data,dataX,bounds,originalX,outOfGraph})=>{
 	const height = 20 + 40*data.length;
 	const width = 300;
 	const dl = 3;
-	const xx = labelX - 150;
 	return <g style={{opacity:display? 0:1,transition: "opacity 0.3s ease"}}>
 		<defs>
 			<filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
@@ -106,16 +106,16 @@ const Tooltip = ({labelX,labelY,data,dataX,bounds,originalX,outOfGraph})=>{
 				<feComposite operator="out" in2="boostedInput"/>
 			</filter>
 		</defs>
-		<rect x={labelX} y={labelY} width="300" height={20+40*data.length} fillOpacity="0.01" filter="url(#trans-shadow)"/>
+		<rect x={labelX} y={labelY} width={width} height={height} fillOpacity="0.01" filter="url(#trans-shadow)"/>
 		<rect x={labelX} y={labelY} width={width} height={height} style={tooltipStyle}/>
 		<text x={labelX+100} y={labelY+5} dy="1em" textAnchor="middle" style={tooltipTextStyle} >
-			<tspan fontFamily='Palatino' dy="1.2em" x={labelX+150}>
+			<tspan fontFamily='Palatino' dy="1.2em" x={labelX+width/2}>
 				{dataX instanceof Date ? capitalizeFirstLetter(dataX.toLocaleDateString(undefined,{ weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })):dataX}
 			</tspan>
 			<tspan dy="1.5em"> </tspan>
 			{
 				data.map((d,i)=>
-				<ToolTipContent key={i} {...{xData:d.x,yData:d.y,xPos:labelX+150,color:d.color,label:d.label}}/>)
+				<ToolTipContent key={i} {...{xData:d.x,yData:d.y,xPos:labelX+width/2,color:d.color,label:d.label}}/>)
 			}
 		</text>
 	</g>;
@@ -204,10 +204,10 @@ export default class Drawer extends React.Component {
 			const { ds } = cu.type === 'Plain' ? cu.path : ( cu.marks[0]?.mark ?? {} );
 			if(ds){
 				const world = {
-					ymin: ds.y.c.min,
-					ymax: ds.y.c.max,
-					xmin: ds.x.c.min,
-					xmax: ds.x.c.max
+					ymin: ds.y?.c?.min,
+					ymax: ds.y?.c?.max,
+					xmin: ds.x?.c?.min,
+					xmax: ds.x?.c?.max
 				};
 				/// React ne fait pas de deep compare
 				const update = ['ymin','ymax','xmin','xmax'].reduce( (memo,v) => memo || this.state.world?.[v] !== world[v] , false);
