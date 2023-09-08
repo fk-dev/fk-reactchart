@@ -61,7 +61,6 @@ const Tooltip = ({labelX,labelY,data,dataX,bounds,originalX,outOfGraph})=>{
 
 	const boundLeft = bounds?.x;
 	const boundRight = bounds?.right;
-labelX+=150;
 	//adjust labelX
 	if(originalX-100 <= boundLeft){
 		labelX += 100;
@@ -201,7 +200,7 @@ export default class Drawer extends React.Component {
 		/// we keep track of world dimensions
 		if(this.props.interactive){
 			const cu = this.props.state.curves.find(x =>  ['Bars','Plain'].indexOf(x.type) !== -1);
-			const { ds } = cu.type === 'Plain' ? cu.path : ( cu.marks[0]?.mark ?? {} );
+			const { ds } = cu?.type === 'Plain' ? cu.path : ( cu?.marks?.[0]?.mark ?? {} );
 			if(ds){
 				const world = {
 					ymin: ds.y?.c?.min,
