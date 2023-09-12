@@ -273,6 +273,7 @@ export default class Drawer extends React.Component {
 		if(parentElement){
 			bounds = parentElement.getBoundingClientRect();
 		}
+console.log('will update Drawer with relative=',relative);
 		return(
 		<svg {...size} id={this.props.id}  data={this.props.mgrId} className={`${this.props.className}${state.selected ? ' selected' : ''}`} style={style} ref={ref =>{this.graphRef = ref}}>
 			{ state.gradient ? <defs>{state.gradient.print( (x,id) => <Gradienter key={`grad.${id}`} state={x}/>)}</defs> : null}

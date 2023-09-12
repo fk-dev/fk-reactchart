@@ -3,6 +3,149 @@
 	filter: alpha(opacity=50);
 }
 
+.legend-position {
+	vertical-align: top;
+}
+
+.legend-align {
+	text-align: left;
+}
+
+.reactchart-toggle-menu {
+
+	float: right;
+
+	.menu {
+	  display: flex;
+	  flex-direction: row;
+	  list-style-type: none;
+	  margin: 0;
+	  padding: 0;
+	}
+
+	.menu > li {
+ 	 	margin: 0 1rem;
+ 		overflow: hidden;
+	}
+
+	.menu-button-container {
+  	display: none;
+  	height: 20px;
+  	width: 30px;
+  	cursor: pointer;
+  	flex-direction: column;
+  	justify-content: center;
+  	align-items: center;
+	}
+
+	#menu-toggle {
+  	display: none;
+	}
+
+	.menu-button,
+	.menu-button::before,
+	.menu-button::after {
+	  display: block;
+	  background-color: lightgray;
+	  position: absolute;
+	  height: 4px;
+	  width: 30px;
+	  border-radius: 2px;
+	}
+
+	.menu-button::before {
+		content: '';
+	  margin-top: -8px;
+	}
+
+	.menu-button::after {
+		content: '';
+  	margin-top: 8px;
+	}
+
+  .menu-button-container {
+    display: flex;
+  }
+  .menu {
+    position: absolute;
+    top: 0;
+    margin-top: 24px;
+		right: 15px;
+    flex-direction: column;
+  }
+  #menu-toggle ~ .menu li {
+    height: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+		margin-right: 15px;
+    transition: height 400ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  #menu-toggle:checked ~ .menu {
+    border: solid lightgray 0.5px;
+		border-radius: 5px;
+    transition: height 400ms cubic-bezier(0.23, 1, 0.32, 1);
+	}
+
+  #menu-toggle:checked ~ .menu > li {
+    height: 2em;
+    padding: 0.5em;
+    border: 0;
+    transition: height 400ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .menu > li {
+    display: flex;
+    margin: 0;
+    padding: 0.5em 0;
+    width: 100px;
+    background-color: white;
+		cursor: pointer;
+  }
+
+}
+
+.reactchart-graph-settings {
+
+	.reactchart-settings-table {
+
+		margin: 10px 0px;
+
+		th, td {
+			padding: 5px;
+		}
+
+	}
+}
+
+.reactchart-filter {
+
+	.reactchart-btn {
+		background:  #F7F7F7;
+		border: none;
+		border-radius: 5px;
+		cursor: pointer;
+		margin: 0px 5px;
+	}
+
+	.reactchart-btn-active {
+		background: #E6EBF5;
+		font-weight: bold;
+		cursor: auto;
+	}
+
+	.reactchart-from {
+		width: 100px;
+		margin-left: 100px;
+	}
+
+	.reactchart-to {
+		width: 100px;
+		margin-left: 10px;
+	}
+
+}
+
 .reactchart {
   // cadre
   .cadre {

@@ -939,6 +939,9 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 	// 8 - gradients
 	imVM.gradient = gradientMgr.getGradientsPrinter(mgrId);
 
+	// 9 - options
+	imVM.relative = props.relative;
+
 	return imVM;
 
 };

@@ -1,5 +1,6 @@
-import { bson } from "fk-helpers";
 import React, { useState } from "react";
+import { deepCp } from '../svg/core/utils.js';
+import { w3color } from './color-converter.js';
 
 /***
  * if type line chart | bar chart -> settings : axes | colors | rebaseType | graph type
@@ -20,9 +21,15 @@ import React, { useState } from "react";
  * @param {*} props contains the graph props
  */
 export default function GraphSettings({props,toggleSettings}) {
-  const rawProps = bson.clone(props.rawProps());
+
+	const initColor = c => {
+		const rgb = w3color(c).toHexString();
+		return rgb;
+	};
+
+  const rawProps = deepCp({},props.rawProps());
   const initialGraphTypes = { ...rawProps.data.map((d) => d.type) }; //{0:Plain,1:Bars}
-  const initialColors = { ...rawProps.graphProps.map((gp) => gp.color) };
+  const initialColors = { ...rawProps.graphProps.map((gp) => initColor(gp.color)) };
   const initialBaseTypes = {
     ...rawProps.data.map((dp) => dp.rebaseType || "value"),
   };
@@ -119,15 +126,88 @@ export default function GraphSettings({props,toggleSettings}) {
     toggleSettings();
   };
   // console.log("new props:" + JSON.stringify(props.rawProps()));
-  return (
+	return <div className='reactchart-graph-settings'>
+	<table className='reactchart-settings-table'>
+		<thead>
+			<tr>
+				<th>Serie</th>
+				<th>Graph type</th>
+				<th>Color</th>
+				<th>Type valeur</th>
+				<th>X axis</th>
+				<th>Y axis</th>
+			</tr>
+		</thead>
+		<tbody>
+			{rawProps.data.map((d, i) => <tr key={`g.${i}`}>
+				<td>{rawProps.graphProps[i].name}</td>
+				<td>
+					<select id={`gType.${i}`} value={graphTypes[i]} onChange={(e) => setGraphTypes((old) => ({ ...old, [i]: e.target.value }))}>
+						<option value="Bars">Bar Chart</option>
+						<option value="Pie">Pie Chart</option>
+						<option value="Plain">Line Chart</option>
+						{/* <option value="donut">Donut Chart</option> */}
+					</select>
+				</td>
+				<td>
+					<input id={`color.${i}`} type="color" name="color" onChange={(e) => setGraphColors((old) => ({ ...old, [i]: e.target.value }))} value={graphColors[i]}/>
+				</td>
+				<td>
+					<select value={baseTypes[i]} id={`typeVal.${i}`} onChange={(e) => setBaseTypes((old) => ({ ...old, [i]: e.target.value }))}>
+						<option value="base100">Base 100</option>
+						<option value="base0">Base 0</option>
+						<option value="value">Value</option>
+					</select>
+				</td>
+				<td>
+					<select id={`xPos.${i}`} value={xPosition[i]} onChange={(e) => setXPosition((old) => ({ ...old, [i]: e.target.value }))} disabled={!["Plain", "Bars"].includes(d.type)}>
+						<option value="top">Top</option>
+						<option value="bottom">Bottom</option>
+					</select>
+				</td>
+				<td>
+					<select id={`yPos.${i}`} value={yPosition[i]} onChange={(e) => setYPosition((old) => ({ ...old, [i]: e.target.value }))} disabled={!["Plain", "Bars"].includes(d.type)}>
+						<option value="left">Left</option>
+						<option value="right">Right</option>
+					</select>
+				</td>
+			</tr>)}
+		</tbody>
+	</table>
+	<table className='reactchart-settings-table'>
+		<tbody>
+			<tr>
+				<th>Position de légende :</th>
+				<td>
+					<select value={legendPosition} onChange={(e) => setLegendPosition(e.target.value)}>
+						<option value="bottom">Bottom</option>
+						<option value="right">Right</option>
+						<option value="left">Left</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<th>Afficher Legende :</th>
+				<td>
+					<select value={showLegend} onChange={(e) => setShowLegend(e.target.value)}>
+						<option value='show'>Show</option>
+						<option value='hide'>Hide</option>
+					</select>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+	<button type="button" onClick={() => applySettings()}>Appliquer</button>
+	</div>;
+  /*return (
     <div className="container-fluid">
         <div className="row">
             <div style={{marginRight:10}} className="col-sm-1">Serie</div>
-            <div style={{marginRight:10}}  className="col-sm-2">Graph Type</div>
-            <div style={{marginRight:10}}  className="col-sm-2">Color</div>
-            <div style={{marginRight:10}}  className="col-sm-2">Type valeur</div>
-            <div style={{marginRight:10}}  className="col-sm-1">X axis</div>
-            <div style={{marginRight:10}}  className="col-sm-1">Y axis</div>
+            <div style={{marginRight:10}} className="col-sm-2">Graph Type</div>
+            <div style={{marginRight:10}} className="col-sm-2">Color</div>
+            <div style={{marginRight:10}} className="col-sm-2">Type valeur</div>
+            <div style={{marginRight:10}} className="col-sm-1">X axis</div>
+            <div style={{marginRight:10}} className="col-sm-1">Y axis</div>
         </div>
         
           {rawProps.data.map((d, i) => {
@@ -146,7 +226,7 @@ export default function GraphSettings({props,toggleSettings}) {
                     <option value="Bars">Bar Chart</option>
                     <option value="Pie">Pie Chart</option>
                     <option value="Plain">Line Chart</option>
-                    {/* <option value="donut">Donut Chart</option> */}
+                    {// <option value="donut">Donut Chart</option>}
                   </select>
                 </div>
                 <div style={{marginRight:10}}  className="col-sm-2">
@@ -233,5 +313,5 @@ export default function GraphSettings({props,toggleSettings}) {
         </button>
       </div>
     </div>
-  );
+  );*/
 }

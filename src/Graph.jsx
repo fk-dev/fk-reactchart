@@ -1,9 +1,7 @@
 import React, { forwardRef } from 'react';
 import { init }   from './helpers.js';
 import { Drawer, utils } from './svg';
-//import Drawer from './svg/Drawer.jsx';
-//import { rndKey, emptyState } from './svg/core/utils.js';
-import { GraphSettings, ToggleMenu } from './interactive';
+import { GraphSettings, ToggleMenu, Filter } from './interactive';
 
 const { rndKey, emptyState } = utils;
 
@@ -63,7 +61,9 @@ export default class Graph extends React.Component {
 		if(!pr.__preprocessed){ // not sh, we update if not both empty (might be an empty graph rerendering)
 
 			if(!this.sh || !this.sh.isEmpty(pr) || !this.sh.isEmpty()){
-				this.sh.kill(this.myKey); // no more in previous helper
+				if(this.sh){
+					this.sh.kill(this.myKey); // no more in previous helper if exists
+				}
 				this.sh = init(pr,this.type,{ key: this.myKey, obj: this, namespace: this.props.namespace}, this.props.debug);
 			}
 
@@ -113,47 +113,50 @@ export default class Graph extends React.Component {
 		const isFilterOn     = rawProps?.dateFilters?.length ?? false;
 		const interactive    = rawProps?.interactive ?? false;
 
-		const LegendGraph = () => showLegend ? <Legend {...this.props	} onlyLegend={true}/> : null;
+		const LegendGraph = ({line}) => showLegend ? <Legend {...this.props	} onlyLegend={true} line={line}/> : null;
 
 		const { hideMenu } = this.props;
 
 		const { settings, showMenu } = this.state;
 
-		return interactive ? <div width="100%" height="100%">{/*interactive means we are NOT in an encapsulating SVG*/}
+		const _getData = () => {
+			const { data = [], graphProps = []} = this.props.unprocessedProps() ?? {};
+			return data.map( (d,i) => ({...d, name: graphProps[i].name}));
+		};
+
+		return interactive ? <div>{/*  width="100%" height="100%">{interactive means we are NOT in an encapsulating SVG*/}
 			{ !hideMenu ? <ToggleMenu toggleSettings={() => this.setState({settings : !this.state.settings})} 
 				toggleMenu={() => this.setState({showMenu: !this.state.showMenu})} settings={settings} showMenu={showMenu} 
-				getData={() => this.props.rawProps()?.data ?? []}/> : null }
+				getData={() => _getData()}/> : null }
 		{
 			settings ? <GraphSettings props={this.props} toggleSettings={() => this.setState({settings: !this.state.settings})}/> : 
 			<>
 				{
-					isFilterOn ? <div className='row'>
-						<Legend {...this.props	} onlyFilter={true}/>
-					</div> : null
+					isFilterOn && this.sh.props().curves?.length ? <Filter mgr={this.sh} filter={rawProps.dateFilters}/> : null
 				}
-				<div className='row'>
+				<div>
 				{
 					legendPosition === 'right' ? <>{/* legend right*/}
-						<div className='col-sm-10' >
+						<table><tbody><tr><td>
 							<Drawer id={this.myKey} mgrId={mgrId} state={state} className={cn} overflow={this.props.overflow} debug={this.showIds()} interactive/>
-						</div>
-						<div className='col-sm-2'>
+						</td>
+						<td className='legend-position'>
 							<LegendGraph/>
-						</div>
+						</td></tr></tbody></table>
 					</> :
 					legendPosition === 'left' ? <>{/* legend left*/}
-						<div className='col-sm-2'>
+						<table><tbody><tr><td className='legend-position'>
 							<LegendGraph/>
-						</div>
-						<div className='col-sm-10' >
+						</td>
+						<td>
 							<Drawer id={this.myKey} mgrId={mgrId} state={state} className={cn} overflow={this.props.overflow} debug={this.showIds()} interactive/>
-						</div>
+						</td></tr></tbody></table>
 					</> : <>
-						<div className='col-sm-12' >{/* legend below*/}
+						<div >{/* legend below*/}
 							<Drawer id={this.myKey} mgrId={mgrId} state={state} className={cn} overflow={this.props.overflow} debug={this.showIds()} interactive/>
 						</div>
-						<div className='col-sm-2'>
-							<LegendGraph/>
+						<div className='legend-align'>
+							<LegendGraph line={true}/>
 						</div>
 					</>
 				}
@@ -166,7 +169,7 @@ export default class Graph extends React.Component {
 	}
 }
 
-class Legend extends React.Component {
+export class Legend extends React.Component {
 
 	constructor(props){
 		super(props);
@@ -296,8 +299,8 @@ class Legend extends React.Component {
 			const { icon, click, label } = l;
 			const iconStyle = { ...this.iconStyle(icon.props,'icon'), verticalAlign: 'sub'};
 			return <span key={idx} {...margin} onClick={() => click(this.sh, this.myKey)}>
-				<span style={iconStyle}>{icon.icon(icon.props)}</span>
-				<span style={this.iconStyle(icon.props)}>{label}</span>
+				<span style={{...iconStyle, display: 'inline'}}>{icon.icon(icon.props)}</span>
+				<span style={{...this.iconStyle(icon.props), display: 'inline'}}>{label}</span>
 			</span>;
 		};
 

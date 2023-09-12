@@ -49,8 +49,8 @@ const filterDateEvents = {
 export const vm = {
   create: function (get, { props, mgrId, keys }) {
     const events = evMgr.create(props.legend.events);
-		const filterDates = props.dateFilters||[];/*[{ interval: "1M", label: "1m" },{ interval: "date" }, ]*/
-    const filterEvents = filterDates.map(
+	//	const filterDates = props.dateFilters||[];/*[{ interval: "1M", label: "1m" },{ interval: "date" }, ]*/
+   /* const filterEvents = filterDates.map(
       ({interval,label}) => {
 				// console.log("check event:"+JSON.stringify({event:filterDateEvents[interval],interval}));
         return {
@@ -59,7 +59,7 @@ export const vm = {
 					interval
         };
       }
-    ); //[{onClick:filterNyears},...]
+    );*/ //[{onClick:filterNyears},...]
     // for icon, just to help reading
     const icw = props.legend.iconWidth - 2 * props.legend.iconHMargin;
     const ich = props.legend.iconHeight - 2 * props.legend.iconVMargin;
@@ -149,7 +149,7 @@ export const vm = {
         remove(mgrId, grad.id);
       }
     }
-    let rectRef={};
+/*    let rectRef={};
     const handleHover = (index) => {
       // console.log("on hover  - ref:",rectRef[index]);
       rectRef[index].setAttribute(
@@ -175,9 +175,9 @@ export const vm = {
         return;
       }
       rectRef[index].setAttribute("style", "fill: #f7f7f7; box-shadow: none;");
-    };
+    };*/
     let res = flatten(leg);
-    const dateFilters = filterEvents.map(
+  /*  const dateFilters = filterEvents.map(
       ({event,label,interval},index) => {
 				if(['from','to'].includes(interval)){
 					return {
@@ -256,7 +256,7 @@ export const vm = {
       }
     );
 
-    res.push(...dateFilters);
+    res.push(...dateFilters);*/
     
     return res;
   },

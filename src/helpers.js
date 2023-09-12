@@ -289,9 +289,9 @@ export function init(rawProps, type, opts, debug){
 	};
 
 	// {relative: true} bugs measuring, we go relative at the end
-	const toRelative = function(key){
-		return () => freezer[key].get().set('relative',true);
-	};
+	//const toRelative = function(key){
+	//	return () => freezer[key].get().set('relative',true);
+	//};
 
 	const addAMeasurer = key => {
 		// check for existence
@@ -617,7 +617,7 @@ export function init(rawProps, type, opts, debug){
 			mark:  (cidx,midx) => manip.showMark(cidx, midx, {props, mgr: rc}) 
 		},
 		filter:{
-			curve:({from,to}) => manip.filter({from,to},{props,mgr:rc})
+			curve:({from,to}) => manip.filter({from,to},{props, mgr:rc})
 		}
 	};
 
@@ -644,9 +644,9 @@ export function init(rawProps, type, opts, debug){
 	});
 
 	// init if needed
-	if(props.relative){
-		rc.onGraphDone(key,toRelative(key));
-	}
+	//if(props.relative){
+//		rc.onGraphDone(key,toRelative(key));
+//	}
 	if(key){
 		if(onGraphDone){
 			rc.onGraphDone(key,onGraphDone);

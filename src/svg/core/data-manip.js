@@ -1,4 +1,4 @@
-import { bson } from "fk-helpers";
+import { deepCp } from "./utils.js";
 //// hide/show
 const setShowValue = (idx, val, { props, mgr }) => {
 
@@ -91,9 +91,18 @@ export function addMark(cidx, midx, position, {props, mgr }){
 
 export function filter({from,to},{props,mgr}){
 	// console.log("calling filter with args:"+JSON.stringify({from,to,props,mgr}));
+
+	const getDs = mgr => {
+		const cu = mgr.props().curves.find(x => x.path?.ds ?? x.marks?.[0]?.ds);
+		return cu.path?.ds ?? cu.marks?.[0]?.ds;
+	};
+
+	if(!props.originalDs){
+		props.originalDs = deepCp({},getDs(mgr));
+	}
 	props.data.forEach(data =>{
 		if(!data.originalSeries){
-			data.originalSeries = bson.clone(data.series);
+			data.originalSeries = deepCp([],data.series);
 		}
 		if(!from && !to){
 			data.series = data.originalSeries;

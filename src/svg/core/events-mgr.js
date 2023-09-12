@@ -1,5 +1,3 @@
-import {date as hDate} from 'fk-helpers';
-
 const clickers = {
 	fade: (mgr,lId, idx) => {
 		const faded = !mgr.props(lId).curves[idx].show;
@@ -30,94 +28,9 @@ const clickers = {
 	filter: (mgr,lId, {from,to}) => {
 		mgr.dynamic.filter.curve({from,to});
 	},
-	filterOneMonth:(mgr,lId,idx) => {
-		const curves = mgr.props(lId).curves;
-		const maxDates = curves.reduce((acc,curr)=>{
-			let dates = getPositions(curr).map(p=>p.x);
-			acc.push(Math.max(...dates));
-			return acc;
-		},[]);
-		const to = new Date(Math.min(...maxDates));
-		const from =  hDate.addMonths(to, -1);
-		mgr.dynamic.filter.curve({from,to});
-	},
-	filterThreeMonths: (mgr,lId,idx) => {
-		const curves = mgr.props(lId).curves;
-		const maxDates = curves.reduce((acc,curr)=>{
-			let dates = getPositions(curr).map(p=>p.x);
-			acc.push(Math.max(...dates));
-			return acc;
-		},[]);
-		const to = new Date(Math.min(...maxDates));
-		const from =  hDate.addMonths(to, -3);
-		mgr.dynamic.filter.curve({from,to});
-	},
-	filterSixMonths: (mgr,lId,idx) => {
-		const curves = mgr.props(lId).curves;
-		const maxDates = curves.reduce((acc,curr)=>{
-			let dates = getPositions(curr).map(p=>p.x);
-			acc.push(Math.max(...dates));
-			return acc;
-		},[]);
-		const to = new Date(Math.min(...maxDates));
-		const from =  hDate.addMonths(to, -6);
-		mgr.dynamic.filter.curve({from,to});
-	},
-	filterYTD:(mgr,lId,idx) => {
-		const curves = mgr.props(lId).curves;
-		const maxDates = curves.reduce((acc,curr)=>{
-			let dates = getPositions(curr).map(p=>p.x);
-			acc.push(Math.max(...dates));
-			return acc;
-		},[]);
-		const to = new Date(Math.min(...maxDates));
-		const from =  hDate.addYears(hDate.eoy(to), -1);
-		mgr.dynamic.filter.curve({from,to});
-	},
-	filterOneYear: (mgr,lId,idx) => {
-		const curves = mgr.props(lId).curves;
-		const maxDates = curves.reduce((acc,curr)=>{
-			let dates = getPositions(curr).map(p=>p.x);
-			acc.push(Math.max(...dates));
-			return acc;
-		},[]);
-		const to = new Date(Math.min(...maxDates));
-		const from =  hDate.addYears(to, -1);
-		mgr.dynamic.filter.curve({from,to});
-	},
-	filterThreeYears: (mgr,lId,idx) => {
-		const curves = mgr.props(lId).curves;
-		const maxDates = curves.reduce((acc,curr)=>{
-			let dates = getPositions(curr).map(p=>p.x);
-			acc.push(Math.max(...dates));
-			return acc;
-		},[]);
-		const to = new Date(Math.min(...maxDates));
-		const from =  hDate.addYears(to, -3);
-		mgr.dynamic.filter.curve({from,to});
-	},
-	filterFiveYears: (mgr,lId,idx) => {
-		const curves = mgr.props(lId).curves;
-		const maxDates = curves.reduce((acc,curr)=>{
-			let dates = getPositions(curr).map(p=>p.x);
-			acc.push(Math.max(...dates));
-			return acc;
-		},[]);
-		const to = new Date(Math.min(...maxDates));
-		const from =  hDate.addYears(to, -5);
-		mgr.dynamic.filter.curve({from,to});
-	},
 	filterAll:(mgr,lId,idx) => {
 		mgr.dynamic.filter.curve({from:null,to:null});
 	},
-	from:(mgr,lId,idx,dateStrFrom) => {
-		const from = new Date(dateStrFrom);
-		mgr.dynamic.filter.curve({from});
-	},
-	to:(mgr,lId,idx,dateStrTo) => {
-		const to = new Date(dateStrTo);
-		mgr.dynamic.filter.curve({to});
-	}
 };
 
 export function create(types){
