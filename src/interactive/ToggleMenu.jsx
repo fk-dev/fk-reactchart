@@ -42,7 +42,7 @@ function exportData(data){
 	});
 }
 
-export default function ToggleMenu({toggleSettings, toggleMenu, settings, showMenu, getData}) {
+export default function ToggleMenu({toggleSettings, /*toggleMenu,*/ settings, /*showMenu,*/ getData}) {
 
 
 	return <div className='reactchart-toggle-menu'>

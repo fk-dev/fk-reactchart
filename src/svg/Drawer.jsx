@@ -76,7 +76,7 @@ const Tooltip = ({labelX,labelY,data,dataX,bounds,originalX,outOfGraph})=>{
 	const height = 20 + 40*data.length;
 	const width = 300;
 	const dl = 3;
-	return <g className={`fk-tooltip ${outOfGraph ? 'tooltip-out' : 'tooltip-in'}`}>
+	return <g className={`fk-tooltip ${outOfGraph ? 'fk-tooltip-out' : 'fk-tooltip-in'}`}>
 		<defs>
 			<filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
     		<feDropShadow dx="3" dy="3" stdDeviation="4" floodColor="#000000" floodOpacity="0.5" />

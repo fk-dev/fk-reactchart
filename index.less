@@ -146,38 +146,40 @@
 
 }
 
+// interactive
+.fk-tooltip {
+	transition: opacity 0.3s ease;
+
+	.tooltip {
+		fill: white;
+		fill-opacity: 70%;
+     stroke: #CCCCCC;
+     stroke-width: 1px;
+     pointer-events: none;
+	}
+
+	.tooltip-text {
+		fill: #333333;
+    font-family: Arial sans-serif;
+  		font-size: 12px;
+	}
+}
+
+.fk-tooltip-in {
+	opacity: 1;
+}
+.fk-tooltip-out {
+	opacity: 0;
+}
+
+.fk-fade-out {
+	opacity: 0;
+	transition: opacity 0.3s ease;
+}
+
+
+
 .reactchart {
-	// interactive
-	.fk-tooltip {
-		transition: opacity 0.3s ease;
-
-		.tooltip {
-			fill: white;
-			fill-opacity: 70%;
-      stroke: #CCCCCC;
-      stroke-width: 1px;
-      pointer-events: none;
-		}
-
-		.tooltip-text {
-			fill: #333333;
-	    font-family: Arial sans-serif;
-   		font-size: 12px;
-		}
-	}
-
-	.tooltip-in {
-		opacity: 1;
-	}
-	.tooltip-out {
-		opacity: 0;
-	}
-
-	.fk-fade-out {
-		opacity: 0;
-		transition: opacity 0.3s ease;
-	}
-
   // cadre
   .cadre {
     stroke-width: 1;

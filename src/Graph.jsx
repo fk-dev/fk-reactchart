@@ -115,9 +115,7 @@ export default class Graph extends React.Component {
 
 		const LegendGraph = ({line}) => showLegend ? <Legend {...this.props	} onlyLegend={true} line={line}/> : null;
 
-		const { hideMenu } = this.props;
-
-		const { settings, showMenu } = this.state;
+		const { settings } = this.state;
 
 		const _getData = () => {
 			const { data = [], graphProps = []} = this.props.unprocessedProps() ?? {};
@@ -125,9 +123,9 @@ export default class Graph extends React.Component {
 		};
 
 		return interactive ? <div>{/*  width="100%" height="100%">{interactive means we are NOT in an encapsulating SVG*/}
-			{ !hideMenu ? <ToggleMenu toggleSettings={() => this.setState({settings : !this.state.settings})} 
-				toggleMenu={() => this.setState({showMenu: !this.state.showMenu})} settings={settings} showMenu={showMenu} 
-				getData={() => _getData()}/> : null }
+			{ rawProps.hideMenu ? null :
+				<ToggleMenu toggleSettings={() => this.setState({settings : !this.state.settings})} settings={settings} getData={() => _getData()}/>
+			}
 		{
 			settings ? <GraphSettings props={this.props} toggleSettings={() => this.setState({settings: !this.state.settings})}/> : 
 			<>
