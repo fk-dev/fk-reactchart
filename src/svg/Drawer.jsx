@@ -68,20 +68,7 @@ const Tooltip = ({labelX,labelY,data,dataX,bounds,originalX,outOfGraph})=>{
 	if(originalX+100 >= boundRight){
 		labelX -= 100;
 	}
-	let display = outOfGraph;
 	labelX = isNaN(labelX) ? 0 : labelX; 
-	const tooltipStyle = {
-			fill:"white" ,
-			fillOpacity: '70%',
-      stroke: "#cccccc",
-      strokeWidth: 1,
-      PointerEvent: "none"
-  };
-	const tooltipTextStyle = {
-		fill:"#333333",
-    fontFamily: "Arial, sans-serif",
-    fontSize: "12px"
-	};
 	data = data?.filter(d=>d.x);
 	if(!data.length){
 		return null;
@@ -89,7 +76,7 @@ const Tooltip = ({labelX,labelY,data,dataX,bounds,originalX,outOfGraph})=>{
 	const height = 20 + 40*data.length;
 	const width = 300;
 	const dl = 3;
-	return <g style={{opacity:display? 0:1,transition: "opacity 0.3s ease"}}>
+	return <g className={`fk-tooltip ${outOfGraph ? 'tooltip-out' : 'tooltip-in'}`}>
 		<defs>
 			<filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
     		<feDropShadow dx="3" dy="3" stdDeviation="4" floodColor="#000000" floodOpacity="0.5" />
@@ -106,8 +93,8 @@ const Tooltip = ({labelX,labelY,data,dataX,bounds,originalX,outOfGraph})=>{
 			</filter>
 		</defs>
 		<rect x={labelX} y={labelY} width={width} height={height} fillOpacity="0.01" filter="url(#trans-shadow)"/>
-		<rect x={labelX} y={labelY} width={width} height={height} style={tooltipStyle}/>
-		<text x={labelX+100} y={labelY+5} dy="1em" textAnchor="middle" style={tooltipTextStyle} >
+		<rect x={labelX} y={labelY} width={width} height={height} className='tooltip'/>
+		<text x={labelX+100} y={labelY+5} dy="1em" textAnchor="middle" className='tooltip-text'>
 			<tspan fontFamily='Palatino' dy="1.2em" x={labelX+width/2}>
 				{dataX instanceof Date ? capitalizeFirstLetter(dataX.toLocaleDateString(undefined,{ weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })):dataX}
 			</tspan>
@@ -273,7 +260,9 @@ export default class Drawer extends React.Component {
 		if(parentElement){
 			bounds = parentElement.getBoundingClientRect();
 		}
-console.log('will update Drawer with relative=',relative);
+
+		const { outOfGraph } = this.state;
+
 		return(
 		<svg {...size} id={this.props.id}  data={this.props.mgrId} className={`${this.props.className}${state.selected ? ' selected' : ''}`} style={style} ref={ref =>{this.graphRef = ref}}>
 			{ state.gradient ? <defs>{state.gradient.print( (x,id) => <Gradienter key={`grad.${id}`} state={x}/>)}</defs> : null}
@@ -282,15 +271,15 @@ console.log('will update Drawer with relative=',relative);
 			{ state.title && state.title.title.length ? <Title className='title' state={state.title} /> : null }
 			{ state.axis || state.curves ? this.orderAG() : null}
 			{ state.foreground ? <Foreground className='foreground' state={state.foreground} pWidth={state.width} pHeight={state.height}/> : null }
-			{ interactive ? <line x1={this.state.x} y1={this.state?.world?.ymin ?? 0} x2={this.state.x} y2={this.state?.world?.ymax ?? height} stroke="#cccccc" ></line> : null}
+			{ interactive ? <line className={outOfGraph ? 'fk-fade-out' : ''} x1={this.state.x} y1={this.state?.world?.ymin ?? 0} x2={this.state.x} y2={this.state?.world?.ymax ?? height} stroke="#cccccc" ></line> : null}
 			{
 				labelsInfo?.length ?
 				<>
-					{labelsInfo.map(({cx,cy,color},index) => <g key={color}>
+					{labelsInfo.map(({cx,cy,color},index) => <g key={color} className={outOfGraph ? 'fk-fade-out' : ''}>
 						<circle key={index+color} cx={cx} cy={cy} r={10} fill={color} opacity={0.3}/>
 						<circle key={index+1+color} cx={cx} cy={cy} r={3} fill={color}/>
 					</g>)}
-					<Tooltip {...{labelX: this.state.x - 150, labelY:height/3 - 50, data: labelsInfo, dataX: labelsInfo[0].x, bounds, originalX: this.state.originalX, outOfGraph: this.state.outOfGraph}}/>
+					<Tooltip {...{labelX: this.state.x - 150, labelY:height/3 - 50, data: labelsInfo, dataX: labelsInfo[0].x, bounds, originalX: this.state.originalX, outOfGraph }}/>
 				</> : null
 			}
 			{ this.props.debug ? this.showMe() : null}
