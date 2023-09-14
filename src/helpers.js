@@ -621,6 +621,31 @@ export function init(rawProps, type, opts, debug){
 		}
 	};
 
+
+	//Auto resize
+	if (rawProps.autoResize) {
+		let resizeElem = null;
+		rc.registerForAutoResize = (elem) => {
+			resizeElem = elem;
+			onResize();
+		}
+
+		const onResize = () => {
+			if (!resizeElem) { return; }
+			const e = $(resizeElem);
+			// const filter = $('.reactchart-filter');//.find("#myGraph"); //il faut aussi soustraire legend-align!
+			const up = rc.unprocessedProps();
+			const width = e.width() || up.width || 100;
+			const height = e.height() || up.height || 100; // - (filter.height() || 0); //
+			console.log('FkReactChar width = ' + width + ' / height = ' + height);
+			rc.reinit({...up, width, height});
+		};
+
+	
+		window.addEventListener('resize', onResize);
+	}
+
+
 	// building _def
 		// measurer
 	let measurer = {

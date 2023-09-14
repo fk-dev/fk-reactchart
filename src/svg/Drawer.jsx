@@ -127,7 +127,7 @@ export default class Drawer extends React.Component {
 	constructor(props) {
     super(props);
     this.state = {
-			outOfGraph: true,
+			outOfGraph: false,
 			dataPoints: []
 		};
   }
@@ -137,8 +137,9 @@ export default class Drawer extends React.Component {
 	}
 
 	handleMouseMove = (event) => {
+		const interactionSupported = !this.props.state.curves.find(x =>  ['Bars'].indexOf(x.type) !== -1);
 
-		if(!this.props.interactive || this.state.outOfGraph){
+		if(!this.props.interactive || !interactionSupported  /*|| this.state.outOfGraph*/){
 			return;
 		}
 	
@@ -153,7 +154,7 @@ export default class Drawer extends React.Component {
 		// const firstC = this.props.state.curves[0];
 		// const {labelX,labelY,data} = hoverLabelData(firstC,x);
 		// console.log("label data:"+JSON.stringify({labelX,labelY,data}));
-		const dataPoints = this.props.state.curves.filter(c => c.show && ['Bars','Plain'].includes(c.type)).map(c => hoverLabelData(c,x));
+		const dataPoints = this.props.state.curves.filter(c => c.show && [/*'Bars',*/'Plain'].includes(c.type)).map(c => hoverLabelData(c,x));
 		this.setState({ x, y, originalX: pt.x, dataPoints });
 	}
 
@@ -235,10 +236,10 @@ export default class Drawer extends React.Component {
 	}
 
 	render(){
-		const { state, interactive, overflow } = this.props; 
+		const { state, interactive, overflow, registerForAutoResize } = this.props; 
 
 		const style = overflow ? {overflow: 'visible'} : null;
-		const { relative, width, height, curves, legend } = state;
+		const { relative, width, height, curves, legend, autoResize } = state;
 		//label
 		let labelsInfo;
 		if(interactive && curves && legend){
@@ -263,7 +264,7 @@ export default class Drawer extends React.Component {
 
 		const { outOfGraph } = this.state;
 
-		return(
+		const rc = (
 		<svg {...size} id={this.props.id}  data={this.props.mgrId} className={`${this.props.className}${state.selected ? ' selected' : ''}`} style={style} ref={ref =>{this.graphRef = ref}}>
 			{ state.gradient ? <defs>{state.gradient.print( (x,id) => <Gradienter key={`grad.${id}`} state={x}/>)}</defs> : null}
 			{ state.cadre.show ? <Cadre state={state.cadre} width={state.width} height={state.height}/> : null }
@@ -287,6 +288,11 @@ export default class Drawer extends React.Component {
 			<Measurer id={this.props.id}/>
 		</svg>)
 		;
+
+		if (autoResize) {
+			return <div ref={registerForAutoResize} className='fk-chart-svg-div'>{rc}</div>
+		}
+		return rc;
 	}
 }
 

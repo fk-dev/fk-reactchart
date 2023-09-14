@@ -899,6 +899,7 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 		relative: false,
 		width: props.width,
 		height: props.height,
+		autoResize: props.autoResize,
 		axisOnTop: props.axisOnTop,
 		css: props.css,
 		order: props.drawing,

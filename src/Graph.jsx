@@ -122,7 +122,11 @@ export default class Graph extends React.Component {
 			return data.map( (d,i) => ({...d, name: graphProps[i].name}));
 		};
 
-		return interactive ? <div>{/*  width="100%" height="100%">{interactive means we are NOT in an encapsulating SVG*/}
+		const {registerForAutoResize} = this.sh;
+
+		const renderDrawer = () => <Drawer id={this.myKey} mgrId={mgrId} registerForAutoResize={registerForAutoResize} state={state} className={cn} overflow={this.props.overflow} debug={this.showIds()} interactive/>;
+
+		return interactive ? <div className='fk-reactchart'>{/*  width="100%" height="100%">{interactive means we are NOT in an encapsulating SVG*/}
 			{ rawProps.hideMenu ? null :
 				<ToggleMenu toggleSettings={() => this.setState({settings : !this.state.settings})} settings={settings} getData={() => _getData()}/>
 			}
@@ -132,11 +136,10 @@ export default class Graph extends React.Component {
 				{
 					isFilterOn && this.sh.props().curves?.length ? <Filter mgr={this.sh} filter={rawProps.dateFilters}/> : null
 				}
-				<div>
 				{
 					legendPosition === 'right' ? <>{/* legend right*/}
 						<table><tbody><tr><td>
-							<Drawer id={this.myKey} mgrId={mgrId} state={state} className={cn} overflow={this.props.overflow} debug={this.showIds()} interactive/>
+							{renderDrawer()}
 						</td>
 						<td className='legend-position'>
 							<LegendGraph/>
@@ -147,22 +150,19 @@ export default class Graph extends React.Component {
 							<LegendGraph/>
 						</td>
 						<td>
-							<Drawer id={this.myKey} mgrId={mgrId} state={state} className={cn} overflow={this.props.overflow} debug={this.showIds()} interactive/>
+							{renderDrawer()}
 						</td></tr></tbody></table>
 					</> : <>
-						<div >{/* legend below*/}
-							<Drawer id={this.myKey} mgrId={mgrId} state={state} className={cn} overflow={this.props.overflow} debug={this.showIds()} interactive/>
-						</div>
+						{renderDrawer()}
 						<div className='legend-align'>
 							<LegendGraph line={true}/>
 						</div>
 					</>
 				}
-				</div>
 			</>
 		}
 		</div> :
-		<Drawer id={this.myKey} mgrId={mgrId} state={state} className={cn} overflow={this.props.overflow} debug={this.showIds()}/>
+		<Drawer id={this.myKey} mgrId={mgrId} registerForAutoResize={registerForAutoResize} state={state} className={cn + ' fk-reactchart'} overflow={this.props.overflow} debug={this.showIds()}/>
 		;
 	}
 }
