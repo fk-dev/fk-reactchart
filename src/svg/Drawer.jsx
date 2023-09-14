@@ -173,10 +173,6 @@ export default class Drawer extends React.Component {
 	componentDidMount(){
 		// console.log("will add mousemove listener");
 		window.document.addEventListener('mousemove',this.handleMouseMove);
-		if(this.graphRef){
-			this.graphRef.addEventListener('mouseout', this.handleMouseOut);
-			this.graphRef.addEventListener('mouseover',this.handleMouseIn);
-		}
 
 	}
 	componentWillUnmount(){
@@ -265,7 +261,14 @@ export default class Drawer extends React.Component {
 		const { outOfGraph } = this.state;
 
 		const rc = (
-		<svg {...size} id={this.props.id}  data={this.props.mgrId} className={`${this.props.className}${state.selected ? ' selected' : ''}`} style={style} ref={ref =>{this.graphRef = ref}}>
+		<svg {...size} 
+			id={this.props.id}
+			data={this.props.mgrId}
+			className={`${this.props.className}${state.selected ? ' selected' : ''}`}
+			style={style}
+			onMouseLeave={() => this.handleMouseOut()}
+			onMouseEnter={() => this.handleMouseIn()}
+			ref={ref =>{this.graphRef = ref}}>
 			{ state.gradient ? <defs>{state.gradient.print( (x,id) => <Gradienter key={`grad.${id}`} state={x}/>)}</defs> : null}
 			{ state.cadre.show ? <Cadre state={state.cadre} width={state.width} height={state.height}/> : null }
 			{ state.background.show ? <Background className='background' state={state.background}/>  : null }
