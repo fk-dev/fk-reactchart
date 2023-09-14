@@ -137,9 +137,7 @@ export default class Drawer extends React.Component {
 	}
 
 	handleMouseMove = (event) => {
-		const interactionSupported = !this.props.state.curves.find(x =>  ['Bars'].indexOf(x.type) !== -1);
-
-		if(!this.props.interactive || !interactionSupported  /*|| this.state.outOfGraph*/){
+		if(!this.props.state.mouseDataHighlightSupported  /*|| this.state.outOfGraph*/){
 			return;
 		}
 	
@@ -182,7 +180,7 @@ export default class Drawer extends React.Component {
 
 	componentDidUpdate(){
 		/// we keep track of world dimensions
-		if(this.props.interactive){
+		if(this.props.state.mouseDataHighlightSupported){
 			const cu = this.props.state.curves.find(x =>  ['Bars','Plain'].indexOf(x.type) !== -1);
 			const { ds } = cu?.type === 'Plain' ? cu.path : ( cu?.marks?.[0]?.mark ?? {} );
 			if(ds){
@@ -235,10 +233,10 @@ export default class Drawer extends React.Component {
 		const { state, interactive, overflow, registerForAutoResize } = this.props; 
 
 		const style = overflow ? {overflow: 'visible'} : null;
-		const { relative, width, height, curves, legend, autoResize } = state;
+		const { relative, width, height, curves, legend, autoResize, mouseDataHighlightSupported } = state;
 		//label
 		let labelsInfo;
-		if(interactive && curves && legend){
+		if(mouseDataHighlightSupported && curves && legend){
 			labelsInfo = curves.filter(c => c.show && ['Bars','Plain'].includes(c.type))
 				.map( (c,i) => ({ ...this.state.dataPoints[i], 
 						color: c.path.color || c.path.gaugeColor, 
@@ -275,7 +273,7 @@ export default class Drawer extends React.Component {
 			{ state.title && state.title.title.length ? <Title className='title' state={state.title} /> : null }
 			{ state.axis || state.curves ? this.orderAG() : null}
 			{ state.foreground ? <Foreground className='foreground' state={state.foreground} pWidth={state.width} pHeight={state.height}/> : null }
-			{ interactive ? <line className={outOfGraph ? 'fk-fade-out' : ''} x1={this.state.x} y1={this.state?.world?.ymin ?? 0} x2={this.state.x} y2={this.state?.world?.ymax ?? height} stroke="#cccccc" ></line> : null}
+			{ state.mouseDataHighlightSupported ? <line className={outOfGraph ? 'fk-fade-out' : ''} x1={this.state.x} y1={this.state?.world?.ymin ?? 0} x2={this.state.x} y2={this.state?.world?.ymax ?? height} stroke="#cccccc" ></line> : null}
 			{
 				labelsInfo?.length ?
 				<>

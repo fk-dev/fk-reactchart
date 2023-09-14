@@ -896,7 +896,8 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 		unsetSelection: () => getNode().set('outSelect',null),
 		setUnselection: fct => getNode().set('outUnselect',fct),
 		unsetUnselection: () => getNode().set('outUnselect',null),
-		relative: false,
+		relative: props.relative,
+		interactive: props.interactive,
 		width: props.width,
 		height: props.height,
 		autoResize: props.autoResize,
@@ -940,8 +941,8 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 	// 8 - gradients
 	imVM.gradient = gradientMgr.getGradientsPrinter(mgrId);
 
-	// 9 - options
-	imVM.relative = props.relative;
+	// 9 - interactive
+	imVM.mouseDataHighlightSupported = imVM.interactive && !imVM.curves.find(x =>  ['Bars', 'Pie'].indexOf(x.type) !== -1);
 
 	return imVM;
 

@@ -47,6 +47,9 @@ export default function Filter({mgr,filter}){
 	};
 
 	const filterFromTo = (val,type) => {
+		if (!val) {
+			return clickMe(type, type === 'from' ? absoluteFrom : absoluteTo);
+		}
 		let value = utc(val);
 		if(!value.isValid()){ return; }
 		value = value.toDate();
