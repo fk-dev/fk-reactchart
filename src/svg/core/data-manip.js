@@ -118,17 +118,25 @@ export function filter({from,to},{props,mgr}){
 			}
 			if(!from && data.series.dateFilter.from){from = data.series.dateFilter.from;}
 			if(!to && data.series.dateFilter.to){to = data.series.dateFilter.to;}
-			data.series = filterSeries.filter(point => {
-				let satFrom = true;
-				let satTo = true;
-				if(from){
-					satFrom = point.x >= from;
-				}
-				if(to){
-					satTo = point.x <= to;
-				}
-				return satFrom && satTo;
-			});
+			let newSerie = [];
+			for (let i = filterSeries.length-1; i>= 0; i--) {
+				const point = filterSeries[i];
+				if (to && point.x > to) { continue; }
+				newSerie.push(point);
+				if (from && point.x <= from) { break; }	//je m'arrête après
+			}
+			data.series = newSerie.reverse();
+			// data.series = filterSeries.filter(point => {
+			// 	let satFrom = true;
+			// 	let satTo = true;
+			// 	if(from){
+			// 		satFrom = point.x >= from;
+			// 	}
+			// 	if(to){
+			// 		satTo = point.x <= to;
+			// 	}
+			// 	return satFrom && satTo;
+			// });
 			data.series.dateFilter = {from,to};
 		}
 	
@@ -141,7 +149,7 @@ export function filter({from,to},{props,mgr}){
 				if(data.rebaseType === 'base100'){
 					point.y = point.y * 100 / serieStartValue;
 				}else if(data.rebaseType === 'base0'){
-					point.y = (point.y - serieStartValue)/serieStartValue;
+					point.y = 100 * (point.y - serieStartValue)/serieStartValue;
 				}
 			});
 		}
