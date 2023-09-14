@@ -4,14 +4,9 @@ import { makeInterval, isValid } from './legend-utils.js';
 export default function Filter({mgr,filter}){
 
 	const getBoundaries = (mgr,filter) => {
-		const cu = mgr.props().curves.find(x =>  ['Bars','Plain'].indexOf(x.type) !== -1);
-		const { originalDs } = mgr.rawProps();
-		const { ds } = cu?.type === 'Plain' ? cu.path : ( cu?.marks?.[0]?.mark ?? {} );
-		let absoluteFrom, absoluteTo;
-		if(originalDs || ds){
-			absoluteFrom = (originalDs ?? ds).x.d.min;
-			absoluteTo   = (originalDs ?? ds).x.d.max;
-		};
+		const data = (mgr.rawProps().data ?? []).filter(x => x.abs.type === 'date').map(x => ({series: x.series.map(x => x.x)})).reduce( (memo,value) => memo.concat(value.series), []); // get all dates in abs of graph
+		const absoluteFrom = data.reduce( (prev,cur) => prev.getTime() < cur.getTime() ? prev : cur);
+    const absoluteTo   = data.reduce( (prev,cur) => prev.getTime() > cur.getTime() ? prev : cur);
 
 		let activeFilters = [];
 		const hasFrom = filter.find(x => x.interval === 'from');
