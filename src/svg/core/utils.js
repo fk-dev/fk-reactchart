@@ -239,7 +239,7 @@ export function measure(gid, debug){
 		if(clN || !fontSize){
 			meas.style.fontSize = "";
 		}else{
-			meas.style.fontSize = typeof fontSize === 'number' ? `${fontSize}px` : fontSize;
+			meas.style.fontSize = typeof fontSize === 'number' ? `${fontSize}pt` : fontSize;
 		}
 
 		const texts = renderTextOptions({fontSize},str);
