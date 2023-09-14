@@ -114,7 +114,7 @@ export function filter({from,to},{props,mgr}){
 			let filterSeries = data.series;
 			// console.log("filters:"+JSON.stringify({from,to,dateFilters:data.series.dateFilter}));
 			if((from && from<data.series.dateFilter.from) || (to && to>data.series.dateFilter.to)){
-				filterSeries = data.originalSeries;
+				filterSeries = deepCp([],data.originalSeries);
 			}
 			if(!from && data.series.dateFilter.from){from = data.series.dateFilter.from;}
 			if(!to && data.series.dateFilter.to){to = data.series.dateFilter.to;}
