@@ -7,6 +7,9 @@ import { clear as clearGradient } from './svg/core/gradient-mgr.js';
 
 export function init(rawProps, type, opts, debug){
 
+	//pre-process data tto rebase data
+	manip.initialRebase(rawProps)
+
 	opts = opts || {};
 	let { key, obj, namespace, onGraphDone, onGraphStart, onPropsReady, printOnly, waitFor } = opts;
 
@@ -527,6 +530,7 @@ export function init(rawProps, type, opts, debug){
 
 	rc.reinit = (newProps, type) => {
 		rawProps = newProps || rawProps;
+
 		// check measurer
 		if(!rc.canMeasure()){
 			rc.setMeasurer();
@@ -634,7 +638,7 @@ export function init(rawProps, type, opts, debug){
 			if (!resizeElem) { return; }
 			const e = $(resizeElem);
 			// const filter = $('.reactchart-filter');//.find("#myGraph"); //il faut aussi soustraire legend-align!
-			const up = rc.unprocessedProps();
+			const up = rc.rawProps();
 			const width = e.width() || up.width || 100;
 			const height = e.height() || up.height || 100; // - (filter.height() || 0); //
 			console.log('FkReactChar width = ' + width + ' / height = ' + height);

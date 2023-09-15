@@ -5,6 +5,7 @@ import * as gProps from './proprieties.js';
 import { cadreVM, backgroundVM, foregroundVM, titleVM, axesVM, curvesVM } from './VMbuilder.js';
 import { vm as legendVM } from './legendBuilder.jsx';
 import * as gradientMgr from './gradient-mgr.js';
+import { initialRebase } from './data-manip.js';
 
 const preprocessAxis = function(props){
 
@@ -665,7 +666,7 @@ const offStairs = function(serie,gprops){
 
 const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 
-	const props = rawProps && rawProps.__defaulted ? rawProps : defaultTheProps(utils.deepCp({},rawProps));
+	let props = rawProps && rawProps.__defaulted ? rawProps : defaultTheProps(utils.deepCp({},rawProps));
 
 	const isCart = props.coordSys !== 'polar';
 

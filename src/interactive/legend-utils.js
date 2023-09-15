@@ -81,6 +81,7 @@ function valueTo(key,originalValue){
 }
 
 export function makeInterval(key,{absoluteFrom, absoluteTo}){
+	if (key === 'ALL') { return { isActive: true}; }
 
 	const { greaterThan, equal, subtract, type } = mgr(absoluteFrom);
 
@@ -88,7 +89,7 @@ export function makeInterval(key,{absoluteFrom, absoluteTo}){
 
 	const from = value === true ? absoluteFrom : subtract(valueTo(key,absoluteTo),value);
 
-	const to = absoluteTo;
+	const to = null;	//absoluteTo;
 
 	const isActive = value && ( greaterThan(from,absoluteFrom) || equal(from,absoluteFrom) );
 

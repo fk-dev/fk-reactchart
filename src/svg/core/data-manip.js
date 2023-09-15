@@ -89,35 +89,34 @@ export function addMark(cidx, midx, position, {props, mgr }){
 	mgr.manipAllVMs(vm => vm().curves[cidx].mark.splice(midx,1));
 }
 
+export function initialRebase(props) {
+	if (!!props.data.filter(data => data.rebaseType)) {
+		filter({}, { props });
+	}
+}
+
 export function filter({from,to},{props,mgr}){
 	// console.log("calling filter with args:"+JSON.stringify({from,to,props,mgr}));
 
-	const getDs = mgr => {
-		const cu = mgr.props().curves.find(x => x.path?.ds ?? x.marks?.[0]?.ds);
-		return cu.path?.ds ?? cu.marks?.[0]?.ds;
-	};
 
-	if(!props.originalDs){
-		props.originalDs = deepCp({},getDs(mgr));
-	}
 	props.data.forEach(data =>{
 		if(!data.originalSeries){
 			data.originalSeries = deepCp([],data.series);
 		}
 		if(!from && !to){
-			data.series = data.originalSeries;
+			data.series = deepCp([], data.originalSeries);
 			
 		}else{
 			//filter using from,to
 			// console.log("final filter using :"+JSON.stringify({from,to,series:data.originalSeries}));
-			data.series.dateFilter = data.series.dateFilter || {from,to};
-			let filterSeries = data.series;
+			// data.series.dateFilter = data.series.dateFilter || {from,to};
+			// let filterSeries = data.series;
 			// console.log("filters:"+JSON.stringify({from,to,dateFilters:data.series.dateFilter}));
-			if((from && from<data.series.dateFilter.from) || (to && to>data.series.dateFilter.to)){
-				filterSeries = deepCp([],data.originalSeries);
-			}
-			if(!from && data.series.dateFilter.from){from = data.series.dateFilter.from;}
-			if(!to && data.series.dateFilter.to){to = data.series.dateFilter.to;}
+			// if((from && from<data.series.dateFilter.from) || (to && to>data.series.dateFilter.to)){
+				const filterSeries = deepCp([],data.originalSeries);
+			// }
+			// if(!from && data.series.dateFilter.from){from = data.series.dateFilter.from;}
+			// if(!to && data.series.dateFilter.to){to = data.series.dateFilter.to;}
 			let newSerie = [];
 			for (let i = filterSeries.length-1; i>= 0; i--) {
 				const point = filterSeries[i];
@@ -137,7 +136,7 @@ export function filter({from,to},{props,mgr}){
 			// 	}
 			// 	return satFrom && satTo;
 			// });
-			data.series.dateFilter = {from,to};
+			// data.series.dateFilter = {from,to};
 		}
 	
 		if(data.rebaseType){
@@ -155,5 +154,7 @@ export function filter({from,to},{props,mgr}){
 		}
 		// data.series = data.series.slice(0,100);
 	});
-	mgr.reinit(props);
+	if (mgr) {
+		mgr.reinit(props);
+	}
 }
