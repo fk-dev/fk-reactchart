@@ -3,7 +3,7 @@ import { init }   from './helpers.js';
 import { Drawer, utils } from './svg';
 import { GraphSettings, ToggleMenu, Filter } from './interactive';
 
-const { rndKey, emptyState } = utils;
+const { rndKey, emptyState, deepCp } = utils;
 
 export default class Graph extends React.Component {
 
@@ -20,7 +20,7 @@ export default class Graph extends React.Component {
 	}
 
 	init(){
-		const pr = this.props;
+		const pr = deepCp({},this.props);
 		if(pr.__preprocessed){ // done outside graph
 			this.sh = pr;
 			// only the key, can't forceUpdate before didMount

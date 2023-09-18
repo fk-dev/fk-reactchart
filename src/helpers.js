@@ -627,7 +627,7 @@ export function init(rawProps, type, opts, debug){
 
 
 	//Auto resize
-	if (rawProps.autoResize) {
+	if (rawProps?.autoResize) {
 		let resizeElem = null;
 		rc.registerForAutoResize = (elem) => {
 			resizeElem = elem;

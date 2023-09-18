@@ -90,7 +90,7 @@ export function addMark(cidx, midx, position, {props, mgr }){
 }
 
 export function initialRebase(props) {
-	if (!!props.data.filter(data => data.rebaseType)) {
+	if (!!props?.data?.filter(data => data.rebaseType)) {
 		filter({}, { props });
 	}
 }
