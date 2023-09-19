@@ -23,7 +23,7 @@ import { w3color } from './color-converter.js';
 export default function GraphSettings({props,toggleSettings}) {
 
 	const initColor = c => {
-		const rgb = w3color(c).toHexString();
+		const rgb = w3color(c ?? '#000000').toHexString();
 		return rgb;
 	};
 
