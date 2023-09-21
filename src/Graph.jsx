@@ -1,7 +1,7 @@
 import React, { forwardRef } from 'react';
 import { init }   from './helpers.js';
 import { Drawer, utils } from './svg';
-import { GraphSettings, ToggleMenu, Filter } from './interactive';
+import { GraphSettings, ToggleMenu, Filter, defaultDateFilters } from './interactive';
 
 const { rndKey, emptyState, deepCp } = utils;
 
@@ -110,7 +110,7 @@ export default class Graph extends React.Component {
 		const rawProps       = this.props.rawProps ? this.props.rawProps() : null;
 		const showLegend     = rawProps?.legend?.showLegend;
 		const legendPosition = rawProps?.legend?.position;
-		const isFilterOn     = rawProps?.dateFilters?.length ?? false;
+		const isFilterOn     = ( rawProps?.dateFilters === true || rawProps?.dateFilters?.length ) ?? false;
 		const interactive    = rawProps?.interactive ?? false;
 
 		const LegendGraph = ({line}) => showLegend ? <Legend {...this.props	} onlyLegend={true} line={line}/> : null;
@@ -134,7 +134,7 @@ export default class Graph extends React.Component {
 			settings ? <GraphSettings props={this.props} toggleSettings={() => this.setState({settings: !this.state.settings})}/> : 
 			<>
 				{
-					isFilterOn && this.sh.props().curves?.length ? <Filter mgr={this.sh} filter={rawProps.dateFilters}/> : null
+					isFilterOn && this.sh.props().curves?.length ? <Filter mgr={this.sh} filter={rawProps.dateFilters === true ? defaultDateFilters : rawProps.dateFilters}/> : null
 				}
 				{
 					legendPosition === 'right' ? <>{/* legend right*/}

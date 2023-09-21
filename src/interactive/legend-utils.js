@@ -1,5 +1,48 @@
 import { mgr } from '../svg/core/utils.js';
 
+export const defaultDateFilters = [
+	{
+		interval: "1M",
+		label: "1m"
+	},
+	{
+		interval: "3M",
+		label: "3m"
+	},
+	{
+		interval: "6M",
+		label: "6m"
+	},
+	{
+		interval: "YTD",
+		label: "YTD"
+	},
+	{
+		interval: "1Y",
+		label: "1an"
+	},
+	{
+		interval: "3Y",
+		label: "3ans"
+	},
+	{
+		interval: "5Y",
+		label: "5ans"
+	},
+	{
+		interval: "ALL",
+		label: "Tout"
+	},
+	{
+		interval: "from",
+		label: "Du"
+	},
+	{
+		interval: "to",
+		label: "au"
+	}
+];
+
 const filterDateEvents = {
 	"1M":{
 		onClick: 'filterOneMonth',
