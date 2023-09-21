@@ -161,21 +161,59 @@
 
 // interactive
 .fk-tooltip {
+
 	transition: opacity 0.3s ease;
 
-	.tooltip {
+	.fk-tooltip-background {
 		fill: white;
 		fill-opacity: 70%;
-     stroke: #CCCCCC;
-     stroke-width: 1px;
-     pointer-events: none;
+    stroke: #CCCCCC;
+    stroke-width: 1px;
+    pointer-events: none;
 	}
 
-	.tooltip-text {
+	.fk-tooltip-text {
 		fill: #333333;
     font-family: Arial sans-serif;
-  		font-size: 12px;
+ 		font-size: 12px;
 	}
+}
+
+.fk-tooltip-div {
+
+	box-shadow: 5px 5px 5px gray;
+	position: absolute;
+	background: rgba(255,255,255,0.7);
+	pointer-events: none;
+	padding: 3px;
+	border: solid 0.5px lightgray;
+	font-family: Arial sans-serif;
+	font-size: 12px;
+	text-align: center;
+
+	.fk-tooltip-title{
+		float: center;
+	 	font-family: Palatino;
+		line-height: 2em;
+	}
+
+	.fk-tooltip-text{
+
+		line-height: 1.2em;
+		display: table-row;
+
+		.fk-tooltip-label{
+			float: left;
+			font-family: Gill Sans;
+			margin-right: 20px;
+		}
+
+		.fk-tooltip-value{
+			float: right;
+			font-weight: bold;
+		}
+	}
+
 }
 
 .fk-tooltip-in {
@@ -185,14 +223,14 @@
 	opacity: 0;
 }
 
-.fk-fade-out {
-	opacity: 0;
-	transition: opacity 0.3s ease;
-}
-
-
-
 .reactchart {
+
+	/// interactivity
+	.fk-fade-out {
+		opacity: 0;
+		transition: opacity 0.3s ease;
+	}
+
   // cadre
   .cadre {
     stroke-width: 1;

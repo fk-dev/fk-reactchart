@@ -31,11 +31,8 @@ function hoverLabelData(curve,mouseX){
 		}
 		const dsx = curveParams.ds?.x;
 		const dsy = curveParams.ds?.y;
-		// console.log("dsx:,x"+JSON.stringify({dsx,mouseX}));
 		const dataX =  toD(dsx,mouseX);
-		// console.log("got datax:",dataX);
 		const positions = curve.type === 'Plain' ? curve.path.positions: curve.type === 'Bars' ? curve.marks.map(m=>m.mark.position):curve.type === 'Pie' ?  curve.path.positions.map(p=>({x:p.color,y:p.value})):[];
-		// console.log("positions:",positions);
 		if(!positions.length){
 			return null;
 		}
@@ -53,81 +50,17 @@ function hoverLabelData(curve,mouseX){
 		
 	return {labelX,labelY, ...data};
 }
+
 function capitalizeFirstLetter(string) {
 	return string.charAt(0).toUpperCase() + string.slice(1);
 }
-// see https://stackoverflow.com/questions/55334402/how-to-have-a-drop-shadow-on-a-transparent-rect-svg
-const Tooltip = ({labelX,labelY,data,dataX,bounds,originalX,outOfGraph})=>{
 
-	const boundLeft = bounds?.x;
-	const boundRight = bounds?.right;
-	//adjust labelX
-	if(originalX-100 <= boundLeft){
-		labelX += 100;
-	}
-	if(originalX+100 >= boundRight){
-		labelX -= 100;
-	}
-	labelX = isNaN(labelX) ? 0 : labelX; 
-	data = data?.filter(d=>d.x);
-	if(!data.length){
-		return null;
-	}
-	const height = 20 + 40*data.length;
-	const width = 300;
-	const dl = 3;
-	return <g className={`fk-tooltip ${outOfGraph ? 'fk-tooltip-out' : 'fk-tooltip-in'}`}>
-		<defs>
-			<filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-    		<feDropShadow dx="3" dy="3" stdDeviation="4" floodColor="#000000" floodOpacity="0.5" />
- 			</filter>
-  		<filter id="trans-shadow">
-  			<feColorMatrix type="matrix" values="1 0 0 0 0 
-        			                               0 1 0 0 0 
-              			                         0 0 1 0 0 
-                    			                   0 0 0 100 0"
-                          			             result="boostedInput"/>
-                                       
-    		<feDropShadow dx="3" dy="3" stdDeviation="4" floodColor="#000000" floodOpacity="0.5" />
-				<feComposite operator="out" in2="boostedInput"/>
-			</filter>
-		</defs>
-		<rect x={labelX} y={labelY} width={width} height={height} fillOpacity="0.01" filter="url(#trans-shadow)"/>
-		<rect x={labelX} y={labelY} width={width} height={height} className='tooltip'/>
-		<text x={labelX+100} y={labelY+5} dy="1em" textAnchor="middle" className='tooltip-text'>
-			<tspan fontFamily='Palatino' dy="1.2em" x={labelX+width/2}>
-				{dataX instanceof Date ? capitalizeFirstLetter(dataX.toLocaleDateString(undefined,{ weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })):dataX}
-			</tspan>
-			<tspan dy="1.5em"> </tspan>
-			{
-				data.map((d,i)=>
-				<ToolTipContent key={i} {...{xData:d.x,yData:d.y,xPos:labelX+width/2,color:d.color,label:d.label}}/>)
-			}
-		</text>
-	</g>;
-};
-const ToolTipContent = ({label,yData,xPos,color})=>{
-	if(!yData){
-		return null;
-	}
-	return(
-		<>
-			<tspan fill={color} x={xPos} dy="1em" fontFamily='Gill Sans'>
-			{label.toUpperCase()+ ' : '}
-			</tspan>
-			<tspan fill="black" strokeWidth="3" fontWeight={600}>
-			{yData?.toLocaleString('fr-FR')}
-			</tspan>
-			<tspan dy="1em"> </tspan>
-			</>
-	);
-};
 export default class Drawer extends React.Component {
 
 	constructor(props) {
     super(props);
     this.state = {
-			outOfGraph: false,
+			outOfGraph: null,
 			dataPoints: []
 		};
   }
@@ -136,8 +69,20 @@ export default class Drawer extends React.Component {
 		return props.interactive || !isEqual(props.state,this.props.state) || props.className !== this.props.className;
 	}
 
+	measureTt(tt){
+		if(!tt || !this.graphRef){return;}
+		const { width, height } = tt.getBoundingClientRect();
+		if(!this.state.maxX || this.state.uidth < width){
+			const maxW = this.graphRef.getBoundingClientRect().width;
+			this.setState({maxX: maxW - width});
+		}
+		if(!this.state.yOffset){
+			this.setState({yOffset: 50 - height/2, height});
+		}
+	}
+
 	handleMouseMove = (event) => {
-		if(!this.props.state.mouseDataHighlightSupported  /*|| this.state.outOfGraph*/){
+		if(!this.props.state.mouseDataHighlightSupported  || this.state.outOfGraph){
 			return;
 		}
 	
@@ -145,14 +90,17 @@ export default class Drawer extends React.Component {
 		let pt = parentElement.createSVGPoint();
 		pt.x = event.clientX; pt.y = event.clientY;
 		const res = pt.matrixTransform(parentElement.getScreenCTM().inverse());
-    // const rect = parentElement.getBoundingClientRect();
 		const x = res.x;
     const y = res.y;
-		// console.log("x,y mouse:"+JSON.stringify({x,y}));
-		// const firstC = this.props.state.curves[0];
-		// const {labelX,labelY,data} = hoverLabelData(firstC,x);
-		// console.log("label data:"+JSON.stringify({labelX,labelY,data}));
 		const dataPoints = this.props.state.curves.filter(c => c.show && [/*'Bars',*/'Plain'].includes(c.type)).map(c => hoverLabelData(c,x));
+		/// first set of outOfGraph, we don't know where we are
+		if(this.state.outOfGraph === null){
+			const { width, height } = this.graphRef.getBoundingClientRect();
+			const outX = x < 0 || x > width;
+			const outY = y < 0 || y > height;
+			this.setState({outOfGraph: outX || outY});
+		}
+
 		this.setState({ x, y, originalX: pt.x, dataPoints });
 	}
 
@@ -169,12 +117,10 @@ export default class Drawer extends React.Component {
 	}
 
 	componentDidMount(){
-		// console.log("will add mousemove listener");
 		window.document.addEventListener('mousemove',this.handleMouseMove);
 
 	}
 	componentWillUnmount(){
-		// console.log("will remove mousemove listener");
 		window.document.removeEventListener('mousemove',this.handleMouseMove);
 	}
 
@@ -204,7 +150,6 @@ export default class Drawer extends React.Component {
 		const { order } = state;
 		const idx = order === 'default' ? i => i : (i,n) => n - 1 - i;
 		const curves = order === 'default' ? state.curves : state.curves.concat().reverse();
-		// console.log("got abs axe:"+JSON.stringify(state.axes.abs));
 		return state.axisOnTop === true ? <g>
 			{curves.map( (curve, i) => grapher(curve.type,curve, { gIdx: idx(i,curves.length),interactive}))}
 			<Axes state={state.axes}/>
@@ -244,7 +189,6 @@ export default class Drawer extends React.Component {
 				})
 			);
 		}
-		// console.log("check labelsInfo:"+JSON.stringify(labelsInfo));
 		const viewBox=`0 0 ${width} ${height}`;
 		const size = relative ? relative.width || relative.height ? {width: relative.width || relative.height, height: relative.height || relative.width, viewBox} : 
 			{width: '100%', height: '100%', viewBox} : 
@@ -256,9 +200,16 @@ export default class Drawer extends React.Component {
 			bounds = parentElement.getBoundingClientRect();
 		}
 
-		const { outOfGraph } = this.state;
+		const outOfGraph = this.state.outOfGraph ?? true;
 
-		const rc = (
+		const computeTTPlace = () => {
+			const left = Math.min(this.state.x + 30,this.state.maxX ?? 0);
+			const yBase = this.state.y + (this.state.yOffset ?? 0);
+			const top = !this.state.maxX || this.state.x + 30 < this.state.maxX ? yBase : yBase - Math.min(this.state.height/2 + 10,2 * ( this.state.x + 30 - this.state.maxX ));
+			return {left, top};
+		};
+
+		const rc = <>
 		<svg {...size} 
 			id={this.props.id}
 			data={this.props.mgrId}
@@ -281,14 +232,23 @@ export default class Drawer extends React.Component {
 						<circle key={index+color} cx={cx} cy={cy} r={10} fill={color} opacity={0.3}/>
 						<circle key={index+1+color} cx={cx} cy={cy} r={3} fill={color}/>
 					</g>)}
-					<Tooltip {...{labelX: this.state.x - 150, labelY:height/3 - 50, data: labelsInfo, dataX: labelsInfo[0].x, bounds, originalX: this.state.originalX, outOfGraph }}/>
 				</> : null
 			}
 			{ this.props.debug ? this.showMe() : null}
 			{ this.empty(state) }
 			<Measurer id={this.props.id}/>
-		</svg>)
-		;
+		</svg>
+		{labelsInfo?.length && this.state.x && this.state.y ? 
+			<div className={`fk-tooltip-div fk-tooltip-${outOfGraph ? 'out' : 'in'}`} style={computeTTPlace()} ref={tt => this.measureTt(tt)}>
+				<span className='fk-tooltip-title'>
+					{labelsInfo[0].x instanceof Date ? capitalizeFirstLetter(labelsInfo[0].x.toLocaleDateString(undefined,{ weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })):labelsInfo[0].x}
+				</span>
+				{labelsInfo.map( (x,i) => <div key={`tt.${i}`} className='fk-tooltip-text'>
+					<span className='fk-tooltip-label' style={{color: x.color}}>{x.label.toUpperCase()}</span>
+					<span className='fk-tooltip-value'>{x.y?.toLocaleString('fr-FR')}</span>
+				</div>)}
+			</div> : null }
+		</>;
 
 		if (autoResize) {
 			return <div ref={registerForAutoResize} className='fk-chart-svg-div'>{rc}</div>
@@ -296,7 +256,3 @@ export default class Drawer extends React.Component {
 		return rc;
 	}
 }
-
-//add intervals 1y|6M|3M
-//on click 3M-> positions filter -> reinit (old positions lost)
-// on click 1Y -> filter positions 
