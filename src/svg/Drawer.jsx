@@ -61,7 +61,10 @@ export default class Drawer extends React.Component {
     super(props);
     this.state = {
 			outOfGraph: null,
-			dataPoints: []
+			dataPoints: [],
+			maxX: -1,
+			width: -1,
+			height: -1
 		};
   }
 
@@ -72,11 +75,11 @@ export default class Drawer extends React.Component {
 	measureTt(tt){
 		if(!tt || !this.graphRef){return;}
 		const { width, height } = tt.getBoundingClientRect();
-		if(!this.state.maxX || this.state.uidth < width){
+		if(this.state.maxX < 0 || this.state.width < 0 || this.state.width < width){
 			const maxW = this.graphRef.getBoundingClientRect().width;
-			this.setState({maxX: maxW - width});
+			this.setState({maxX: maxW - width, width});
 		}
-		if(!this.state.yOffset){
+		if(!this.state.yOffset || this.state.height < 0 || height !== this.state.height){
 			this.setState({yOffset: 50 - height/2, height});
 		}
 	}
