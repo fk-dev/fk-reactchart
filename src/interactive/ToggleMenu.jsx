@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { downloadData } from './http-utils.js';
 
 function toCsv(name, serie, options){
@@ -42,27 +42,28 @@ function exportData(data){
 	});
 }
 
-export default function ToggleMenu({toggleSettings, /*toggleMenu,*/ settings, /*showMenu,*/ getData}) {
+export default function ToggleMenu({toggleSettings, settings, getData}) {
 
+	const [inputVal, setInputVal] = useState(false);
+
+	function _toggleSettings(){
+		toggleSettings();
+		setInputVal(!inputVal);
+	}
+
+	function _exportData(data){
+		exportData(data);
+		setInputVal(!inputVal);
+	}
 
 	return <div className='reactchart-toggle-menu'>
-		<input id="menu-toggle" type='checkbox'/>
+		<input id="menu-toggle" type='checkbox' checked={inputVal} onChange={(e) => setInputVal(e.target.checked)}/>
 		<label className='menu-button-container' htmlFor="menu-toggle">
 			<div className='menu-button'></div>
 		</label>
 		<ul className="menu">
-			<li><span onClick={()=> toggleSettings()}>{settings ? 'Graph':'Settings'}</span></li>
-			<li><span onClick={()=> exportData(getData())}>{'Export'}</span></li>
-			{/*<li><a onClick={()=> toggleMenu()}>{'X'}</a></li>*/}
+			<li><span onClick={()=> _toggleSettings()}>{settings ? 'Graph':'Settings'}</span></li>
+			<li><span onClick={()=> _exportData(getData())}>{'Export'}</span></li>
 		</ul>
 	</div>;
-
-	/*return <div className="btn-group navbar-right" style={{margin:0,height:0,opacity:0.8,zIndex:99}}>
-		<a className="btn btn-default dropdown-toggle" onClick={()=>toggleMenu()}><i className="glyphicon glyphicon-menu-hamburger"></i></a>
-		<ul className="dropdown-menu navbar-right text-right" style={showMenu ? {"display": "block"} : {"display": "none"}}>
-			<li><a className='btn btn-default' onClick={()=> toggleSettings()}>{settings ? 'Graph':'Settings'}</a></li>
-			<li><a className='btn btn-default' onClick={()=> exportData(getData())}>{'Export'}</a></li>
-			<li><a className='btn btn-default' onClick={()=> toggleMenu()}>{'X'}</a></li>
-		</ul>
-	</div>;*/
 }
