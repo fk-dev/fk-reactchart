@@ -126,7 +126,7 @@ export default class Graph extends React.Component {
 
 		const renderDrawer = () => <Drawer id={this.myKey} mgrId={mgrId} registerForAutoResize={registerForAutoResize} state={state} className={cn} overflow={this.props.overflow} debug={this.showIds()} interactive/>;
 
-		return interactive ? <div className='fk-reactchart'>{/*  width="100%" height="100%">{interactive means we are NOT in an encapsulating SVG*/}
+		return interactive ? <div className='fk-reactchart'>{/*interactive means we are NOT in an encapsulating SVG*/}
 			{ rawProps.hideMenu ? null :
 				<ToggleMenu toggleSettings={() => this.setState({settings : !this.state.settings})} settings={settings} getData={() => _getData()}/>
 			}

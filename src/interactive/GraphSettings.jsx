@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { deepCp } from '../svg/core/utils.js';
 import { w3color } from './color-converter.js';
+import { label } from './lang-services.js';
 
 /***
  * if type line chart | bar chart -> settings : axes | colors | rebaseType | graph type
@@ -27,7 +28,7 @@ export default function GraphSettings({props,toggleSettings}) {
 		return rgb;
 	};
 
-  const rawProps = deepCp({},props.rawProps());
+  const rawProps = deepCp({},props.unprocessedProps());
   const initialGraphTypes = { ...rawProps.data.map((d) => d.type) }; //{0:Plain,1:Bars}
   const initialColors = { ...rawProps.graphProps.map((gp) => initColor(gp.color)) };
   const initialBaseTypes = {
@@ -42,14 +43,12 @@ export default function GraphSettings({props,toggleSettings}) {
 
   const [graphTypes, setGraphTypes] = useState(initialGraphTypes);
   const [graphColors, setGraphColors] = useState(initialColors);
-  // console.log("initialBaseTypes:" + JSON.stringify({ initialBaseTypes }));
   const [baseTypes, setBaseTypes] = useState(initialBaseTypes); //Base100|Base0|value pour perf
   const [xPosition, setXPosition] = useState(initialAbsPosition);
   const [yPosition, setYPosition] = useState(initialOrdPosition);
   const initLegendPosition = rawProps.legend?.position || 'bottom';
   const [legendPosition, setLegendPosition] = useState(initLegendPosition);
   const initShowLegend = rawProps.legend?.showLegend ? 'show':'hide';
-  // console.log("check legend from props:"+JSON.stringify(rawProps.legend));
   const [showLegend, setShowLegend] = useState(initShowLegend);
   const applySettings = () => {
     rawProps.graphProps.forEach((g, i) => {
@@ -68,7 +67,6 @@ export default function GraphSettings({props,toggleSettings}) {
           x: 0.9,
           y: 0.9,
         };
-        // rawProps.outerMargin = { left: 40, bottom: 40, right: 40, top: 40 }; // left, bottom, right, top
       } else {
         ["pie", "pieOrigin", "pieRadius", "chgSerie"].forEach((key) => {
           delete g[key];
@@ -120,104 +118,29 @@ export default function GraphSettings({props,toggleSettings}) {
       rawProps.legend.showLegend = showLegend === 'show'? true:false;
     rawProps.legend.position = legendPosition;
     }
-    // console.log("will apply these props:" + JSON.stringify(rawProps));
     rawProps.__defaulted = false;
     props.reinit(rawProps);
     toggleSettings();
   };
-  // console.log("new props:" + JSON.stringify(props.rawProps()));
-	return <div className='reactchart-graph-settings'>
-	<table className='reactchart-settings-table'>
-		<thead>
-			<tr>
-				<th>Serie</th>
-				<th>Graph type</th>
-				<th>Color</th>
-				<th>Type valeur</th>
-				<th>X axis</th>
-				<th>Y axis</th>
-			</tr>
-		</thead>
-		<tbody>
-			{rawProps.data.map((d, i) => <tr key={`g.${i}`}>
-				<td>{rawProps.graphProps[i].name}</td>
-				<td>
-					<select id={`gType.${i}`} value={graphTypes[i]} onChange={(e) => setGraphTypes((old) => ({ ...old, [i]: e.target.value }))}>
-						<option value="Bars">Bar Chart</option>
-						<option value="Pie">Pie Chart</option>
-						<option value="Plain">Line Chart</option>
-						{/* <option value="donut">Donut Chart</option> */}
-					</select>
-				</td>
-				<td>
-					<input id={`color.${i}`} type="color" name="color" onChange={(e) => setGraphColors((old) => ({ ...old, [i]: e.target.value }))} value={graphColors[i]}/>
-				</td>
-				<td>
-					<select value={baseTypes[i]} id={`typeVal.${i}`} onChange={(e) => setBaseTypes((old) => ({ ...old, [i]: e.target.value }))}>
-						<option value="base100">Base 100</option>
-						<option value="base0">Base 0</option>
-						<option value="value">Value</option>
-					</select>
-				</td>
-				<td>
-					<select id={`xPos.${i}`} value={xPosition[i]} onChange={(e) => setXPosition((old) => ({ ...old, [i]: e.target.value }))} disabled={!["Plain", "Bars"].includes(d.type)}>
-						<option value="top">Top</option>
-						<option value="bottom">Bottom</option>
-					</select>
-				</td>
-				<td>
-					<select id={`yPos.${i}`} value={yPosition[i]} onChange={(e) => setYPosition((old) => ({ ...old, [i]: e.target.value }))} disabled={!["Plain", "Bars"].includes(d.type)}>
-						<option value="left">Left</option>
-						<option value="right">Right</option>
-					</select>
-				</td>
-			</tr>)}
-		</tbody>
-	</table>
-	<table className='reactchart-settings-table'>
-		<tbody>
-			<tr>
-				<th>Position de légende :</th>
-				<td>
-					<select value={legendPosition} onChange={(e) => setLegendPosition(e.target.value)}>
-						<option value="bottom">Bottom</option>
-						<option value="right">Right</option>
-						<option value="left">Left</option>
-					</select>
-				</td>
-			</tr>
-			<tr>
-				<th>Afficher Legende :</th>
-				<td>
-					<select value={showLegend} onChange={(e) => setShowLegend(e.target.value)}>
-						<option value='show'>Show</option>
-						<option value='hide'>Hide</option>
-					</select>
-				</td>
-			</tr>
-		</tbody>
-	</table>
-	<button type="button" onClick={() => applySettings()}>Appliquer</button>
-	</div>;
-  /*return (
-    <div className="container-fluid">
-        <div className="row">
-            <div style={{marginRight:10}} className="col-sm-1">Serie</div>
-            <div style={{marginRight:10}} className="col-sm-2">Graph Type</div>
-            <div style={{marginRight:10}} className="col-sm-2">Color</div>
-            <div style={{marginRight:10}} className="col-sm-2">Type valeur</div>
-            <div style={{marginRight:10}} className="col-sm-1">X axis</div>
-            <div style={{marginRight:10}} className="col-sm-1">Y axis</div>
+  return (
+    <div className="reactchart-graph-settings">
+        <div className="fk-row">
+            <div className="fk-col fk-head fk-serie">{label('serie')}</div>
+            <div className="fk-col fk-head fk-graphtype">{label('graphType')}</div>
+            <div className="fk-col fk-head fk-color">{label('color')}</div>
+            <div className="fk-col fk-head fk-valtype">{label('valType')}</div>
+            <div className="fk-col fk-head fk-xaxis">{label('Xaxis')}</div>
+            <div className="fk-col fk-head fk-yaxis">{label('Yaxis')}</div>
         </div>
         
           {rawProps.data.map((d, i) => {
-            let serieName = rawProps.graphProps[i].name;
-            let serieType = d.type; // Plain | Bars | Pie ...
+            const serieName = rawProps.graphProps[i].name;
+            const serieType = d.type; // Plain | Bars | Pie ...
             return (
-              <div  key={i} className="row">
-                <div style={{paddingRight:10}}  className="col-sm-1">{serieName}</div>
-                <div style={{marginRight:10}}  className="col-sm-2">
-                  <select
+              <div key={i} className="fk-row">
+                <div className="fk-col fk-serie">{serieName}</div>
+                <div className="fk-col fk-graphtype">
+                  <select id={`gt.${i}`} className='fk-input'
                     value={graphTypes[i]}
                     onChange={(e) =>
                       setGraphTypes((old) => ({ ...old, [i]: e.target.value }))
@@ -226,11 +149,11 @@ export default function GraphSettings({props,toggleSettings}) {
                     <option value="Bars">Bar Chart</option>
                     <option value="Pie">Pie Chart</option>
                     <option value="Plain">Line Chart</option>
-                    {// <option value="donut">Donut Chart</option>}
+                    {/* <option value="donut">Donut Chart</option> */}
                   </select>
                 </div>
-                <div style={{marginRight:10}}  className="col-sm-2">
-                  <input
+                <div className="fk-col fk-color">
+                  <input id={`col.${i}`} className='fk-input'
                     type="color"
                     name="color"
                     onChange={(e) =>
@@ -239,41 +162,40 @@ export default function GraphSettings({props,toggleSettings}) {
                     value={graphColors[i]}
                   />
                 </div>
-                <div style={{marginRight:10}}  className="col-sm-2">
-                  <select
+                <div className="fk-col fk-valtype">
+                  <select id={`typeVal.${i}`} className='fk-input'
                     value={baseTypes[i]}
-                    id="typeVal"
                     onChange={(e) =>
                       setBaseTypes((old) => ({ ...old, [i]: e.target.value }))
                     }
                   >
-                    <option value="base100">Base 100</option>
-                    <option value="base0">Base 0</option>
-                    <option value="value">Value</option>
+                    <option value="base100">{label('base100')}</option>
+                    <option value="base0">{label('base0')}</option>
+                    <option value="value">{label('value')}</option>
                   </select>
                 </div>
-                <div style={{marginRight:10}}  className="col-sm-1">
-                  <select
+                <div className="fk-col fk-xaxis">
+                  <select id={`xaxis.${i}`} className='fk-input'
                     value={xPosition[i]}
                     onChange={(e) =>
                       setXPosition((old) => ({ ...old, [i]: e.target.value }))
                     }
                     disabled={!["Plain", "Bars"].includes(serieType)}
                   >
-                    <option value="top">Top</option>
-                    <option value="bottom">Bottom</option>
+                    <option value="top">{label('top')}</option>
+                    <option value="bottom">{label('bottom')}</option>
                   </select>
                 </div>
-                <div style={{marginRight:10}}  className="col-sm-1">
-                  <select
+                <div className="fk-col fk-yaxis">
+                  <select id={`yaxis.${i}`} className='fk-input'
                     value={yPosition[i]}
                     onChange={(e) =>
                       setYPosition((old) => ({ ...old, [i]: e.target.value }))
                     }
                     disabled={!["Plain", "Bars"].includes(serieType)}
                   >
-                    <option value="left">Left</option>
-                    <option value="right">Right</option>
+                    <option value="left">{label('left')}</option>
+                    <option value="right">{label('right')}</option>
                   </select>
                 </div>
               </div>
@@ -281,37 +203,37 @@ export default function GraphSettings({props,toggleSettings}) {
           })}
   
       
-      <div className="row" style={{ paddingTop: 10 }}>
-        <label className="col-sm-3">Position de Legende : </label>
-        <select
+      <div className="fk-line" style={{ paddingTop: 10 }}>
+        <label className="fk-label">{label('legPos')}</label>
+        <select id='legPos' className='fk-input'
           value={legendPosition}
           onChange={(e) => {
             setLegendPosition(e.target.value);
           }}
         >
-          <option value="bottom">Bottom</option>
-          <option value="right">Right</option>
-          <option value="left">Left</option>
+          <option value="bottom">{label('bottom')}</option>
+          <option value="right">{label('right')}</option>
+          <option value="left">{label('left')}</option>
         </select>
       </div>
-      <div className="row">
-        <label className="col-sm-3">Afficher Legende :</label>
-        <select
+      <div className="fk-line">
+        <label className="fk-label">{label('showLeg')}</label>
+        <select id='showLeg' className='fk-input'
           value={showLegend}
           onChange={(e) => {
             setShowLegend(e.target.value);
           }}
         >
-          <option value='show'>Show</option>
-          <option value='hide'>Hide</option>
+          <option value='show'>{label('show')}</option>
+          <option value='hide'>{label('hide')}</option>
 
         </select>
       </div>
-      <div className="row">
-        <button type="button" onClick={() => applySettings()}>
-          Appliquer
+      <div className="fk-line">
+        <button className='fk-button' type="button" onClick={() => applySettings()}>
+          {label('apply')}
         </button>
       </div>
     </div>
-  );*/
+  );
 }
