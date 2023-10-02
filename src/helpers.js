@@ -440,7 +440,7 @@ export function init(rawProps, type, opts, debug){
 	rc.mgr              = (key) => hasAKey(key) ? freezer[pointsTo[key]] : checkFreezer();
 	rc.props   = rc.get = (key) => rc.mgr(key).get(); // processed props
 	rc.unprocessedProps = () => props; // delfaulted unprocessed props
-	rc.rawProps         = () => rawProps; // raw props
+	rc.rawProps         = () => rawProps ? deepCp({},rawProps) : rawProps; // raw props
 	rc.legend           = (key) => rc.props(key).legend;
 	// vm manipulation
 	rc.manipAVM         = (todo,key) => key ? freezer[key] ? todo(freezer[key].get,key) : null : todo(checkFreezer().get);
@@ -629,6 +629,7 @@ export function init(rawProps, type, opts, debug){
 	//Auto resize
 	if (rawProps?.autoResize) {
 		let resizeElem = null;
+		let recompute = null;
 		rc.registerForAutoResize = (elem) => {
 			resizeElem = elem;
 			onResize();
@@ -641,8 +642,11 @@ export function init(rawProps, type, opts, debug){
 			const up = rc.rawProps();
 			const width = e.width() || up.width || 100;
 			const height = e.height() || up.height || 100; // - (filter.height() || 0); //
-			console.log('FkReactChar width = ' + width + ' / height = ' + height);
-			rc.reinit({...up, width, height});
+			//console.log('FkReactChar width = ' + width + ' / height = ' + height);
+			if(recompute){
+				clearTimeout(recompute);
+			}
+			recompute = setTimeout(() => rc.reinit({...up, width, height}),100);
 		};
 
 	
