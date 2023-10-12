@@ -102,14 +102,15 @@ export default class Label extends React.Component {
 			const hoff = LHeight * 0.2; // descent
 			const mar  = 3;
 			//
-			const _xr = xL => xL - (props.textAnchor === 'start' ? 0 : props.textAnchor === 'end' ? LLength : LLength/2) - mar;
+			const _xr = (xL,textAnchor) => xL - (textAnchor === 'start' ? 0 : textAnchor === 'end' ? LLength : LLength/2) - mar;
 			const _yr = yL => yL - LHeight + hoff - mar;
-			const rcoord = Array.isArray(coord) ? coord.map( ({xL,yL}) => {
+			const textAnchor = Array.isArray(coord) ? coord.map(c => props(c).textAnchor) : props(coord).textAnchor;
+			const rcoord = Array.isArray(coord) ? coord.map( ({xL,yL},i) => {
 				return {
-					xr: _xr(xL), 
+					xr: _xr(xL,textAnchor[i]), 
 					yr: _yr(yL)
 				};
-			}) : {xr: _xr(coord.xL), yr: _yr(coord.yL)};
+			}) : {xr: _xr(coord.xL,textAnchor), yr: _yr(coord.yL)};
 
 			const wr = LLength + 2*mar;
 			const hr = LHeight + 2*mar;

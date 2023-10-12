@@ -2,7 +2,7 @@ import React from 'react';
 
 import { isEqual } from '../core/im-utils.js';
 import { isNil, isString } from '../core/utils.js';
-import { offsetOfHook, offsetOfLabel, anchorOfLabel, isDown } from '../core/polar-utils.js';
+import { offsetOfHook, offsetOfLabel, anchorOfLabel, isDown, toAngle, angleFromOffset } from '../core/polar-utils.js';
 
 export default class Pie extends React.Component {
 
@@ -10,10 +10,12 @@ export default class Pie extends React.Component {
 		return !isEqual(props.state,this.props.state);
 	}
 
-	point(ang,rad,or){
+	point(ang,rad,or,dir,offset){
+		offset = offset ?? 0;
+		dir = dir ?? 1;
 		return {
-			abs:   rad * Math.cos( (180 - ang) * Math.PI / 180) + or.x,
-			ord: - rad * Math.sin( (180 - ang) * Math.PI / 180) + or.y
+			abs:   rad * Math.cos( (dir * ang + offset) * Math.PI / 180) + or.x,
+			ord: - rad * Math.sin( (dir * ang + offset) * Math.PI / 180) + or.y
 		};
 	}
 
@@ -40,7 +42,7 @@ export default class Pie extends React.Component {
 
 		// large-arc-flag, true if theta > 180
 		const laf = theta > 180 ? 1 : 0;
-		const path = `M${x4},${y4} L${x3},${y3} A${radius},${radius} 0 ${laf},0 ${x2},${y2} L ${x1},${y1} A${toreRadius},${toreRadius} 0 ${laf},1 ${x4},${y4} Z`;
+		const path = `M${x4},${y4} L${x3},${y3} A${radius},${radius} 0 ${laf},1 ${x2},${y2} L ${x1},${y1} A${toreRadius},${toreRadius} 0 ${laf},0 ${x4},${y4} Z`;
 		stroke = strokeWidth ? ( stroke ? stroke : 'white' ) : 'none';
 		strokeWidth = strokeWidth || '0';
 		return <path className={pieClass(idx)} onClick={() => idx < 0 ? null : onClick(idx)} key={idx} fill={color} stroke={stroke} strokeWidth={strokeWidth} d={path}/>;
@@ -54,10 +56,10 @@ export default class Pie extends React.Component {
 
 		const x1 = origin.x;
 		const y1 = origin.y;
-		const p2 = this.point(theta - 1,radius,origin);
+		const p2 = this.point(theta - 1,radius,origin,-1,180);
 		const x2 = p2.abs;
 		const y2 = p2.ord;
-		const p3 = this.point(theta + 1,radius,origin);
+		const p3 = this.point(theta + 1,radius,origin,-1,180);
 		const x3 = p3.abs;
 		const y3 = p3.ord;
 
@@ -92,51 +94,21 @@ export default class Pie extends React.Component {
 			out.push( type ==='gauge' ? this.gauge(positions[p],p) : this.area(oldT,positions[p],p,pieSepColor, pieSep));
 			const theta = Math.min(positions[p].value, 359.9640);// more than 99.99% is a circle (not supported by arc anyway)
 			oldT += theta;
-
-    }
-
-		oldT = startAngle;
+		}
+	// labels written over
 		for(let p = 0; p < positions.length; p++){
-			const label = labels[p] ? labels[p] : null;
+			if(labels[p]){
 
-			if(label){
-
-				const theta = Math.min(positions[p].value, 359.9640);// more than 99.99% is a circle (not supported by arc anyway)
-				const curAng = type === 'gauge' ? theta : theta / 2 + oldT;
-
-				const pR   = !isNil(positions[p].pinRadius) ? positions[p].pinRadius * radius : pinRadius;
-				const pL   = !isNil(positions[p].pinLength) ? positions[p].pinLength * radius : pinLength;
-				const pO   = positions[p].pinOffset   ?? pinOffset;
-				const pFS  = positions[p].pinFontSize ?? pinFontSize;
-				const pD   = positions[p].pinDraw     ?? pinDraw;
-				const hook = positions[p].pinHook     ?? pinHook;
-				const textAnchor = anchorOfLabel({pinOffset: pO, theta: curAng});
-				const isD = isDown({pinOffset: pO, theta: curAng});
-
-				const pc1 = this.point(curAng, pR, origin);
-				const xc1 = pc1.abs;
-				const yc1 = pc1.ord;
-				const pc2 = this.point(curAng - (pO.alpha ?? 0), pR + pL, origin);
-				const xc2 = pc2.abs + ( pO.x ?? 0 );
-				const yc2 = pc2.ord + ( pO.y ?? 0 );
-
-				const hO = offsetOfHook({ pinOffset: pO, pinLength: pL, pinHook: hook, theta: curAng });
-				const xc3 = xc2 + hO.x;
-				const yc3 = yc2 + hO.y;
-
-				const lO = offsetOfLabel({ pinOffset: pO, pinFontSize: pFS, pinLength: pL, theta: curAng },{width: 0, height: 0});
-				const pl  = this.point(curAng - (pO.alpha ?? 0), pR + pL, origin);
-				const xc = label.position?.x ?? pl.abs + ( pO.x ?? 0 ) + hO.x + lO.x;
-				const yc = ( isString(label.position?.y) || isNil(label.position?.y) ? pl.ord + ( pO.y ?? 0 ) : label.position.y ) + lO.y + ( isD ? positions[p].labelHeight : 0 );
-
+				const pFS  = labels[p].pinFontSize ?? pinFontSize;
+				const pD   = labels[p].pinDraw     ?? pinDraw;
+				const hook = labels[p].pinHook     ?? pinHook;
+				const { cD, cP, cH, cL, text, color } = labels[p];
 				if(pD){
-					const lpath = `M${xc1},${yc1} L${xc2},${yc2}${xc3 !== xc2 ? ` ${hook ? 'L' : 'M'}${xc3},${yc3}` : ''}`;
+					const lpath = `M${cD.x},${cD.y} L${cP.x},${cP.y}${hook ? ` L${cH.x},${cH.y}` : ''}`;
 					out.push(<path key={`${p}.ll`} strokeWidth='1' stroke='black' fill='none' d={lpath}/>);
 				}
 
-				out.push(<text fill={label.color} fontSize={pFS} key={`${p}.l`} x={xc} y={yc} textAnchor={textAnchor}>{label.text}</text>);
-
-				oldT += theta;
+				out.push(<text fill={color} fontSize={typeof pFS === 'number' ? `${pFS}pt` : pFS} key={`${p}.l`} x={cL.x} y={cL.y} textAnchor={cL.textAnchor}>{text}</text>);
 			}
 		}
 

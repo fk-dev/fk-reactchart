@@ -121,9 +121,10 @@ export default class AxisLine extends React.Component {
 			return label.label.map( (lab,i) => {
 				let cp = deepCp({},label);
 				cp.label = lab;
-				cp.position.theta = cp.position.theta[i];
-				cp.offset = cp.offset[i];
-				cp.anchor = cp.anchor[i];
+				['theta','x','y'].forEach( k => {cp.position[k] = cp.position[k][i];});
+				['offset','anchor','LHeight','LLength','LWidth','LLineHeight','dir'].forEach( k => {
+					cp[k] = cp[k][i];
+				});
 				return <Label key={`polar.label.${lab}`} className={labName} state={cp}/>;
 			});
 		}else{

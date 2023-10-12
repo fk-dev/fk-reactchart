@@ -1,27 +1,24 @@
 import { toC } from '../core/space-transf.js';
 import { isNil } from '../core/utils.js';
 import { shader } from '../core/colorMgr.js';
+import { anchorsAndLabels } from '../core/polar-utils.js'; 
 
 export const vm = {
 
 	create: function(get, { serie, props, ds, onSelect, unSelect }){
-		// console.log("pie-vm : "+JSON.stringify(props));
 		const vm = get;
+
+		const radius = props.pieRadius;
 
 		const sum	= serie.reduce( (memo, value) => memo + value.value, 0);
 		const angleMax = props.pie === 'gauge' ? 180 : 360;
 		const val = v => props.pieNoStack ? v/props.gaugeMaxVal : v/sum;
 		const positions = serie.map( (point,idx) => {
+			const value = Math.max(Math.min(val(point.value) * angleMax,angleMax),0);
 			return {
-				value: Math.max(Math.min(val(point.value) * angleMax,angleMax),0),
+				...point,
 				color: point.color || shader(idx),
-				pinOffset: point.pinOffset,
-				pinLength: point.pinLength,
-				pinRadius: point.pinRadius,
-				pinFontSize: point.pinFontSize,
-				pinDraw: point.pinDraw,
-				textAnchor: point.textAnchor,
-				labelHeight: point.labelHeight
+				value
 			};
 		});
 
@@ -35,10 +32,20 @@ export const vm = {
 
 		let labels = [];
 		if(props.tag.show){
-			labels = serie.map( val => ({text: props.tag.print(val), color:  val.tagColor ?? props.tag?.color, position: val.label}) );
+			let _cval = 0;
+			const tmpSer = positions.map( pos => {
+				const value = pos.value + ( props.pie === 'gauge' ? 0 : _cval );// gauge do not cumulate
+				_cval = value; 
+				return {...pos, value};
+			});
+			labels = anchorsAndLabels(tmpSer,ds.r.c.origin,radius,props.pie === 'gauge' ? 1 : null, props.pie === 'gauge' ? -180 : null, props.pie === 'gauge' || ["radar","Bars","yBars"].indexOf(props.type) !== -1).map( (sol,i) => {
+				const val = serie[i];
+				return {
+					...sol,
+					text: props.tag.print(val), color: val.tagColor ?? props.tag?.color, position: val.label
+				};
+			});
 		}
-
-		const radius = props.pieRadius;
 
 		const onClick = (p) => {
 			vm().set('selected',p === vm().selected ? null : p);

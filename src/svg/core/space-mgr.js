@@ -6,7 +6,7 @@
 import { isNil, mgr as mgrU, isString, isArray, computeSquare } from './utils.js';
 import { defMargins } from './proprieties.js';
 import { errorMgr }   from './errorMgr.js';
-import { radius, offsetOfLabel,
+import { radius, offsetOfLabel, 
     offsetOfHook }    from './polar-utils.js';
 import { toC }        from './space-transf.js';
 import { precompute } from '../marks/pin.js';
@@ -299,7 +299,7 @@ const computeOuterMargin = (where, limits, axis, measure, title ) => {
     if(labels.length){
 			// this is the axises label
 			if(dir === 'r'){
-				axis.marginOff = Math.max(cadMar , defMargins.outer.min);
+				axis.marginOff = Math.max(Math.min(cadMar , defMargins.outer.min),axis.marginOff);
 				const cN = axis.css ? `axis-label-${where}` : '';
 				const { labelFSize, dim } = axis;
 				return {
@@ -308,7 +308,8 @@ const computeOuterMargin = (where, limits, axis, measure, title ) => {
 					labelLengthes: dim.map( ({label, theta}) => {
 						return {
 							theta: theta,
-							labelLength: measureText(label, labelFSize, cN)
+							labelLength: measureText(label, labelFSize, cN),
+							
 						};
 					})
 				};
@@ -495,7 +496,7 @@ const measureTags = (tagProps, pos, tag, lengthMgr) => {
 			min: offset.y + (anchor.top    ? height : anchor.bottom ? 0 : 0.25 * height) + defMargins.inner.min, // depth
 			max: offset.y - (anchor.bottom ? height : anchor.top    ? 0 : 0.75 * height) - defMargins.inner.min // line height
 		},
-		
+		width, height
 	};
 
 };
@@ -612,41 +613,28 @@ const polarTags = (tagsProps,datas,maxAngles,lengthMgr) => {
 
 		const maxAngle = maxAngles[i];
 	
-		const toRad = a => a * Math.PI / 180;
-	
 		const total = isNil(series[0].theta) ? series.reduce( (memo,x) => memo + x.value,0) : null;
 		let curValue = 0;
 		const _tags = series.map(point => {
-			const {hor, vert} = measureTags(tagProps, {x:0, y:0}, tagProps.print(point), lengthMgr);
-			const height = Math.abs(vert.max - vert.min);
-			const width  = Math.abs(hor.max - hor.min);
+			const { width, height} = measureTags(tagProps, {x:0, y:0}, tagProps.print(point), lengthMgr);
 			const size = {width, height};
-			const theta = point.theta ?? (curValue + point.value)/total * maxAngle;
+			const theta = !isNil(point.theta) ? point.theta : (curValue + point.value)/total * maxAngle;
 
 			const pinOffset   = point.pinOffset ?? tagProps.pinOffset;
 			const pinLength   = point.pinLength ?? tagProps.pinLength;
 			const pinHook     = point.pinHook   ?? tagProps.pinHook;
 			const pinFontSize = point.fontSize  ?? tagProps.fontSize;
-			const hookOffset  = offsetOfHook({pinOffset, pinLength, pinHook, theta},size);
-			const labelOffset = offsetOfLabel({pinOffset, pinFontSize, pinLength, theta},size);
 
-
-			const offset = {
-				r: pinOffset.r ?? 0,
-				x: hookOffset.x + labelOffset.x,
-				y: hookOffset.y + labelOffset.y
-			};
 			point.labelHeight = height;
+			point.labelWidth  = width;
+			point.value       = theta * 180 / Math.PI;
+			point.pinOffset   = point.pinOffset ?? tagProps.pinOffset;
+			point.pinLength   = point.pinLength ?? tagProps.pinLength;
+			point.pinRadius   = point.pinRadius ?? tagProps.pinRadius;
+			point.pinFontSize = point.fontSize  ?? tagProps.fontSize;
+			point.pinHook     = point.pinHook   ?? tagProps.pinHook;
 
-			return {
-				height,
-				width,
-				theta: toRad(theta + tagProps.startAngle + ( offset.alpha ?? 0) ),
-				toRadius: (point.pinRadius ?? tagProps.pinRadius) + (point.pinLength ?? tagProps.pinLength),
-				radiusFactor: tagProps.radius/maxRadius || 1,
-				forcedRadius: maxRadius,
-				offset
-			};
+			return point;
 			
 		});
 		return tags.concat(_tags);
@@ -681,14 +669,43 @@ const _polarSpace = (universe, datas, axis, graphProps, borders, titleProps, sho
 	}, {});
 
 	const { cadMar, title, labelLengthes } = computeOuterMargin('r', {min: 0, max }, axis.polar[0], lengthMgr, titleProps );
-	const polarTag = polarTags(showTags,datas,graphProps.map(x => x.pie === 'gauge' ? 180 : 360), lengthMgr);
-	const sol = radius(universe.width - 2 * (cadMar + axis.polar[0].marginOff), universe.height - 2 * (cadMar + axis.polar[0].marginOff) - title,labelLengthes,polarTag, forcedRadius);
+
+	const world = {
+		width:  universe.width  - 2 * (cadMar + axis.polar[0].marginOff),
+		height: universe.height - 2 * (cadMar + axis.polar[0].marginOff) - title
+	};
+
+
+	/// for radar, the tags are the axis tags
+	const isRadar = !!datas.find(d => ["radar","Bars","yBars"].indexOf(d.type) !== -1);
+	const noTag = tOpts => ({
+		...tOpts,
+		pinRadius: 1, pinLength: 0, pinHook: 0, pinOffset: { x: 0, y: 0}, pin: false
+	});
+	const tagsToShow = isRadar ? graphProps.map(x => noTag(x.tag)) : showTags;
+	let polarTag = polarTags(tagsToShow,datas,graphProps.map(x => x.pie === 'gauge' ? Math.PI : 2 * Math.PI), lengthMgr);
+	if(isRadar){
+		polarTag.forEach( point => {
+			const ll = labelLengthes.find(x => Math.abs(x.theta - point.theta) < 1e-10);
+			const { width, height } = ll?.labelLength ?? {};
+			point.labelWidth  = width  ?? point.labelWidth;
+			point.labelHeight = height ?? point.labelHeight;
+		});
+	}
+	const sol = radius(
+		world,
+		polarTag,
+		graphProps.find(x => x.pie === 'gauge') ? 1 : -1,
+		graphProps.find(x => x.pie === 'gauge') ? -180 : 0,
+		!!graphProps.find(x => x.pie === 'gauge') || isRadar,
+		isRadar
+	);
 
 	const marginsO = {
-		left:   sol.outerMargins.left   + cadMar,
-		right:  sol.outerMargins.right  + cadMar,
-		top:    sol.outerMargins.top    + cadMar + title,
-		bottom: sol.outerMargins.bottom + cadMar
+		left:   sol.innerMargins.left   + cadMar + axis.polar[0].marginOff,
+		right:  sol.innerMargins.right  + cadMar + axis.polar[0].marginOff,
+		top:    sol.innerMargins.top    + cadMar + axis.polar[0].marginOff + title,
+		bottom: sol.innerMargins.bottom + cadMar + axis.polar[0].marginOff
 	};
 
 	const dWorld = {
@@ -696,14 +713,12 @@ const _polarSpace = (universe, datas, axis, graphProps, borders, titleProps, sho
 		max: isNil(axisBounds.max) ? max : axisBounds.max
 	};
 
-	const oriOffset = (w,u) => (u - w)/2;
-
 	const cWorld = {
 		min: 0, 
 		max: sol.r,
 		origin: {
-			x: marginsO.left + sol.r/2 + oriOffset(marginsO.left + marginsO.right + sol.r, universe.width),
-			y: marginsO.top  + sol.r/2 + oriOffset(marginsO.bottom + marginsO.top + sol.r, universe.height),
+			x: marginsO.left + sol.originOffset.x - sol.innerMargins.left,
+			y: marginsO.top  + sol.originOffset.y - sol.innerMargins.top
 		}
 	};
 

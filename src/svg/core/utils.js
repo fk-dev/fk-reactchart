@@ -172,7 +172,7 @@ export function measure(gid, debug){
 				};
 
 				txt = Array.isArray(txt) ? txt : [txt];
-				const ls = txt.map(_meas);
+				const ls = txt.map(_meas).concat({width:0,height:0});
 
 				const width  = Math.max.apply(null,ls.map(x => x.width));
 				const height = Math.max.apply(null,ls.map(x => x.height));

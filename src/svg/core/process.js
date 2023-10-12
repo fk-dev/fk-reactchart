@@ -43,7 +43,7 @@ const preprocessAxis = function(props){
 				const startAngle = props.graphProps[rIdx].pieStartAngle ?? 0;
 				curAxe.dim = rData.series.map( (p,i) => ({
 						label: getLabel(p),
-						theta: (i * thetaStep + startAngle) * Math.PI / 180
+						theta: ((i * thetaStep + startAngle)%360 ) * Math.PI / 180
 					}));
 				curAxe.grid.major.dim = curAxe.dim;
 				rData.series.forEach( (p,i) => {
@@ -51,18 +51,18 @@ const preprocessAxis = function(props){
 					/// legend contains the dimension name
 					p.r      = getValue(p);
 					p.legend = getLabel(p);
-					p.theta  = curAxe.dim[i].theta;
+					p.theta  = curAxe.dim[i].theta
 				});
 				
 			}else{
 				const gauge = isGauge(rData);
 				const startAngle = props.graphProps[rIdx].pieStartAngle ?? 0;
 				const maxVal = gauge ? ( props.graphProps[rIdx].gaugeMaxVal ?? 100 ) : rData.series.reduce( (memo,v) => memo + v.value,0);
-				const angleMax = gauge ? 180 : 360;
-				let curValue = startAngle;
+				const angleMax = gauge ? Math.PI : 2 * Math.PI;
+				let curValue = startAngle * Math.PI/180;
 				const valThetas = rData.series.map( v => {
 						const locAngle = ( v.value ?? v.x ) / maxVal * angleMax;
-						const t = curValue + locAngle/( gauge ? 1 : 2 );
+						const t = curValue + locAngle;
 						curValue += gauge ? 0 : locAngle;
 						return t;
 				});
@@ -71,7 +71,7 @@ const preprocessAxis = function(props){
 				/// 1 - defined
 				/// 2 - value (sum defined and not 0)
 				/// 3 - null
-					p.theta = p.theta ?? ( maxVal ? valThetas[ip] : null	);
+					p.theta = !utils.isNil(p.theta) ? p.theta / 180 * Math.PI : ( maxVal ? valThetas[ip] : null	);
 				});
 			}
 			axis.polar.push(curAxe);
@@ -748,6 +748,7 @@ const processSync = (getNode, rawProps, mgrId, getMeasurer) => {
 			ord: props.data[idx].ord,
 			coordSys: props.data[idx].coordSys,
 			limitOffset: lOffset[idx] ? lOffset[idx] : null,
+			type: props.data[idx].type
 		};
 	});
 
