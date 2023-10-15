@@ -9,9 +9,10 @@ export const vm = {
 		const vm = get;
 
 		const radius = props.pieRadius;
+		const isGauge = props.pie === 'gauge';
 
 		const sum	= serie.reduce( (memo, value) => memo + value.value, 0);
-		const angleMax = props.pie === 'gauge' ? 180 : 360;
+		const angleMax = isGauge ? 180 : 360;
 		const val = v => props.pieNoStack ? v/props.gaugeMaxVal : v/sum;
 		const positions = serie.map( (point,idx) => {
 			const value = Math.max(Math.min(val(point.value) * angleMax,angleMax),0);
@@ -32,17 +33,22 @@ export const vm = {
 
 		let labels = [];
 		if(props.tag.show){
-			let _cval = 0;
 			const tmpSer = positions.map( pos => {
-				const value = pos.value + ( props.pie === 'gauge' ? 0 : _cval );// gauge do not cumulate
-				_cval = value; 
-				return {...pos, value};
+				return {...pos, value: pos.theta * 180 / Math.PI};
 			});
-			labels = anchorsAndLabels(tmpSer,ds.r.c.origin,radius,props.pie === 'gauge' ? 1 : null, props.pie === 'gauge' ? -180 : null, props.pie === 'gauge' || ["radar","Bars","yBars"].indexOf(props.type) !== -1).map( (sol,i) => {
+			const opts = {
+				radius: props.pieRadius ?? radius,
+				dir: props.pieDir,
+				angleOffset: props.pie === 'gauge' ? -180 : null,
+				notCumulative: props.pie === 'gauge' || ["radar","Bars","yBars"].indexOf(props.type) !== -1,
+				isRadar: false,
+				startAngle: props.pie === 'gauge' ? -180 : props.pieStartAngle
+			};
+			labels = anchorsAndLabels(tmpSer,ds.r.c.origin,opts).map( (sol,i) => {
 				const val = serie[i];
 				return {
 					...sol,
-					text: props.tag.print(val), color: val.tagColor ?? props.tag?.color, position: val.label
+					text: props.tag.print(val), color:  val.tagColor ?? props.tag?.color, position: val.label
 				};
 			});
 		}
@@ -67,6 +73,7 @@ export const vm = {
 			origin,
 			startAngle: props.pieStartAngle || 0,
 			radius,
+			direction: -props.pieDir,
 			toreRadius: props.pieToreRadius * radius,
 			labels,
 			pinRadius: props.tag.pinRadius * radius,

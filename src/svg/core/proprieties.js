@@ -119,8 +119,9 @@ graph.Pie = graph.pie = ({pieType}) => deepCp(graph.common(),{
 	pie: pieType ? pieType : 'disc', // tore, gauge
 	pieOrigin: {x: 0, y:0}, // offset from center
 	pieRadius: null, // optim 
+	pieDir: pieType === 'gauge' ? 1 : -1,
 	noOptim :  false, // force no optim, use pieRadius
-	pieStartAngle: 0,
+	pieStartAngle:  pieType === 'gauge' ? 180 : 0,
 	pieToreRadius: pieType === 'disc' ? 0 : 0.5, // 0: no hole, 1 : no border!
 	pieNoStack: pieType === 'gauge', // 1D circular graph
 	gaugeMaxVal: 100,

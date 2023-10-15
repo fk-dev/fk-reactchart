@@ -597,49 +597,41 @@ const _spaces = (universe, datas, axis, borders, titleProps, showTags, lengthMgr
 
 };
 
-const polarTags = (tagsProps,datas,maxAngles,lengthMgr) => {
+const polarTags = (tagProps,data,maxAngle,lengthMgr) => {
 
-	let maxRadius = tagsProps.reduce( (memo,x) => memo > x.radius ? memo : x.radius,-1);
+	let maxRadius = tagProps.radius ?? 1;
 
 	if(maxRadius < 0 || !maxRadius){
 		maxRadius = 1;
 	}
 
-	return tagsProps.reduce( (tags,tagProps,i) => {
-		const { series } = datas[i];
-		if(!tagProps){
-			return tags;
-		}
-
-		const maxAngle = maxAngles[i];
+	const { series } = data;
+	if(!tagProps){
+		return [];
+	}
 	
-		const total = isNil(series[0].theta) ? series.reduce( (memo,x) => memo + x.value,0) : null;
-		let curValue = 0;
-		const _tags = series.map(point => {
-			const { width, height} = measureTags(tagProps, {x:0, y:0}, tagProps.print(point), lengthMgr);
-			const size = {width, height};
-			const theta = !isNil(point.theta) ? point.theta : (curValue + point.value)/total * maxAngle;
+	const total = isNil(series[0].theta) ? series.reduce( (memo,x) => memo + x.value,0) : null;
+	let curValue = 0;
+	return series.map(point => {
+		const { width, height} = measureTags(tagProps, {x:0, y:0}, tagProps.print(point), lengthMgr);
+		const size = {width, height};
+		const theta = !isNil(point.theta) ? point.theta : (curValue + point.value)/total * maxAngle;
 
-			const pinOffset   = point.pinOffset ?? tagProps.pinOffset;
-			const pinLength   = point.pinLength ?? tagProps.pinLength;
-			const pinHook     = point.pinHook   ?? tagProps.pinHook;
-			const pinFontSize = point.fontSize  ?? tagProps.fontSize;
+		point.labelHeight = height;
+		point.labelWidth  = width;
+		point.value       = theta * 180 / Math.PI;
+		point.pinOffset   = point.pinOffset ?? tagProps.pinOffset;
+		if(point.pinOffset.alpha){
+			point.pinOffset.alpha *= Math.PI / 180;
+		}
+		point.pinLength   = point.pinLength ?? tagProps.pinLength;
+		point.pinRadius   = point.pinRadius ?? tagProps.pinRadius;
+		point.pinFontSize = point.fontSize  ?? tagProps.fontSize;
+		point.pinHook     = point.pinHook   ?? tagProps.pinHook;
 
-			point.labelHeight = height;
-			point.labelWidth  = width;
-			point.value       = theta * 180 / Math.PI;
-			point.pinOffset   = point.pinOffset ?? tagProps.pinOffset;
-			point.pinLength   = point.pinLength ?? tagProps.pinLength;
-			point.pinRadius   = point.pinRadius ?? tagProps.pinRadius;
-			point.pinFontSize = point.fontSize  ?? tagProps.fontSize;
-			point.pinHook     = point.pinHook   ?? tagProps.pinHook;
-
-			return point;
+		return point;
 			
-		});
-		return tags.concat(_tags);
-		
-	},[]);
+	});
 };
 
 const _polarSpace = (universe, datas, axis, graphProps, borders, titleProps, showTags, lengthMgr) => {
@@ -659,47 +651,64 @@ const _polarSpace = (universe, datas, axis, graphProps, borders, titleProps, sho
 		return { max, min };
 	}, {});
 
-	const { max, min } = datas.reduce( (memo,v) => {
-		const valueMin = Math.min.apply(null, v.series.map( vv => isNil(vv.r) ? vv.y : vv.r ));
-		const valueMax = Math.max.apply(null, v.series.map( vv => isNil(vv.r) ? vv.y : vv.r ));
-		return {
-			max: !isNil(memo.max) && memo.max > valueMax ? memo.max: valueMax,
-			min: !isNil(memo.min) && memo.min < valueMin ? memo.min: valueMin,
+
+	const radiuses = datas.map( (data,iData) => {
+
+		const graphProp = graphProps[iData];
+
+		const values = data.series.map( vv => isNil(vv.r) ? vv.y : vv.r );
+		const max = Math.max.apply(null, values);
+		const min = Math.min.apply(null, values);
+
+		const { cadMar, title, labelLengthes } = computeOuterMargin('r', {min: 0, max }, axis.polar[0], lengthMgr, titleProps );
+
+		const world = {
+			width:  universe.width  - 2 * (cadMar + axis.polar[0].marginOff),
+			height: universe.height - 2 * (cadMar + axis.polar[0].marginOff) - title
 		};
-	}, {});
-
-	const { cadMar, title, labelLengthes } = computeOuterMargin('r', {min: 0, max }, axis.polar[0], lengthMgr, titleProps );
-
-	const world = {
-		width:  universe.width  - 2 * (cadMar + axis.polar[0].marginOff),
-		height: universe.height - 2 * (cadMar + axis.polar[0].marginOff) - title
-	};
 
 
-	/// for radar, the tags are the axis tags
-	const isRadar = !!datas.find(d => ["radar","Bars","yBars"].indexOf(d.type) !== -1);
-	const noTag = tOpts => ({
-		...tOpts,
-		pinRadius: 1, pinLength: 0, pinHook: 0, pinOffset: { x: 0, y: 0}, pin: false
-	});
-	const tagsToShow = isRadar ? graphProps.map(x => noTag(x.tag)) : showTags;
-	let polarTag = polarTags(tagsToShow,datas,graphProps.map(x => x.pie === 'gauge' ? Math.PI : 2 * Math.PI), lengthMgr);
-	if(isRadar){
-		polarTag.forEach( point => {
-			const ll = labelLengthes.find(x => Math.abs(x.theta - point.theta) < 1e-10);
-			const { width, height } = ll?.labelLength ?? {};
-			point.labelWidth  = width  ?? point.labelWidth;
-			point.labelHeight = height ?? point.labelHeight;
+		/// for radar, the tags are the axis tags
+		const isRadar = ["radar","Bars","yBars"].indexOf(data.type) !== -1;
+		const noTag = tOpts => ({
+			...tOpts,
+			pinRadius: 1, pinLength: 0, pinHook: 0, pinOffset: { x: 0, y: 0}, pin: false
 		});
+
+		const tagsToShow = isRadar ? noTag(graphProp.tag) : showTags[iData];
+		let polarTag = polarTags(tagsToShow,data,graphProp.pie === 'gauge' ? Math.PI : 2 * Math.PI, lengthMgr);
+		if(isRadar){
+			polarTag.forEach( point => {
+				const ll = labelLengthes.find(x => Math.abs(x.theta - point.theta) < 1e-10);
+				const { width, height } = ll?.labelLength ?? {};
+				point.labelWidth  = width  ?? point.labelWidth;
+				point.labelHeight = height ?? point.labelHeight;
+			});
+		}
+
+		return {
+			sol : radius(world,polarTag,
+				{ 
+					angleDir: graphProp.pieDir,
+					angleOffset: graphProp.pie === 'gauge' ? -180 : 0,
+					notCumulative: graphProp.pie === 'gauge' || isRadar,
+					isRadar, 
+					startAngle:  graphProp.pie === 'gauge' ? -180 : graphProp.pieStartAngle
+				}
+			),
+			cadMar, title
+		};
+	});
+
+	// greatest given radius
+	let { index } = graphProps.reduce( (memo,v,i) => v.pieRadius && v.pieRadius > memo.radius ? {index: i, radius: v.pieRadius} : memo ,{index: -1, radius: -1});
+
+	if(index === -1){
+		const { radiusIdx = 0 } = radiuses.reduce( (prev,next,i) => prev.sol.r < next.sol.r ? {...next, radiusIdx: i} : prev );
+		index = radiusIdx;
 	}
-	const sol = radius(
-		world,
-		polarTag,
-		graphProps.find(x => x.pie === 'gauge') ? 1 : -1,
-		graphProps.find(x => x.pie === 'gauge') ? -180 : 0,
-		!!graphProps.find(x => x.pie === 'gauge') || isRadar,
-		isRadar
-	);
+
+	const { sol, cadMar, title } = radiuses[index];
 
 	const marginsO = {
 		left:   sol.innerMargins.left   + cadMar + axis.polar[0].marginOff,
@@ -726,10 +735,10 @@ const _polarSpace = (universe, datas, axis, graphProps, borders, titleProps, sho
 	const fromCtoD = (dWorld.max - dWorld.min) / cWorld.max;
 
 	// to props
-	const maxPropsRadius = graphProps.reduce( (memo,gp) => memo > gp.pieRadius || !gp.pieRadius ? memo : gp.pieRadius, -1);
-	const factor = graphProps.map(x => x.pieRadius/maxPropsRadius);
+	const maxPropsRadius = graphProps[index].pieRadius ?? sol.r;
+	const factor = graphProps.map(x => (x.pieRadius ?? maxPropsRadius)/maxPropsRadius);
 	graphProps.forEach( (x,i) => {
-		x.pieRadius = isNil(x.pieRadius) ? sol.r : factor[i] * sol.r;
+		x.pieRadius = i === index ? sol.r : factor[i] * sol.r;
 	});
 
 	return {

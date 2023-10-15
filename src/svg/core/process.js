@@ -6,6 +6,7 @@ import { cadreVM, backgroundVM, foregroundVM, titleVM, axesVM, curvesVM } from '
 import { vm as legendVM } from './legendBuilder.jsx';
 import * as gradientMgr from './gradient-mgr.js';
 import { initialRebase } from './data-manip.js';
+import { toFullCircle } from './polar-utils.js'; 
 
 const preprocessAxis = function(props){
 
@@ -56,15 +57,16 @@ const preprocessAxis = function(props){
 				
 			}else{
 				const gauge = isGauge(rData);
-				const startAngle = props.graphProps[rIdx].pieStartAngle ?? 0;
+				const direction = props.graphProps[rIdx].pieDir === 1 || gauge ? -1 : 1;
 				const maxVal = gauge ? ( props.graphProps[rIdx].gaugeMaxVal ?? 100 ) : rData.series.reduce( (memo,v) => memo + v.value,0);
-				const angleMax = gauge ? Math.PI : 2 * Math.PI;
-				let curValue = startAngle * Math.PI/180;
+				const startAngle = ( gauge ? 180 : ( props.graphProps[rIdx].pieStartAngle ?? 0 ) ) * Math.PI/180;
+				const angleTot   = gauge ? Math.PI : 2 * Math.PI;
+				let curValue = startAngle;
 				const valThetas = rData.series.map( v => {
-						const locAngle = ( v.value ?? v.x ) / maxVal * angleMax;
-						const t = curValue + locAngle;
-						curValue += gauge ? 0 : locAngle;
-						return t;
+						const locAngle = ( v.value ?? v.x ) / maxVal * angleTot;
+						const t = curValue + locAngle * direction;
+						curValue += gauge ? 0 : locAngle * direction;
+						return toFullCircle(t,true);
 				});
 				rData.series.forEach( (p,ip) => {
 				/// p.theta  (in degree):

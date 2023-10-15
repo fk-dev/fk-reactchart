@@ -20,10 +20,11 @@ export default class Pie extends React.Component {
 	}
 
 	area(oldT,position,idx,stroke,strokeWidth){
-		const {state: { path: { origin, radius, toreRadius, onClick, isSelected, fill }, css } } = this.props;
+		const {state: { path: { origin, radius, toreRadius, onClick, isSelected, fill, direction, type }, css } } = this.props;
 
+		const dir = type !== 'gauge' ? direction : 1;
 		const color = position.color || fill;
-		const theta = Math.min(position.value, 359.9640);// more than 99.99% is a circle (not supported by arc anyway)
+		const theta = dir * Math.min(position.value, 359.9640);// more than 99.99% is a circle (not supported by arc anyway)
 
 		const p1 = this.point(oldT,toreRadius,origin);
 		const x1 = p1.abs;
@@ -41,8 +42,11 @@ export default class Pie extends React.Component {
 		const pieClass = p => p < 0 ? ( css ? 'background-gauge' : '' ) : `${css ? `mark mark-${p}` : ''}${isSelected(p) ? ' selected' : ''}`;
 
 		// large-arc-flag, true if theta > 180
-		const laf = theta > 180 ? 1 : 0;
-		const path = `M${x4},${y4} L${x3},${y3} A${radius},${radius} 0 ${laf},1 ${x2},${y2} L ${x1},${y1} A${toreRadius},${toreRadius} 0 ${laf},0 ${x4},${y4} Z`;
+		const laf = Math.abs(theta) > 180 ? 1 : 0;
+		// sweep-flag, direction, radius && tore
+		const rsf = dir > 0 ? 1 : 0;
+		const tsf = dir > 0 ? 0 : 1;
+		const path = `M${x4},${y4} L${x3},${y3} A${radius},${radius} 0 ${laf},${rsf} ${x2},${y2} L ${x1},${y1} A${toreRadius},${toreRadius} 0 ${laf},${tsf} ${x4},${y4} Z`;
 		stroke = strokeWidth ? ( stroke ? stroke : 'white' ) : 'none';
 		strokeWidth = strokeWidth || '0';
 		return <path className={pieClass(idx)} onClick={() => idx < 0 ? null : onClick(idx)} key={idx} fill={color} stroke={stroke} strokeWidth={strokeWidth} d={path}/>;
@@ -74,7 +78,7 @@ export default class Pie extends React.Component {
 		const { path, css } = state;
 		const { labels, positions, 
 			pinRadius, pinLength, pinHook, pinDraw, pinFontSize, pinOffset,
-			origin, type, gaugeColor, fill, pieSep, pieSepColor,
+			origin, type, gaugeColor, fill, pieSep, pieSepColor, direction,
 			startAngle, radius } = path;
 
 		if(positions.length === 0){
@@ -93,7 +97,7 @@ export default class Pie extends React.Component {
 			// path of point
 			out.push( type ==='gauge' ? this.gauge(positions[p],p) : this.area(oldT,positions[p],p,pieSepColor, pieSep));
 			const theta = Math.min(positions[p].value, 359.9640);// more than 99.99% is a circle (not supported by arc anyway)
-			oldT += theta;
+			oldT += direction * theta;
 		}
 	// labels written over
 		for(let p = 0; p < positions.length; p++){

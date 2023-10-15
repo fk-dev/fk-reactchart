@@ -148,17 +148,15 @@ export function offsetOfHook({ pinOffset, pinLength, pinHook, theta }){
 }
 
 ////////////////////////////////
-export function anchorFromAngle(theta,radius,inverse,isAxis){
-
-	/// dir = 1 => inversion 0 et 180
+export function anchorFromAngle(theta,radius,isAxis){
 
 	const s = sin(theta);
 
 	const _anchorFromAngleTag = () => {
 		if(theta >= 5 * PI/3 || theta <= PI/3){
-			return inverse ? 'end' : 'start';
+			return 'start';
 		}else if( 2 * PI/3 <= theta && theta <= 4 * PI/3){
-			return inverse ? 'start' : 'end';
+			return 'end';
 		}else{
 			return 'middle';
 		}
@@ -185,14 +183,18 @@ export function anchorFromAngle(theta,radius,inverse,isAxis){
 		const l = width/(2 * radius);
 		const ll = 1 - abs(cos(theta)) ;
 		const cosbeta = 1 - ( ll + l);
-		const sinbeta = abs(cosbeta) > 1 ? 1 : sqrt(1 - cosbeta * cosbeta);
+		const sinbeta = cosbeta < 0 || abs(cosbeta) > 1 ? 1 : sqrt(1 - cosbeta * cosbeta);
 		const dd = 1 - sinbeta;
 		const d = 1 - abs(s);
 		const length = d - dd;
-		return ( s < 0 ? length : - length ) * radius;
+		const out = ( s < 0 ? length : - length ) * radius;
+		return out;
 	};
 
-	const offsetFromAngle  = h => ( s < 0 ? - 0.5 * (s - 1) : 0 ) * h;
+	const offsetFromAngle  = h => {
+		const out = ( s < 0 ? - 0.5 * (s - 1) : 0 ) * h;
+		return out;
+	};
 	const verticalOffset   = w => textAnchor === 'middle' ? vertOffset(w) : 0;
 	const offsetFromAnchor = textAnchor === 'middle' && s > 0 ? -3 : 0;
 
@@ -209,11 +211,11 @@ export function anchorFromAngle(theta,radius,inverse,isAxis){
 
 /// point: alpha is local (from previous point), r is distance to center
 /// offset: (alpha || x, y)
-function onePointToNext(start,offset,length,origin,angleDir,angleOffset){
+function onePointToNext(start,offset,length,origin,angleDir){
 
 
 	// SVG angle (y is reversed)
-	const angle = a => SVGAngleCorrection(a,true,angleDir,angleOffset);
+	const angle = a => SVGAngleCorrection(a,true,angleDir);
 
 	// apply alpha offset and x,y angle offset
 	let end = {
@@ -249,17 +251,30 @@ function hookAlpha(_angle){
 	}
 }
 
-export function anchorsAndLabels(serie, origin={x:0,y:0},radius,dir,angleOffset,notCumulative,isRadar){
+/// -360 < alpha < 360, double precision
+export function toFullCircle(alpha,radian){
+	const full = radian ? 2 * PI : 360;
+	while(alpha + full < 1e-12){
+		alpha += full;
+	}
+	while(alpha - full > 1e-12){
+		alpha -= full;
+	}
+	return alpha;
+}
+
+export function anchorsAndLabels(serie, origin={x:0,y:0},{radius,dir,angleOffset,notCumulative,isRadar, startAngle = 0}){
 
 	let out = [];
 
-	let _curAlpha = 0;
+	let _curAlpha = startAngle;
 	for(let p = 0; p < serie.length; p++){
 
-		const alpha = Math.min(serie[p].value, 359.9640);// more than 99.99% is a circle (not supported by arc anyway)
+		const alpha = Math.max(Math.min( toFullCircle(serie[p].value), 359.9640), -359.9640);// more than 99.99% is a circle (not supported by arc anyway)
 
-		const labelAlpha = notCumulative ? alpha : _curAlpha +  (alpha - _curAlpha)/2;
+		const labelAlpha = to2PI( (notCumulative ? alpha : _curAlpha +  (alpha - _curAlpha)/2) );
 		_curAlpha = alpha;
+
 
 		const pR  = serie[p].pinRadius * radius;
 		const pL  = serie[p].pinLength * radius;
@@ -271,12 +286,12 @@ export function anchorsAndLabels(serie, origin={x:0,y:0},radius,dir,angleOffset,
 
 		/// point
 		const firstOffset = { alpha: toRad(labelAlpha) };
-		const pc1 = onePointToNext(origin,firstOffset,pR,origin,dir,angleOffset);
+		const pc1 = onePointToNext(origin,firstOffset,pR,origin);//,dir);//,angleOffset);
 		const xc1 = pc1.x;
 		const yc1 = pc1.y;
 
 		/// pin
-		const pc2 = onePointToNext(pc1,pO,pL,origin,dir,angleOffset);
+		const pc2 = onePointToNext(pc1,pO,pL,origin);//,dir);//,angleOffset);
 		const xc2 = pc2.x;
 		const yc2 = pc2.y;
 
@@ -286,12 +301,12 @@ export function anchorsAndLabels(serie, origin={x:0,y:0},radius,dir,angleOffset,
 			alpha: hL ? hookAlpha(pc2.alpha) : 0 
 		};
 
-		const pc3 = onePointToNext(pc2,hO,hL,origin,dir,angleOffset);
+		const pc3 = onePointToNext(pc2,hO,hL,origin);//,dir);//,angleOffset);
 		const xc3 = pc3.x;
 		const yc3 = pc3.y;
 		const labelAngle = pc3.alpha;
 
-		const { textAnchor, textOffset } = anchorFromAngle(labelAngle,radius,dir === 1,isRadar);
+		const { textAnchor, textOffset } = anchorFromAngle(labelAngle,radius,isRadar);
 
 		const xc = xc3 + textOffset.x;
 		const yc = yc3 + textOffset.y(serie[p].labelWidth,serie[p].labelHeight);
@@ -302,7 +317,7 @@ export function anchorsAndLabels(serie, origin={x:0,y:0},radius,dir,angleOffset,
 	return out;
 }
 
-export function radius(world,tags,angleDir,angleOffset, notCumulative,isRadar){
+export function radius(world,tags,{angleDir,angleOffset, notCumulative,isRadar, startAngle }){
 
 	function leftOff({ textAnchor, labelWidth }){
 		switch(textAnchor){
@@ -332,7 +347,7 @@ export function radius(world,tags,angleDir,angleOffset, notCumulative,isRadar){
 
 	function computeWidthHeight(rad){
 
-		const pos = anchorsAndLabels(tags, {x:0,y:0},rad,angleDir,angleOffset,notCumulative,isRadar);
+		const pos = anchorsAndLabels(tags, {x:0,y:0},{radius: rad,dir: angleDir,angleOffset,notCumulative,isRadar, startAngle});
 
 		const { left, right, top, bottom } = pos.reduce( (memo,v) => {
 			const { cL } = v;
@@ -352,6 +367,7 @@ export function radius(world,tags,angleDir,angleOffset, notCumulative,isRadar){
 		return { width: right - left, height: bottom - top, left: -left, top: -top};
 	}
 
+	// 0 not accepted
 	let radiusCand = min(world.width/2,world.height/2) * 0.8;
 	let delta = 1e30;
 	let step = radiusCand/5;
@@ -362,6 +378,10 @@ export function radius(world,tags,angleDir,angleOffset, notCumulative,isRadar){
 	const NLOOP_MAX = 100;
 	while( (delta < 0 || delta > EPSILON) && loop < NLOOP_MAX){
 		const { width, height, left, top } = computeWidthHeight(radiusCand);
+		solWidth  = width;
+		solHeight = height;
+		solLeft   = left;
+		solTop    = top;
 		const dW = world.width - width;
 		const dH = world.height - height;
 		const locDelta = delta;
@@ -371,10 +391,6 @@ export function radius(world,tags,angleDir,angleOffset, notCumulative,isRadar){
 			dir *= -1;
 		}
 		radiusCand += step;
-		solWidth  = width;
-		solHeight = height;
-		solLeft   = left;
-		solTop    = top;
 		loop++;
 	}
 
