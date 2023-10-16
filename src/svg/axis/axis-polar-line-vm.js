@@ -123,7 +123,7 @@ export function vm(ds,cs, props,partnerDs,dir, motherCss, measurer){
 		theta: props.dim.map(x => x.theta)
 	};
 
-	const anchorAndOff = label.position.theta.map(t => anchorFromAngle(2 * Math.PI - t,ds.c.max,false,true));
+	const anchorAndOff = label.position.theta.map(t => anchorFromAngle(2 * Math.PI - t,ds.c.max,true));
 
 	label.offset = anchorAndOff.map( (aAo,i) => ({x: aAo.textOffset.x, y: aAo.textOffset.y(labelSizes[i].width,labelSizes[i].height)}));
 	label.anchor = anchorAndOff.map( aAo => aAo.textAnchor);
