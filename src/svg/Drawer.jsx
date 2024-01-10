@@ -178,12 +178,14 @@ export default class Drawer extends React.Component {
 	}
 
 	render(){
-		const { state, interactive, overflow, registerForAutoResize } = this.props; 
+		const { state, interactive, overflow, registerForAutoResize,axisProps } = this.props; 
 
 		const style = overflow ? {overflow: 'visible'} : null;
 		const { relative, width, height, curves, legend, autoResize, mouseDataHighlightSupported } = state;
 		//label
 		let labelsInfo;
+		const labelize = axisProps?.ord[0]?.ticks?.major?.labelize;
+		window.axisProps = axisProps;
 		if(mouseDataHighlightSupported && curves && legend){
 			labelsInfo = curves.filter(c => c.show && ['Bars','Plain'].includes(c.type))
 				.map( (c,i) => ({ ...this.state.dataPoints[i], 
@@ -248,7 +250,8 @@ export default class Drawer extends React.Component {
 				</span>
 				{labelsInfo.map( (x,i) => <div key={`tt.${i}`} className='fk-tooltip-text'>
 					<span className='fk-tooltip-label' style={{color: x.color}}>{x.label.toUpperCase()}</span>
-					<span className='fk-tooltip-value'>{x.y?.toLocaleString('fr-FR')}</span>
+					<span className='fk-tooltip-value'>
+						{labelize? labelize(x.y):x.y?.toLocaleString('fr-FR')}</span>
 				</div>)}
 			</div> : null }
 		</>;
