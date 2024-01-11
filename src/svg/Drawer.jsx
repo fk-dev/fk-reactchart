@@ -185,7 +185,7 @@ export default class Drawer extends React.Component {
 		//label
 		let labelsInfo;
 		const labelize = axisProps?.ord[0]?.ticks?.major?.labelize;
-		window.axisProps = axisProps;
+		// window.axisProps = axisProps;
 		if(mouseDataHighlightSupported && curves && legend){
 			labelsInfo = curves.filter(c => c.show && ['Bars','Plain'].includes(c.type))
 				.map( (c,i) => ({ ...this.state.dataPoints[i], 
