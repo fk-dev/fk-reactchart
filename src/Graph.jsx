@@ -123,7 +123,6 @@ export default class Graph extends React.Component {
 		};
 
 		const {registerForAutoResize} = this.sh;
-console.log("check rawprops:",rawProps);
 		const renderDrawer = () => <Drawer id={this.myKey} mgrId={mgrId} registerForAutoResize={registerForAutoResize} state={state} className={cn} overflow={this.props.overflow} debug={this.showIds()} axisProps={axisProps} interactive/>;
 
 		return interactive ? <div className='fk-reactchart'>{/*interactive means we are NOT in an encapsulating SVG*/}
