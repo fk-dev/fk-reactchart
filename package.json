@@ -18,9 +18,9 @@
     "freezer-js": "^0.14.1"
   },
   "devDependencies": {
-    "@babel/cli": "^7.23.0",
-    "@babel/preset-env": "^7.23.2",
-    "@babel/preset-react": "^7.22.15",
+    "@babel/cli": "^7.23.4",
+    "@babel/preset-env": "^7.23.8",
+    "@babel/preset-react": "^7.23.3",
     "babelify": "^10.0.0",
     "browserify": "^17.0.0",
     "bundle-collapser": "^1.4.0",
