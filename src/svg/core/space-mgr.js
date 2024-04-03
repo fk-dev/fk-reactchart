@@ -610,7 +610,7 @@ const polarTags = (tagProps,data,maxAngle,lengthMgr) => {
 		return [];
 	}
 	
-	const total = isNil(series[0].theta) ? series.reduce( (memo,x) => memo + x.value,0) : null;
+	const total = isNil(series[0]?.theta) ? series.reduce( (memo,x) => memo + x.value,0) : null;
 	let curValue = 0;
 	return series.map(point => {
 		const { width, height} = measureTags(tagProps, {x:0, y:0}, tagProps.print(point), lengthMgr);
