@@ -25,6 +25,7 @@ import { toC,toD } from './core/space-transf.js';
 	}
 */
 function hoverLabelData(curve,mouseX){
+		curve = curve.toJS ? curve.toJS() : curve;
 		let curveParams = curve.type === 'Plain' ? curve.path : curve.type === 'Bars' ? curve.marks[0]?.mark : null;
 		if(!curveParams){
 			return null;
@@ -251,7 +252,7 @@ export default class Drawer extends React.Component {
 				{labelsInfo.map( (x,i) => <div key={`tt.${i}`} className='fk-tooltip-text'>
 					<span className='fk-tooltip-label' style={{color: x.color}}>{x.label.toUpperCase()}</span>
 					<span className='fk-tooltip-value'>
-						{labelize? labelize(x.y):x.y?.toLocaleString('fr-FR')}</span>
+						{labelize && labelize(x.y) ? labelize(x.y) : x.y?.toLocaleString('fr-FR')}</span>
 				</div>)}
 			</div> : null }
 		</>;
