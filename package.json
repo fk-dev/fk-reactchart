@@ -13,7 +13,7 @@
   "homepage": "https://fundkis.com/lab/reactchart",
   "dependencies": {
     "react": "^17.0.2",
-    "underscore": "1.13.2",
+    "underscore": "1.13.6",
     "moment": "^2.29.1",
     "freezer-js": "^0.14.1"
   },
