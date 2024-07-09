@@ -95,7 +95,7 @@ export default class Drawer extends React.Component {
 		pt.x = event.clientX; pt.y = event.clientY;
 		// console.log("check : ",parentElement.getScreenCTM());
 		const screenCTM = parentElement.getScreenCTM()
-		const res = pt.matrixTransform(screenCTM?.inverse());
+		const res = pt.matrixTransform(screenCTM.inverse());
 		const x = res.x;
     	const y = res.y;
 		const dataPoints = this.props.state.curves.filter(c => c.show && [/*'Bars',*/'Plain'].includes(c.type)).map(c => hoverLabelData(c,x));
