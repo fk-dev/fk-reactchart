@@ -93,13 +93,11 @@ export default class Drawer extends React.Component {
 		const parentElement = this.graphRef;
 		let pt = parentElement.createSVGPoint();
 		pt.x = event.clientX; pt.y = event.clientY;
+		// console.log("check : ",parentElement.getScreenCTM());
 		const screenCTM = parentElement.getScreenCTM()
-		let x,y
-		if(screenCTM){
-			const res = pt.matrixTransform(screenCTM.inverse());
-			x = res.x;
-			y = res.y;
-		}
+		const res = pt.matrixTransform(screenCTM?.inverse());
+		const x = res.x;
+    	const y = res.y;
 		const dataPoints = this.props.state.curves.filter(c => c.show && [/*'Bars',*/'Plain'].includes(c.type)).map(c => hoverLabelData(c,x));
 		/// first set of outOfGraph, we don't know where we are
 		if(this.state.outOfGraph === null){
