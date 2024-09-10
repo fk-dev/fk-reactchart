@@ -33,6 +33,7 @@
 
 	.reactchart-toggle-menu {
 
+		display: inline-block;
 		float: right;
 		text-align: -webkit-right;
 
@@ -57,10 +58,6 @@
 	  	flex-direction: column;
 	  	justify-content: center;
 	  	align-items: center;
-		}
-
-		#menu-toggle {
-	  	display: none;
 		}
 
 		.menu-button,
@@ -92,26 +89,34 @@
 			right: 15px;
 	    flex-direction: column;
 	  }
-	  #menu-toggle ~ .menu li {
-	    height: 0;
-	    margin: 0;
-	    padding: 0;
-	    border: 0;
-	    transition: height 400ms cubic-bezier(0.23, 1, 0.32, 1);
-	  }
 
-	  #menu-toggle:checked ~ .menu {
-	    border: solid lightgray 0.5px;
-			border-radius: 5px;
-	    transition: height 400ms cubic-bezier(0.23, 1, 0.32, 1);
-		}
-
-	  #menu-toggle:checked ~ .menu > li {
-	    height: 2em;
-	    padding: 0.5em;
-	    border: 0;
-	    transition: height 400ms cubic-bezier(0.23, 1, 0.32, 1);
-	  }
+		// 20 menu toggle max in one page...
+		each(range(1%,20%,1),{
+			#menu-toggle-@{index} {
+		  	display: none;
+			}
+	
+		  #menu-toggle-@{index} ~ .menu li {
+		    height: 0;
+		    margin: 0;
+		    padding: 0;
+		    border: 0;
+		    transition: height 400ms cubic-bezier(0.23, 1, 0.32, 1);
+		  }
+	
+		  #menu-toggle-@{index}:checked ~ .menu {
+		    border: solid lightgray 0.5px;
+				border-radius: 5px;
+		    transition: height 400ms cubic-bezier(0.23, 1, 0.32, 1);
+			}
+	
+		  #menu-toggle-@{index}:checked ~ .menu > li {
+		    height: 2em;
+		    padding: 0.5em;
+		    border: 0;
+		    transition: height 400ms cubic-bezier(0.23, 1, 0.32, 1);
+		  }
+		});
 	  .menu > li {
 	    display: flex;
 	    margin: 0;
@@ -129,6 +134,9 @@
 
 	.reactchart-graph-settings {
 
+		border: 1px solid lightgray;
+		border-radius: 8px;
+		padding: 5px;
 		.reactchart-settings-table {
 
 			margin: 10px 0px;
@@ -179,6 +187,7 @@
 			}
 			.fk-button{
 				border-radius: 5px;
+				border-width: 0.1px;
 				padding: 6px 8px;
 				background: #3A83F1;
 				color: white;
@@ -187,35 +196,40 @@
 
 		.fk-line,.fk-row > .fk-input{
 			padding: 3px;
-			background: green;
 		}
 
 	}
 
 	.reactchart-filter {
 
-		.reactchart-btn {
-			background:  #F7F7F7;
-			border: none;
-			border-radius: 5px;
-			cursor: pointer;
-			margin: 0px 5px;
+		display: inline-flex;
+
+		.reactchart-btn-filters {
+			.reactchart-btn {
+				background:  #F7F7F7;
+				border: none;
+				border-radius: 5px;
+				cursor: pointer;
+				margin: 0px 5px;
+			}
+
+			.reactchart-btn-active {
+				background: #E6EBF5;
+				font-weight: bold;
+					cursor: auto;
+			}
 		}
 
-		.reactchart-btn-active {
-			background: #E6EBF5;
-			font-weight: bold;
-			cursor: auto;
-		}
+		.reactchart-date-filters {
+			.reactchart-from {
+				width: 100px;
+				margin-left: 65px;
+			}
 
-		.reactchart-from {
-			width: 100px;
-			margin-left: 100px;
-		}
-
-		.reactchart-to {
-			width: 100px;
-			margin-left: 10px;
+			.reactchart-to {
+				width: 100px;
+				margin-left: 10px;
+			}
 		}
 	}
 

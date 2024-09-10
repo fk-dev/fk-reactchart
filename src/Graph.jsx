@@ -2,6 +2,7 @@ import React, { forwardRef } from 'react';
 import { init }   from './helpers.js';
 import { Drawer, utils } from './svg';
 import { GraphSettings, ToggleMenu, Filter, defaultDateFilters } from './interactive';
+import { delReg } from './register.js';
 
 const { rndKey, emptyState, deepCp } = utils;
 
@@ -90,6 +91,7 @@ export default class Graph extends React.Component {
 		if(this.sh && this.sh.__preprocessed){
 			this.sh.kill(this.myKey);
 		}
+		delReg(this.myId);
 	}
 
 	showIds(){
@@ -125,41 +127,38 @@ export default class Graph extends React.Component {
 		const {registerForAutoResize} = this.sh;
 		const renderDrawer = () => <Drawer id={this.myKey} mgrId={mgrId} registerForAutoResize={registerForAutoResize} state={state} className={cn} overflow={this.props.overflow} debug={this.showIds()} axisProps={axisProps} interactive/>;
 
+		const { hideMenu, dateFilters, noDownload, noSettings } = rawProps;
+		const noMenu = hideMenu || ( noDownload && noSettings );
+
 		return interactive ? <div className='fk-reactchart'>{/*interactive means we are NOT in an encapsulating SVG*/}
-			{ rawProps.hideMenu ? null :
-				<ToggleMenu toggleSettings={() => this.setState({settings : !this.state.settings})} settings={settings} getData={() => _getData()}/>
-			}
-		{
-			settings ? <GraphSettings props={this.props} toggleSettings={() => this.setState({settings: !this.state.settings})}/> : 
-			<>
-				{
-					isFilterOn && this.sh.props().curves?.length ? <Filter mgr={this.sh} filter={rawProps.dateFilters === true ? defaultDateFilters : rawProps.dateFilters}/> : null
-				}
-				{
-					legendPosition === 'right' ? <>{/* legend right*/}
-						<table><tbody><tr><td>
-							{renderDrawer()}
-						</td>
-						<td className='legend-position'>
-							<LegendGraph/>
-						</td></tr></tbody></table>
-					</> :
-					legendPosition === 'left' ? <>{/* legend left*/}
-						<table><tbody><tr><td className='legend-position'>
-							<LegendGraph/>
-						</td>
-						<td>
-							{renderDrawer()}
-						</td></tr></tbody></table>
-					</> : <>
+			<div className='fk-reactchart-header'>
+				{!settings && isFilterOn && this.sh.props().curves?.length ? <Filter mgr={this.sh} filter={dateFilters === true ? defaultDateFilters : dateFilters}/> : null }
+				{noMenu ? null : <ToggleMenu graphId={this.myId} noDownload={noDownload} noSettings={noSettings} toggleSettings={() => this.setState({settings : !this.state.settings})} settings={settings} getData={() => _getData()}/> }
+			</div>
+			{settings ? <GraphSettings props={this.props} toggleSettings={() => this.setState({settings: !this.state.settings})}/> : null }
+			{settings ? null : 
+				legendPosition === 'right' ? <>{/* legend right*/}
+					<table><tbody><tr><td>
 						{renderDrawer()}
-						<div className='legend-align'>
-							<LegendGraph line={true}/>
-						</div>
-					</>
-				}
-			</>
-		}
+					</td>
+					<td className='legend-position'>
+						<LegendGraph/>
+					</td></tr></tbody></table>
+				</> :
+				legendPosition === 'left' ? <>{/* legend left*/}
+					<table><tbody><tr><td className='legend-position'>
+						<LegendGraph/>
+					</td>
+					<td>
+						{renderDrawer()}
+					</td></tr></tbody></table>
+				</> : <>
+					{renderDrawer()}
+					<div className='legend-align'>
+						<LegendGraph line={true}/>
+					</div>
+				</>
+			}
 		</div> :
 		<Drawer id={this.myKey} mgrId={mgrId} registerForAutoResize={registerForAutoResize} state={state} className={cn + ' fk-reactchart'} overflow={this.props.overflow} debug={this.showIds()}/>
 		;

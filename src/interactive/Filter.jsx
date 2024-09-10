@@ -74,10 +74,14 @@ export default function Filter({mgr,filter}){
 	const showFromTo = ['from', 'to'].includes(who);
 
 	return absoluteFrom && absoluteTo ? <div className='reactchart-filter'>
-		{activeFilters.map(f => <button key={f.key} disabled={who === f.key} className={`reactchart-btn${who === f.key ? ' reactchart-btn-active' : ''}`} onClick={() => clickMe(f.key)}>{f.label}</button>)}
-		{hasFrom ? <input type="text" placeholder={hasFrom.label} className='reactchart-from'
-			onFocus={(e) => e.target.type = "date"} onBlur={(e) => e.target.type = "text"} value={showFromTo  && from ? utc(from).format('YYYY-MM-DD') : ''} onChange={(e) => filterFrom(e.target.value)}/> : null}
-		{hasTo   ? <input type="text" placeholder={hasTo.label} className='reactchart-to'
-			onFocus={(e) => e.target.type = "date"} onBlur={(e) => e.target.type = "text"} value={showFromTo && to ? utc(to).format('YYYY-MM-DD') : ''} onChange={(e) => filterTo(e.target.value)}/> : null}
+		<div className='reactchart-btn-filters'>
+			{activeFilters.map(f => <button key={f.key} disabled={who === f.key} className={`reactchart-btn${who === f.key ? ' reactchart-btn-active' : ''}`} onClick={() => clickMe(f.key)}>{f.label}</button>)}
+		</div>
+		<div className='reactchart-date-filters'>
+			{hasFrom ? <input type="text" placeholder={hasFrom.label} className='reactchart-from'
+				onFocus={(e) => e.target.type = "date"} onBlur={(e) => e.target.type = "text"} value={showFromTo  && from ? utc(from).format('YYYY-MM-DD') : ''} onChange={(e) => filterFrom(e.target.value)}/> : null}
+			{hasTo   ? <input type="text" placeholder={hasTo.label} className='reactchart-to'
+				onFocus={(e) => e.target.type = "date"} onBlur={(e) => e.target.type = "text"} value={showFromTo && to ? utc(to).format('YYYY-MM-DD') : ''} onChange={(e) => filterTo(e.target.value)}/> : null}
+		</div>
 	</div> : null;
 }

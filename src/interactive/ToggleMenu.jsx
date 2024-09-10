@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { downloadData } from './http-utils.js';
+import { getReg, addReg } from '../register.js';
 
 function toCsv(name, serie, options){
 
@@ -42,8 +43,10 @@ function exportData(data){
 	});
 }
 
-export default function ToggleMenu({toggleSettings, settings, getData}) {
+export default function ToggleMenu({toggleSettings, settings, getData, noDownload, noSettings, graphId}) {
 
+
+	useMemo(() => addReg(graphId),[graphId]);
 	const [inputVal, setInputVal] = useState(false);
 
 	function _toggleSettings(){
@@ -57,13 +60,13 @@ export default function ToggleMenu({toggleSettings, settings, getData}) {
 	}
 
 	return <div className='reactchart-toggle-menu'>
-		<input id="menu-toggle" type='checkbox' checked={inputVal} onChange={(e) => setInputVal(e.target.checked)}/>
-		<label className='menu-button-container' htmlFor="menu-toggle">
+		<input id={`menu-toggle-${getReg(graphId)}`}  type='checkbox' checked={inputVal} onChange={(e) => setInputVal(e.target.checked)}/>
+		<label className='menu-button-container' htmlFor={`menu-toggle-${getReg(graphId)}`}>
 			<div className='menu-button'></div>
 		</label>
 		<ul className="menu">
-			<li><span onClick={()=> _toggleSettings()}>{settings ? 'Graph':'Settings'}</span></li>
-			<li><span onClick={()=> _exportData(getData())}>{'Export'}</span></li>
+			{noSettings ? null : <li><span onClick={()=> _toggleSettings()}>{settings ? 'Graph':'Settings'}</span></li>}
+			{noDownload ? null : <li><span onClick={()=> _exportData(getData())}>{'Export'}</span></li>}
 		</ul>
 	</div>;
 }
