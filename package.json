@@ -23,7 +23,7 @@
     ]
   },
   "scripts": {
-    "test": "gulp test",
+    "test": "$fkSRCPATH/fk-dev-tools/bin/run-test.sh",
     "build": "babel src -d lib",
     "preBuild": "gulp buildNpm",
     "prepublish": "npm run build && npm run preBuild"
