@@ -109,7 +109,7 @@ export default class Graph extends React.Component {
 		const cn    = this.props.namespace || ( this.sh ? this.sh.getNamespace() : 'reactchart' );
 		const mgrId = this.sh?.__mgrId ?? 'noMgr';
 
-		const rawProps       = this.props.rawProps ? this.props.rawProps() : null;
+		const rawProps       = this.props.rawProps ? this.props.rawProps() : {};
 		const showLegend     = rawProps?.legend?.showLegend;
 		const legendPosition = rawProps?.legend?.position;
 		const isFilterOn     = ( rawProps?.dateFilters === true || rawProps?.dateFilters?.length ) ?? false;
