@@ -252,8 +252,11 @@ function hookAlpha(_angle){
 }
 
 /// -360 < alpha < 360, double precision
-export function toFullCircle(alpha,radian){
+export function toFullCircle(alpha,radian) {
 	const full = radian ? 2 * PI : 360;
+	if (!isFinite(alpha)) {
+		alpha = full;
+	}
 	while(alpha + full < 1e-12){
 		alpha += full;
 	}
