@@ -1,3 +1,5 @@
+bearer-errors.err
 *.swp
 node_modules
 lib
+tmp
