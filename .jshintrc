@@ -52,5 +52,5 @@
 
     "node"  : true,
 
-    "globals"       : { "angular" : false, "theMdl" : false }
+    "globals"       : {  }
 }
