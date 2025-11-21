@@ -630,10 +630,28 @@ export function init(rawProps, type, opts, debug){
 	if (rawProps?.autoResize) {
 		let resizeElem = null;
 		let recompute = null;
+		let resizeObserver = null;
+
+		const destroyObserver = () => {
+			if (resizeObserver) {
+				resizeObserver.disconnect();
+				resizeObserver = null;
+			}
+		};
+
+		// [IA] Use ResizeObserver to refresh the chart whenever the container box changes (modal open, flex changes, etc.)
 		rc.registerForAutoResize = (elem) => {
-			resizeElem = elem;
+			destroyObserver();
+			resizeElem = elem || null;
+			if (!resizeElem) {
+				return;
+			}
+			resizeObserver = new ResizeObserver(() => {
+				onResize();
+			});
+			resizeObserver.observe(resizeElem);
 			onResize();
-		}
+		};
 
 		const onResize = () => {
 			if (!resizeElem) { return; }
@@ -648,9 +666,6 @@ export function init(rawProps, type, opts, debug){
 			}
 			recompute = setTimeout(() => rc.reinit({...up, width, height}),100);
 		};
-
-	
-		window.addEventListener('resize', onResize);
 	}
 
 
