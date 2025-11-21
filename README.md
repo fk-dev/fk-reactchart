@@ -1,5 +1,4 @@
 # Fund KIS' immutable React-based charts library
-
 This is a work of [Fund KIS](http://fundkis.com/lab/react-chart) to 
 easily produce quality charts.
 
