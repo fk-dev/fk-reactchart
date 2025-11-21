@@ -74,14 +74,18 @@ export default class Drawer extends React.Component {
 	}
 
 	measureTt(tt){
-		if(!tt || !this.graphRef){return;}
-		const { width, height } = tt.getBoundingClientRect();
-		if(this.state.maxX < 0 || this.state.width < 0 || this.state.width < width){
-			const maxW = this.graphRef.getBoundingClientRect().width;
-			this.setState({maxX: maxW - width, width});
-		}
-		if(!this.state.yOffset || this.state.height < 0 || height !== this.state.height){
-			this.setState({yOffset: 50 - height/2, height});
+		try {
+			if(!tt || !this.graphRef){return;}
+			const { width, height } = tt.getBoundingClientRect();
+			if(this.state.maxX < 0 || this.state.width < 0 || this.state.width < width){
+				const maxW = this.graphRef.getBoundingClientRect().width;
+				this.setState({maxX: maxW - width, width});
+			}
+			if(!this.state.yOffset || this.state.height < 0 || height !== this.state.height){
+				this.setState({yOffset: 50 - height/2, height});
+			}
+		} catch (e) {
+			console.log('mesureTt error ', e); // eslint-disable-line no-console
 		}
 	}
 
