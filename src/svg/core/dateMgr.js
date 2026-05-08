@@ -528,7 +528,7 @@ export function extraTicks({extra, extraLabelize},already,step,start,end){
 	// custom extra
 	// 1 - grid
 	for(let g = 0; g < extra.grid.length; g++){
-		const { position, color, width } = extra.grid[g];
+		const { position, color, width, dasharray } = extra.grid[g];
 		const idx = already.findIndex( a => equal(a.position,position));
 		if(idx !== -1){
 			already[idx].grid = { color, width, show: true };
@@ -547,7 +547,8 @@ export function extraTicks({extra, extraLabelize},already,step,start,end){
 			grid: {
 				show: true,
 				color,
-				width: width || 0.5
+				width: width || 0.5,
+				dasharray
 			}
 		});
 	}

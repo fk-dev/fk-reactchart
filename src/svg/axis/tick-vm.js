@@ -197,6 +197,7 @@ export function vm({css, cs, measurer, ds, partner, bounds, dir, locProps, comFa
 			show: true,
 			color: true,
 			length: true,
+			dasharray: true,
 			out: true,
 			width: true,
 			custom: locProps.custom
@@ -400,6 +401,7 @@ export function vm({css, cs, measurer, ds, partner, bounds, dir, locProps, comFa
 			color: true,
 			width: true,
 			circle: true,
+			dasharray: true,
 			dim: true
 		};
 

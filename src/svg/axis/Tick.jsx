@@ -43,7 +43,7 @@ export default class Tick extends React.Component {
 
 		const { state, className } = this.props;
 		const { type, placement, grid, tick } = state;
-		const { show, css, color, width, length, cycle, dim } = grid;
+		const { show, css, color, width, length, dasharray, cycle, dim } = grid;
 		const { position, ds, dir } = tick;
 
 		if(show === false){
@@ -52,7 +52,8 @@ export default class Tick extends React.Component {
 
 		const tickProps = {
 			stroke: color, 
-			strokeWidth: width
+			strokeWidth: width,
+			strokeDasharray: dasharray
 		};
 
 		const gridName = className.length ? `${className}Grid` : '';
