@@ -169,7 +169,7 @@ export function vm({css, cs, measurer, ds, partner, bounds, dir, locProps, comFa
 
 	// in case we need to check user defined labels
 	const getMaxLabelLength = () => {
-		let max = -5;
+		let max = 0;
 		for(let i = 0; i < tickers.length - 1; i++){
 			const loc = Math.abs(tickers[i + 1].position - tickers[i].position);
 			max = loc > max ? loc : max;
